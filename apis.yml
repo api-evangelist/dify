@@ -25,7 +25,7 @@ type: Index
 image: https://kinlane-productions.s3.amazonaws.com/apis-json/apis-json-logo.jpg
 access: 3rd-Party
 created: '2025-02-08'
-modified: '2025-03-27'
+modified: '2026-03-16'
 position: Consumer
 description: >-
   Dify is an open-source platform for building AI applications. We combine
@@ -34,14 +34,14 @@ description: >-
   innovators. 
 maintainers:
   - FN: Kin Lane
-    email: info@apievangelist.com
+    email: kin@apievangelist.com
 specificationVersion: '0.19'
 common:
-  - name: Dify.AI · The Innovation Engine for Generative AI Applications
+  - name: Dify.AI ï¿½ The Innovation Engine for Generative AI Applications
     description: 'null'
     url: https://dify.ai/
     type: Website
-  - name: Dify AI · Plans and Pricing
+  - name: Dify AI ï¿½ Plans and Pricing
     description: 'null'
     url: https://dify.ai/pricing
     type: Pricing
@@ -65,7 +65,7 @@ common:
     description: 'null'
     url: https://dify.ai/terms
     type: TermsOfService
-  - name: Privacy Policy · Dify.AI
+  - name: Privacy Policy ï¿½ Dify.AI
     description: 'null'
     url: https://dify.ai/privacy
     type: PrivacyPolicy
