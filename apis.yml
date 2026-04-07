@@ -1,13 +1,12 @@
 aid: dify
-url: 
-  https://raw.githubusercontent.com/api-evangelist/dify/refs/heads/main/apis.yml
+url: https://raw.githubusercontent.com/api-evangelist/dify/refs/heads/main/apis.yml
 apis:
   - aid: dify:dify
     name: Dify
     tags:
-      - Backend-as-a-Service
-      - LLMOps
       - Artificial Intelligence
+      - Backend-As-A-Service
+      - LLMOps
     humanURL: ' https://docs.dify.ai/'
     properties:
       - url: ' https://docs.dify.ai/'
@@ -18,9 +17,9 @@ apis:
       it accessible to both developers and non-technical innovators.
 name: Dify
 tags:
-  - Backend-as-a-Service
-  - LLMOps
   - Artificial Intelligence
+  - Backend-As-A-Service
+  - LLMOps
 type: Index
 image: https://kinlane-productions.s3.amazonaws.com/apis-json/apis-json-logo.jpg
 access: 3rd-Party
