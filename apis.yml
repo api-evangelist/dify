@@ -1,5 +1,6 @@
 aid: dify
-url: https://raw.githubusercontent.com/api-evangelist/dify/refs/heads/main/apis.yml
+url: 
+  https://raw.githubusercontent.com/api-evangelist/dify/refs/heads/main/apis.yml
 apis:
   - aid: dify:dify
     name: Dify
@@ -12,10 +13,9 @@ apis:
       - url: ' https://docs.dify.ai/'
         type: Documentation
     description: >-
-      Dify is an open-source platform for building AI applications. We combine
-      Backend-as-a-Service and LLMOps to streamline the development of
-      generative AI solutions, making it accessible to both developers and
-      non-technical innovators. 
+      Dify is an open-source platform for building AI applications. We combine Backend-as-a-Service
+      and LLMOps to streamline the development of generative AI solutions, making
+      it accessible to both developers and non-technical innovators.
 name: Dify
 tags:
   - Backend-as-a-Service
@@ -28,10 +28,9 @@ created: '2025-02-08'
 modified: '2026-03-16'
 position: Consumer
 description: >-
-  Dify is an open-source platform for building AI applications. We combine
-  Backend-as-a-Service and LLMOps to streamline the development of generative AI
-  solutions, making it accessible to both developers and non-technical
-  innovators. 
+  Dify is an open-source platform for building AI applications. We combine Backend-as-a-Service
+  and LLMOps to streamline the development of generative AI solutions, making it accessible
+  to both developers and non-technical innovators.
 maintainers:
   - FN: Kin Lane
     email: kin@apievangelist.com
