@@ -35,6 +35,10 @@ maintainers:
     email: kin@apievangelist.com
 specificationVersion: '0.19'
 common:
+  - type: GitHubOrganization
+    url: https://github.com/langgenius
+  - type: LinkedIn
+    url: https://www.linkedin.com/company/langgenius
   - name: Dify.AI � The Innovation Engine for Generative AI Applications
     description: 'null'
     url: https://dify.ai/
