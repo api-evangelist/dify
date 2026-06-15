@@ -1,0 +1,299 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Dify API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Chat",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Send a chat message",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/chat-messages",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Send a chat message"
+        },
+        {
+          "info": {
+            "name": "Stop a generating chat message",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/chat-messages/:task_id/stop",
+            "params": [
+              {
+                "name": "task_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Stop a generating chat message"
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Completion",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Send a completion request",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/completion-messages",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Send a completion request"
+        },
+        {
+          "info": {
+            "name": "Stop completion generation",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/completion-messages/:task_id/stop",
+            "params": [
+              {
+                "name": "task_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Stop completion generation"
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Workflows",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Execute a workflow",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/workflows/run",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Execute a workflow"
+        },
+        {
+          "info": {
+            "name": "Stop a running workflow",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/workflows/:task_id/stop",
+            "params": [
+              {
+                "name": "task_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Stop a running workflow"
+        },
+        {
+          "info": {
+            "name": "Get a workflow run detail",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.dify.ai/v1/workflows/run/:workflow_run_id",
+            "params": [
+              {
+                "name": "workflow_run_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a workflow run detail"
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Conversations",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List conversations",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.dify.ai/v1/conversations",
+            "params": [
+              {
+                "name": "user",
+                "value": "",
+                "type": "query"
+              },
+              {
+                "name": "limit",
+                "value": "",
+                "type": "query"
+              }
+            ]
+          },
+          "docs": "List conversations"
+        },
+        {
+          "info": {
+            "name": "Delete a conversation",
+            "type": "http"
+          },
+          "http": {
+            "method": "DELETE",
+            "url": "https://api.dify.ai/v1/conversations/:conversation_id",
+            "params": [
+              {
+                "name": "conversation_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Delete a conversation"
+        },
+        {
+          "info": {
+            "name": "Rename a conversation",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/conversations/:conversation_id/name",
+            "params": [
+              {
+                "name": "conversation_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Rename a conversation"
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Datasets",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "List knowledge bases / datasets",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.dify.ai/v1/datasets"
+          },
+          "docs": "List knowledge bases / datasets"
+        },
+        {
+          "info": {
+            "name": "Test retrieval against a dataset",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/datasets/:dataset_id/retrieve",
+            "params": [
+              {
+                "name": "dataset_id",
+                "value": "",
+                "type": "path"
+              }
+            ],
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Test retrieval against a dataset"
+        }
+      ]
+    },
+    {
+      "info": {
+        "name": "Files",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Upload a file",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/files/upload",
+            "body": {
+              "type": "multipart-form",
+              "data": [
+                {
+                  "name": "file",
+                  "type": "text",
+                  "value": ""
+                },
+                {
+                  "name": "user",
+                  "type": "text",
+                  "value": ""
+                }
+              ]
+            }
+          },
+          "docs": "Upload a file"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
