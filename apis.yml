@@ -71,5 +71,5 @@ common:
     description: 'null'
     url: https://dify.ai/privacy
     type: PrivacyPolicy
-  - type: LLMsTxt
+  - type: LlmsText
     url: https://docs.dify.ai/llms.txt

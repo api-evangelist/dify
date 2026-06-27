@@ -3,12 +3,12 @@
   "feeds": [
     {
       "source": "https://dify.ai/blog",
-      "feed_url": "https://dify.ai/blog",
-      "title": "",
+      "feed_url": "",
       "saved": 0,
-      "method": "none"
+      "method": "agent-scrape"
     }
   ],
   "post_count": 1,
-  "fetched": "2026-06-14T20:42:17Z"
+  "fetched": "2026-06-27T12:36:25Z",
+  "agent_pulled": "2026-06-27"
 }
