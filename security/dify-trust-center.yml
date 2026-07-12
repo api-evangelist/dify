@@ -1,0 +1,12 @@
+generated: '2026-07-11'
+method: searched
+probe: true
+source: https://security.dify.ai/
+url: https://security.dify.ai/
+certifications:
+- SOC 2
+evidence:
+- source: https://security.dify.ai/
+  keywords:
+  - soc 2
+  - trust center
