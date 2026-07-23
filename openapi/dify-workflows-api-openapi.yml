@@ -1,0 +1,75 @@
+openapi: 3.1.0
+info:
+  title: Dify Chat Workflows API
+  description: Dify is an open-source platform for building AI applications and agentic workflows. This API provides access to chat messages, completion messages, workflow execution, conversations, knowledge bases (datasets) and file uploads.
+  version: '1.0'
+servers:
+- url: https://api.dify.ai/v1
+  description: Dify Cloud API
+security:
+- bearerAuth: []
+tags:
+- name: Workflows
+paths:
+  /workflows/run:
+    post:
+      tags:
+      - Workflows
+      summary: Execute a workflow
+      operationId: runWorkflow
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - inputs
+              - user
+              properties:
+                inputs:
+                  type: object
+                response_mode:
+                  type: string
+                  enum:
+                  - streaming
+                  - blocking
+                user:
+                  type: string
+      responses:
+        '200':
+          description: Workflow result
+  /workflows/{task_id}/stop:
+    post:
+      tags:
+      - Workflows
+      summary: Stop a running workflow
+      operationId: stopWorkflow
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Stopped
+  /workflows/run/{workflow_run_id}:
+    get:
+      tags:
+      - Workflows
+      summary: Get a workflow run detail
+      operationId: getWorkflowRun
+      parameters:
+      - name: workflow_run_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Workflow run details
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

@@ -1,0 +1,69 @@
+openapi: 3.1.0
+info:
+  title: Dify Chat API
+  description: Dify is an open-source platform for building AI applications and agentic workflows. This API provides access to chat messages, completion messages, workflow execution, conversations, knowledge bases (datasets) and file uploads.
+  version: '1.0'
+servers:
+- url: https://api.dify.ai/v1
+  description: Dify Cloud API
+security:
+- bearerAuth: []
+tags:
+- name: Chat
+paths:
+  /chat-messages:
+    post:
+      tags:
+      - Chat
+      summary: Send a chat message
+      operationId: sendChatMessage
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - inputs
+              - query
+              - user
+              properties:
+                inputs:
+                  type: object
+                query:
+                  type: string
+                response_mode:
+                  type: string
+                  enum:
+                  - streaming
+                  - blocking
+                conversation_id:
+                  type: string
+                user:
+                  type: string
+                files:
+                  type: array
+                  items:
+                    type: object
+      responses:
+        '200':
+          description: Chat response
+  /chat-messages/{task_id}/stop:
+    post:
+      tags:
+      - Chat
+      summary: Stop a generating chat message
+      operationId: stopChatMessage
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Stopped
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

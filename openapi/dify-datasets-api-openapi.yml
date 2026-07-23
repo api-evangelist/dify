@@ -1,0 +1,52 @@
+openapi: 3.1.0
+info:
+  title: Dify Chat Datasets API
+  description: Dify is an open-source platform for building AI applications and agentic workflows. This API provides access to chat messages, completion messages, workflow execution, conversations, knowledge bases (datasets) and file uploads.
+  version: '1.0'
+servers:
+- url: https://api.dify.ai/v1
+  description: Dify Cloud API
+security:
+- bearerAuth: []
+tags:
+- name: Datasets
+paths:
+  /datasets:
+    get:
+      tags:
+      - Datasets
+      summary: List knowledge bases / datasets
+      operationId: listDatasets
+      responses:
+        '200':
+          description: Datasets
+  /datasets/{dataset_id}/retrieve:
+    post:
+      tags:
+      - Datasets
+      summary: Test retrieval against a dataset
+      operationId: datasetRetrieve
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                query:
+                  type: string
+                retrieval_model:
+                  type: object
+      responses:
+        '200':
+          description: Retrieval results
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

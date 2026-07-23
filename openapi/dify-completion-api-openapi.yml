@@ -1,0 +1,60 @@
+openapi: 3.1.0
+info:
+  title: Dify Chat Completion API
+  description: Dify is an open-source platform for building AI applications and agentic workflows. This API provides access to chat messages, completion messages, workflow execution, conversations, knowledge bases (datasets) and file uploads.
+  version: '1.0'
+servers:
+- url: https://api.dify.ai/v1
+  description: Dify Cloud API
+security:
+- bearerAuth: []
+tags:
+- name: Completion
+paths:
+  /completion-messages:
+    post:
+      tags:
+      - Completion
+      summary: Send a completion request
+      operationId: sendCompletion
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - inputs
+              - user
+              properties:
+                inputs:
+                  type: object
+                response_mode:
+                  type: string
+                  enum:
+                  - streaming
+                  - blocking
+                user:
+                  type: string
+      responses:
+        '200':
+          description: Completion response
+  /completion-messages/{task_id}/stop:
+    post:
+      tags:
+      - Completion
+      summary: Stop completion generation
+      operationId: stopCompletion
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Stopped
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

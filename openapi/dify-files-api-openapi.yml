@@ -1,0 +1,41 @@
+openapi: 3.1.0
+info:
+  title: Dify Chat Files API
+  description: Dify is an open-source platform for building AI applications and agentic workflows. This API provides access to chat messages, completion messages, workflow execution, conversations, knowledge bases (datasets) and file uploads.
+  version: '1.0'
+servers:
+- url: https://api.dify.ai/v1
+  description: Dify Cloud API
+security:
+- bearerAuth: []
+tags:
+- name: Files
+paths:
+  /files/upload:
+    post:
+      tags:
+      - Files
+      summary: Upload a file
+      operationId: uploadFile
+      requestBody:
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - file
+              - user
+              properties:
+                file:
+                  type: string
+                  format: binary
+                user:
+                  type: string
+      responses:
+        '200':
+          description: File uploaded
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer

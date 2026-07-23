@@ -1,0 +1,67 @@
+openapi: 3.1.0
+info:
+  title: Dify Chat Conversations API
+  description: Dify is an open-source platform for building AI applications and agentic workflows. This API provides access to chat messages, completion messages, workflow execution, conversations, knowledge bases (datasets) and file uploads.
+  version: '1.0'
+servers:
+- url: https://api.dify.ai/v1
+  description: Dify Cloud API
+security:
+- bearerAuth: []
+tags:
+- name: Conversations
+paths:
+  /conversations:
+    get:
+      tags:
+      - Conversations
+      summary: List conversations
+      operationId: listConversations
+      parameters:
+      - name: user
+        in: query
+        required: true
+        schema:
+          type: string
+      - name: limit
+        in: query
+        schema:
+          type: integer
+      responses:
+        '200':
+          description: Conversations
+  /conversations/{conversation_id}:
+    delete:
+      tags:
+      - Conversations
+      summary: Delete a conversation
+      operationId: deleteConversation
+      parameters:
+      - name: conversation_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '204':
+          description: Deleted
+  /conversations/{conversation_id}/name:
+    post:
+      tags:
+      - Conversations
+      summary: Rename a conversation
+      operationId: renameConversation
+      parameters:
+      - name: conversation_id
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Renamed
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
