@@ -1,27 +1,94 @@
 aid: dify
 url: https://raw.githubusercontent.com/api-evangelist/dify/refs/heads/main/apis.yml
 apis:
-  - aid: dify:dify
-    name: Dify
-    tags:
-      - Artificial Intelligence
-      - Backend-As-A-Service
-      - LLMOps
-    humanURL: ' https://docs.dify.ai/'
-    properties:
-      - url: ' https://docs.dify.ai/'
-        type: Documentation
-    description: >-
-      Dify is an open-source platform for building AI applications. We combine Backend-as-a-Service
-      and LLMOps to streamline the development of generative AI solutions, making
-      it accessible to both developers and non-technical innovators.
+- aid: dify:dify
+  name: Dify
+  tags:
+  - Artificial Intelligence
+  - Backend-As-A-Service
+  - LLMOps
+  humanURL: ' https://docs.dify.ai/'
+  properties:
+  - url: ' https://docs.dify.ai/'
+    type: Documentation
+  description: >-
+    Dify is an open-source platform for building AI applications. We combine Backend-as-a-Service and
+    LLMOps to streamline the development of generative AI solutions, making it accessible to both developers
+    and non-technical innovators.
+- aid: dify:dify-chat-api
+  name: Dify Chat API
+  description: The Chat API from Dify — 2 operation(s) for chat.
+  humanURL: ' https://docs.dify.ai/'
+  tags:
+  - Chat
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-chat-api-openapi.yml
+- aid: dify:dify-completion-api
+  name: Dify Completion API
+  description: The Completion API from Dify — 2 operation(s) for completion.
+  humanURL: ' https://docs.dify.ai/'
+  tags:
+  - Completion
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-completion-api-openapi.yml
+- aid: dify:dify-conversations-api
+  name: Dify Conversations API
+  description: The Conversations API from Dify — 3 operation(s) for conversations.
+  humanURL: ' https://docs.dify.ai/'
+  tags:
+  - Conversations
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-conversations-api-openapi.yml
+- aid: dify:dify-datasets-api
+  name: Dify Datasets API
+  description: The Datasets API from Dify — 2 operation(s) for datasets.
+  humanURL: ' https://docs.dify.ai/'
+  tags:
+  - Datasets
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-datasets-api-openapi.yml
+- aid: dify:dify-files-api
+  name: Dify Files API
+  description: The Files API from Dify — 1 operation(s) for files.
+  humanURL: ' https://docs.dify.ai/'
+  tags:
+  - Files
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-files-api-openapi.yml
+- aid: dify:dify-workflows-api
+  name: Dify Workflows API
+  description: The Workflows API from Dify — 3 operation(s) for workflows.
+  humanURL: ' https://docs.dify.ai/'
+  tags:
+  - Workflows
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-workflows-api-openapi.yml
 name: Dify
 tags:
   - Artificial Intelligence
   - Backend-As-A-Service
   - LLMOps
 type: Index
-image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/apis-json-logo.jpg
+accessModel:
+  pricing: freemium
+  onboarding: self-serve
+  trial: false
+  try_now: true
+  public: false
+  label: Freemium · Self-serve signup
+  confidence: high
+  source:
+  - plans
+  - authentication
+  generated: '2026-07-22'
+  method: derived
+image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
 access: 3rd-Party
 created: '2025-02-08'
 modified: '2026-04-28'
