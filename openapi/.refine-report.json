@@ -1,0 +1,24 @@
+{
+  "provider": "dify",
+  "sources": [
+    "dify-chat-api-openapi.yml",
+    "dify-completion-api-openapi.yml",
+    "dify-conversations-api-openapi.yml",
+    "dify-datasets-api-openapi.yml",
+    "dify-files-api-openapi.yml",
+    "dify-workflows-api-openapi.yml"
+  ],
+  "outputs": [
+    "dify-chat-api-openapi.yml",
+    "dify-completion-api-openapi.yml",
+    "dify-conversations-api-openapi.yml",
+    "dify-datasets-api-openapi.yml",
+    "dify-files-api-openapi.yml",
+    "dify-workflows-api-openapi.yml"
+  ],
+  "archived": [],
+  "errors": [],
+  "warnings": [],
+  "notes": [],
+  "skipped": []
+}
