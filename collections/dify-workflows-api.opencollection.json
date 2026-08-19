@@ -1,0 +1,75 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Dify Chat Workflows API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Workflows",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Execute a workflow",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/workflows/run",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Execute a workflow"
+        },
+        {
+          "info": {
+            "name": "Stop a running workflow",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/workflows/:task_id/stop",
+            "params": [
+              {
+                "name": "task_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Stop a running workflow"
+        },
+        {
+          "info": {
+            "name": "Get a workflow run detail",
+            "type": "http"
+          },
+          "http": {
+            "method": "GET",
+            "url": "https://api.dify.ai/v1/workflows/run/:workflow_run_id",
+            "params": [
+              {
+                "name": "workflow_run_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Get a workflow run detail"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}

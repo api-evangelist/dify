@@ -1,0 +1,57 @@
+{
+  "opencollection": "1.0.0",
+  "info": {
+    "name": "Dify Chat Completion API",
+    "version": "1.0"
+  },
+  "request": {
+    "auth": {
+      "type": "bearer",
+      "token": "{{bearerToken}}"
+    }
+  },
+  "items": [
+    {
+      "info": {
+        "name": "Completion",
+        "type": "folder"
+      },
+      "items": [
+        {
+          "info": {
+            "name": "Send a completion request",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/completion-messages",
+            "body": {
+              "type": "json",
+              "data": "{}"
+            }
+          },
+          "docs": "Send a completion request"
+        },
+        {
+          "info": {
+            "name": "Stop completion generation",
+            "type": "http"
+          },
+          "http": {
+            "method": "POST",
+            "url": "https://api.dify.ai/v1/completion-messages/:task_id/stop",
+            "params": [
+              {
+                "name": "task_id",
+                "value": "",
+                "type": "path"
+              }
+            ]
+          },
+          "docs": "Stop completion generation"
+        }
+      ]
+    }
+  ],
+  "bundled": true
+}
