@@ -5,6 +5,10 @@ apis:
   name: Dify
   tags:
   - Artificial Intelligence
+  - Backend-as-a-Service
+  - LLMOps
+  tags_raw:
+  - Artificial Intelligence
   - Backend-As-A-Service
   - LLMOps
   humanURL: ' https://docs.dify.ai/'
@@ -56,6 +60,8 @@ apis:
   description: The Files API from Dify — 1 operation(s) for files.
   humanURL: ' https://docs.dify.ai/'
   tags:
+  - File
+  tags_raw:
   - Files
   properties:
   - type: OpenAPI
@@ -71,6 +77,10 @@ apis:
     url: openapi/dify-workflows-api-openapi.yml
 name: Dify
 tags:
+  - Artificial Intelligence
+  - Backend-as-a-Service
+  - LLMOps
+tags_raw:
   - Artificial Intelligence
   - Backend-As-A-Service
   - LLMOps
