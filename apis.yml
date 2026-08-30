@@ -5,7 +5,7 @@ apis:
   name: Dify
   tags:
   - Artificial Intelligence
-  - Backend-as-a-Service
+  - Backend-As-A-Service
   - LLMOps
   tags_raw:
   - Artificial Intelligence
@@ -78,7 +78,7 @@ apis:
 name: Dify
 tags:
   - Artificial Intelligence
-  - Backend-as-a-Service
+  - Backend-As-A-Service
   - LLMOps
 tags_raw:
   - Artificial Intelligence
