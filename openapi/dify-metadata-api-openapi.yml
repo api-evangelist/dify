@@ -1,0 +1,689 @@
+openapi: 3.0.1
+info:
+  title: Dify Metadata API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
+    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  version: 1.0.0
+servers:
+- url: https://{api_base_url}
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
+    API base URL.
+  variables:
+    api_base_url:
+      default: api.dify.ai/v1
+      description: Host and path of the API base URL, without the `https://` prefix.
+security:
+- ApiKeyAuth: []
+tags:
+- name: Metadata
+  description: Operations for managing knowledge base metadata fields and document metadata values.
+paths:
+  /datasets/{dataset_id}/metadata:
+    post:
+      tags:
+      - Metadata
+      summary: Create Metadata Field
+      description: Create a custom metadata field for annotating documents in the knowledge base with
+        structured information.
+      operationId: createMetadataField
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. See [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - type
+              - name
+              properties:
+                type:
+                  type: string
+                  enum:
+                  - string
+                  - number
+                  - time
+                  description: '`string` for text values, `number` for numeric values, `time` for date/time
+                    values.'
+                name:
+                  type: string
+                  description: Name for the metadata field. Must be unique among the knowledge base's
+                    fields and at most 255 characters.
+      responses:
+        '201':
+          description: Metadata field created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Metadata field identifier.
+                  name:
+                    type: string
+                    description: Metadata field name.
+                  type:
+                    type: string
+                    description: Metadata field type.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    id: b5c6d7e8-f9a0-1b2c-3d4e-5f6a7b8c9d0e
+                    name: author
+                    type: string
+        '400':
+          description: '`invalid_param` : The metadata name already exists, exceeds 255 characters, or
+            conflicts with a built-in field.'
+          content:
+            application/json:
+              examples:
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Metadata name already exists.
+        '403':
+          description: '- `forbidden` : Dataset api access is not enabled.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '`not_found` : Dataset not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+      x-mint:
+        href: /en/api-reference/metadata/create-metadata-field
+        metadata:
+          title: Create Metadata Field
+          sidebarTitle: Create Metadata Field
+    get:
+      tags:
+      - Metadata
+      summary: List Metadata Fields
+      description: Returns all metadata fields for the knowledge base, both custom and built-in, with
+        the count of documents using each field.
+      operationId: listMetadataFields
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. See [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      responses:
+        '200':
+          description: Metadata fields for the knowledge base.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  doc_metadata:
+                    type: array
+                    description: List of metadata field definitions.
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Metadata field identifier.
+                        name:
+                          type: string
+                          description: Metadata field name.
+                        type:
+                          type: string
+                          description: Metadata field type.
+                        count:
+                          type: integer
+                          description: Number of documents using this metadata field.
+                  built_in_field_enabled:
+                    type: boolean
+                    description: Whether built-in metadata fields are enabled for this knowledge base.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    doc_metadata:
+                    - id: b5c6d7e8-f9a0-1b2c-3d4e-5f6a7b8c9d0e
+                      name: author
+                      type: string
+                      count: 3
+                    built_in_field_enabled: true
+        '403':
+          description: '`forbidden` : Dataset api access is not enabled.'
+          content:
+            application/json:
+              examples:
+                forbidden:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+        '404':
+          description: '`not_found` : Dataset not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+      x-mint:
+        href: /en/api-reference/metadata/list-metadata-fields
+        metadata:
+          title: List Metadata Fields
+          sidebarTitle: List Metadata Fields
+  /datasets/{dataset_id}/metadata/{metadata_id}:
+    patch:
+      tags:
+      - Metadata
+      summary: Update Metadata Field
+      description: Rename a custom metadata field.
+      operationId: updateMetadataField
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. See [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: metadata_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: ID of the metadata field to rename. See [List Metadata Fields](/en/api-reference/metadata/list-metadata-fields).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  description: New name for the field. Must be unique among the knowledge base's fields
+                    and at most 255 characters.
+      responses:
+        '200':
+          description: Metadata field updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Metadata field identifier.
+                  name:
+                    type: string
+                    description: Metadata field name.
+                  type:
+                    type: string
+                    description: Metadata field type.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    id: b5c6d7e8-f9a0-1b2c-3d4e-5f6a7b8c9d0e
+                    name: author
+                    type: string
+        '400':
+          description: '`invalid_param` : The metadata name already exists, exceeds 255 characters, or
+            conflicts with a built-in field.'
+          content:
+            application/json:
+              examples:
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Metadata name already exists.
+        '403':
+          description: '- `forbidden` : Dataset api access is not enabled.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '`not_found` : Dataset not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+      x-mint:
+        href: /en/api-reference/metadata/update-metadata-field
+        metadata:
+          title: Update Metadata Field
+          sidebarTitle: Update Metadata Field
+    delete:
+      tags:
+      - Metadata
+      summary: Delete Metadata Field
+      description: Permanently delete a custom metadata field. Documents that used the field lose their
+        values for it.
+      operationId: deleteMetadataField
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. See [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: metadata_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: ID of the metadata field to delete. See [List Metadata Fields](/en/api-reference/metadata/list-metadata-fields).
+      responses:
+        '204':
+          description: Success.
+        '403':
+          description: '- `forbidden` : Dataset api access is not enabled.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '`not_found` : Dataset not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+      x-mint:
+        href: /en/api-reference/metadata/delete-metadata-field
+        metadata:
+          title: Delete Metadata Field
+          sidebarTitle: Delete Metadata Field
+  /datasets/{dataset_id}/metadata/built-in:
+    get:
+      tags:
+      - Metadata
+      summary: Get Built-in Metadata Fields
+      description: Returns the built-in metadata fields provided by the system.
+      operationId: getBuiltInMetadataFields
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. See [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      responses:
+        '200':
+          description: Built-in metadata fields.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  fields:
+                    type: array
+                    description: List of system-provided metadata fields.
+                    items:
+                      type: object
+                      properties:
+                        name:
+                          type: string
+                          description: Built-in field identifier. `document_name` for the document title,
+                            `uploader` for the creator, `upload_date` for creation time, `last_update_date`
+                            for last modification time, `source` for the document origin.
+                        type:
+                          type: string
+                          description: Field data type. `string` for text values, `time` for date/time
+                            values.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    fields:
+                    - name: document_name
+                      type: string
+                    - name: uploader
+                      type: string
+                    - name: upload_date
+                      type: time
+                    - name: last_update_date
+                      type: time
+                    - name: source
+                      type: string
+        '403':
+          description: '`forbidden` : Dataset api access is not enabled.'
+          content:
+            application/json:
+              examples:
+                forbidden:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+        '404':
+          description: '`not_found` : Dataset not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+      x-mint:
+        href: /en/api-reference/metadata/get-built-in-metadata-fields
+        metadata:
+          title: Get Built-in Metadata Fields
+          sidebarTitle: Get Built-in Metadata Fields
+  /datasets/{dataset_id}/metadata/built-in/{action}:
+    post:
+      tags:
+      - Metadata
+      summary: Update Built-in Metadata Field
+      description: Enable or disable built-in metadata fields for the knowledge base.
+      operationId: toggleBuiltInMetadataField
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. See [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: action
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - enable
+          - disable
+        description: '`enable` to activate built-in metadata fields, `disable` to deactivate them.'
+      responses:
+        '200':
+          description: Built-in metadata field toggled successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: Operation result.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    result: success
+        '403':
+          description: '- `forbidden` : Dataset api access is not enabled.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '`not_found` : Dataset not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+      x-mint:
+        href: /en/api-reference/metadata/update-built-in-metadata-field
+        metadata:
+          title: Update Built-in Metadata Field
+          sidebarTitle: Update Built-in Metadata Field
+  /datasets/{dataset_id}/documents/metadata:
+    post:
+      tags:
+      - Metadata
+      summary: Update Document Metadata in Batch
+      description: Update metadata values for multiple documents in a single request.
+      operationId: batchUpdateDocumentMetadata
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. See [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - operation_data
+              properties:
+                operation_data:
+                  type: array
+                  items:
+                    type: object
+                    required:
+                    - document_id
+                    - metadata_list
+                    properties:
+                      document_id:
+                        type: string
+                        description: ID of the document to update. See [List Documents](/en/api-reference/documents/list-documents).
+                      metadata_list:
+                        type: array
+                        items:
+                          type: object
+                          required:
+                          - id
+                          - name
+                          properties:
+                            id:
+                              type: string
+                              description: Metadata field ID. See [List Metadata Fields](/en/api-reference/metadata/list-metadata-fields).
+                            name:
+                              type: string
+                              description: Metadata field name.
+                            value:
+                              description: Metadata value. Can be a string, number, or `null`.
+                        description: Metadata fields to set on the document.
+                      partial_update:
+                        type: boolean
+                        default: false
+                        description: Whether to partially update metadata, keeping existing values for
+                          unspecified fields.
+                  description: Document metadata update operations, one entry per document.
+      responses:
+        '200':
+          description: Document metadata updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: Operation result.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    result: success
+        '400':
+          description: '`invalid_param` : Another metadata operation is already running for a document
+            in this request.'
+          content:
+            application/json:
+              examples:
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Another document metadata operation is running, please wait a moment.
+        '403':
+          description: '- `forbidden` : Dataset api access is not enabled.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '- `not_found` : Knowledge base not found.
+
+            - `not_found` : A document referenced in `operation_data` does not exist in this knowledge
+            base.
+
+            - `not_found` : A metadata field referenced in `metadata_list` does not exist in this knowledge
+            base.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found (knowledge base)
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found (document)
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+                not_found_3:
+                  summary: not_found (metadata)
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Metadata not found.
+      x-mint:
+        href: /en/api-reference/metadata/update-document-metadata-in-batch
+        metadata:
+          title: Update Document Metadata in Batch
+          sidebarTitle: Update Document Metadata in Batch
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API_KEY
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
+        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+
+
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
+        fail with HTTP `401` (`unauthorized`).'
+x-provenance:
+  generated: '2026-09-06'
+  method: derived
+  source: openapi/_original/dify-service-api-openapi.json
+  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
+    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
+    spec.

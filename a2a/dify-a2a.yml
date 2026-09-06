@@ -1,0 +1,56 @@
+generated: '2026-09-06'
+method: probed
+source: https://docs.dify.ai/.well-known/agent-card.json
+description: >-
+  A2A agent card served by Dify on its own documentation host. Found by direct probe of the
+  canonical /.well-known/agent-card.json path; saved verbatim to dify-agent-card.json. Never
+  generated or derived.
+discovery:
+  path: /.well-known/agent-card.json
+  canonical: true
+  host: docs.dify.ai
+x-evidence:
+  fetched: '2026-09-06'
+  url: https://docs.dify.ai/.well-known/agent-card.json
+  http_status: 200
+  content_type: application/json
+  bytes: 1033
+card:
+  name: Dify Docs
+  url: https://docs.dify.ai/
+  version: '1.0.0'
+  protocolVersion: '0.3'
+  preferredTransport: HTTP+JSON
+  provider:
+    organization: Dify Docs
+    url: https://docs.dify.ai/
+  documentationUrl: https://docs.dify.ai/
+  skills:
+    - id: dify
+      name: Dify
+      url: https://docs.dify.ai/.well-known/agent-skills/dify/skill.md
+grade: conformant
+grade_basis:
+  spec: A2A 1.0.0
+  capabilities_is_object: true
+  protocol_version_present: true
+  skills_is_array: true
+  preferred_transport_present: true
+  default_input_modes_present: true
+  default_output_modes_present: true
+deviations:
+  - >-
+    protocolVersion is 0.3, not 1.0.0 — the card declares an earlier protocol revision than the
+    grading spec. No hard check fails.
+  - >-
+    The card scopes itself to the DOCUMENTATION site (name "Dify Docs", url https://docs.dify.ai/),
+    not to the Dify Service API at https://api.dify.ai/v1. Its single skill points at a documentation
+    skill file, and the matching agent surface is the docs MCP server at https://docs.dify.ai/mcp.
+  - >-
+    The card is emitted by the Mintlify documentation platform Dify runs on its own domain, so it is
+    platform-authored rather than hand-written by Dify. It is served from a Dify-controlled host, so
+    it is recorded as published by Dify.
+  - capabilities declares streaming false and pushNotifications false.
+related:
+  mcp: mcp/dify-mcp.yml
+  agent_skill: skills/dify-provider-published-skill.md

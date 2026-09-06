@@ -1,0 +1,1616 @@
+openapi: 3.0.1
+info:
+  title: Dify Chunks API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
+    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  version: 1.0.0
+servers:
+- url: https://{api_base_url}
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
+    API base URL.
+  variables:
+    api_base_url:
+      default: api.dify.ai/v1
+      description: Host and path of the API base URL, without the `https://` prefix.
+security:
+- ApiKeyAuth: []
+tags:
+- name: Chunks
+  description: Operations for managing document chunks and child chunks.
+paths:
+  /datasets/{dataset_id}/documents/{document_id}/segments:
+    post:
+      tags:
+      - Chunks
+      summary: Create Chunks
+      description: Create one or more chunks within a document.
+      operationId: createSegments
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. Obtain it from [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. Obtain it from [List Documents](/en/api-reference/documents/list-documents).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - segments
+              properties:
+                segments:
+                  type: array
+                  items:
+                    type: object
+                    properties:
+                      content:
+                        type: string
+                        description: Chunk text content.
+                        minLength: 1
+                      answer:
+                        type: string
+                        description: Answer text. Required for Q&A-mode (`qa_model`) documents.
+                      keywords:
+                        type: array
+                        items:
+                          type: string
+                        description: Keywords for the chunk.
+                      attachment_ids:
+                        type: array
+                        items:
+                          type: string
+                        description: Attachment file IDs.
+                    required:
+                    - content
+                  description: Array of chunk objects to create.
+                  minItems: 1
+      responses:
+        '200':
+          description: Chunks created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: List of created chunks.
+                    items:
+                      $ref: '#/components/schemas/Segment'
+                  doc_form:
+                    type: string
+                    description: Document chunking mode used by this document.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    data:
+                    - id: f3d1c7be-9f3a-40d8-8eb8-3a1ef9c3f2c1
+                      position: 1
+                      document_id: a8e0e5b5-78c6-4130-a5ce-25feb0e0b4ac
+                      content: Dify is an open-source LLM app development platform.
+                      sign_content: ''
+                      answer: ''
+                      word_count: 9
+                      tokens: 12
+                      keywords:
+                      - dify
+                      - platform
+                      - llm
+                      index_node_id: a1b2c3d4-e5f6-7890-abcd-000000000001
+                      index_node_hash: abc123def456
+                      hit_count: 0
+                      enabled: true
+                      disabled_at: null
+                      disabled_by: null
+                      status: completed
+                      created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      created_at: 1741267200
+                      updated_at: 1741267200
+                      updated_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      indexing_at: 1741267200
+                      completed_at: 1741267200
+                      error: null
+                      stopped_at: null
+                      child_chunks: []
+                      attachments: []
+                      summary: null
+                    doc_form: text_model
+        '400':
+          description: '- `provider_not_initialize` : The knowledge base uses high-quality indexing but
+            its embedding model is missing or misconfigured.
+
+            - `invalid_param` : A chunk field is invalid (for example, `answer` is required for Q&A-mode
+            documents) or the number of chunks exceeds the per-request limit.
+
+            - Request-body schema validation (such as empty `content`) returns a non-standard body `{"error":
+            "<validation details>"}` with no `code` or `status` field.'
+          content:
+            application/json:
+              examples:
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No Embedding Model available. Please configure a valid provider in the Settings
+                      -> Model Provider.
+                invalid_param_limit:
+                  summary: invalid_param (segments limit)
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Exceeded maximum segments limit of 1000.
+                validation_error:
+                  summary: schema validation (non-standard body)
+                  value:
+                    error: "1 validation error for SegmentCreatePayload\nsegments.0.content\n  String\
+                      \ should have at least 1 character [type=string_too_short, input_value='', input_type=str]"
+        '403':
+          description: '- `forbidden` : Dataset api access is not enabled.
+
+            - `forbidden` : The capacity of the vector space has reached the limit of your subscription.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.
+
+            - `forbidden` : To unlock this feature and elevate your Dify experience, please upgrade to
+            a paid plan.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (vector space)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: The capacity of the vector space has reached the limit of your subscription.
+                forbidden_3:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+                forbidden_4:
+                  summary: forbidden (upgrade plan)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: To unlock this feature and elevate your Dify experience, please upgrade to
+                      a paid plan.
+        '404':
+          description: '- `not_found` : Dataset not found.
+
+            - `not_found` : Document not found.
+
+            - `not_found` : Document is not completed.
+
+            - `not_found` : Document is disabled.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+                not_found_3:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document is not completed.
+                not_found_4:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document is disabled.
+        '503':
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
+            the Dify Cloud Sandbox plan only; retry the request later.'
+          content:
+            application/json:
+              examples:
+                service_unavailable:
+                  summary: service_unavailable
+                  value:
+                    status: 503
+                    code: service_unavailable
+                    message: Unable to verify vector space usage right now. Please try again later.
+      x-mint:
+        href: /en/api-reference/chunks/create-chunks
+        metadata:
+          title: Create Chunks
+          sidebarTitle: Create Chunks
+    get:
+      tags:
+      - Chunks
+      summary: List Chunks
+      description: Returns a paginated list of chunks within a document, optionally filtered by keyword
+        or indexing status.
+      operationId: listSegments
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. Obtain it from [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. Obtain it from [List Documents](/en/api-reference/documents/list-documents).
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+        description: Page number.
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+        description: Number of items per page. Server caps at `100`.
+      - name: status
+        in: query
+        schema:
+          type: array
+          items:
+            type: string
+        style: form
+        explode: true
+        description: Filter chunks by indexing status, e.g. `completed`, `indexing`, `error`.
+      - name: keyword
+        in: query
+        schema:
+          type: string
+        description: Search keyword.
+      responses:
+        '200':
+          description: List of chunks.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: List of chunks.
+                    items:
+                      $ref: '#/components/schemas/Segment'
+                  doc_form:
+                    type: string
+                    description: Document chunking mode used by this document.
+                  total:
+                    type: integer
+                    description: Total number of matching chunks.
+                  has_more:
+                    type: boolean
+                    description: Whether more items exist on the next page.
+                  limit:
+                    type: integer
+                    description: Number of items per page.
+                  page:
+                    type: integer
+                    description: Current page number.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    data:
+                    - id: f3d1c7be-9f3a-40d8-8eb8-3a1ef9c3f2c1
+                      position: 1
+                      document_id: a8e0e5b5-78c6-4130-a5ce-25feb0e0b4ac
+                      content: Dify is an open-source LLM app development platform.
+                      sign_content: ''
+                      answer: ''
+                      word_count: 9
+                      tokens: 12
+                      keywords:
+                      - dify
+                      - platform
+                      - llm
+                      index_node_id: a1b2c3d4-e5f6-7890-abcd-000000000001
+                      index_node_hash: abc123def456
+                      hit_count: 0
+                      enabled: true
+                      disabled_at: null
+                      disabled_by: null
+                      status: completed
+                      created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      created_at: 1741267200
+                      updated_at: 1741267200
+                      updated_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      indexing_at: 1741267200
+                      completed_at: 1741267200
+                      error: null
+                      stopped_at: null
+                      child_chunks: []
+                      attachments: []
+                      summary: null
+                    doc_form: text_model
+                    total: 1
+                    has_more: false
+                    limit: 20
+                    page: 1
+        '400':
+          description: '`provider_not_initialize` : The knowledge base uses high-quality indexing but
+            its embedding model is missing or misconfigured.'
+          content:
+            application/json:
+              examples:
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No Embedding Model available. Please configure a valid provider in the Settings
+                      -> Model Provider.
+        '403':
+          description: '`forbidden` : Dataset api access is not enabled.'
+          content:
+            application/json:
+              examples:
+                forbidden:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+        '404':
+          description: '- `not_found` : Dataset not found.
+
+            - `not_found` : Document not found.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+      x-mint:
+        href: /en/api-reference/chunks/list-chunks
+        metadata:
+          title: List Chunks
+          sidebarTitle: List Chunks
+  /datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}:
+    get:
+      tags:
+      - Chunks
+      summary: Get Chunk
+      description: Retrieve the full details of a single chunk.
+      operationId: getSegmentDetail
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. Obtain it from [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. Obtain it from [List Documents](/en/api-reference/documents/list-documents).
+      - name: segment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Chunk ID. Obtain it from [List Chunks](/en/api-reference/chunks/list-chunks).
+      responses:
+        '200':
+          description: Chunk details.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Segment'
+                  doc_form:
+                    type: string
+                    description: Document chunking mode used by this document.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    data:
+                      id: f3d1c7be-9f3a-40d8-8eb8-3a1ef9c3f2c1
+                      position: 1
+                      document_id: a8e0e5b5-78c6-4130-a5ce-25feb0e0b4ac
+                      content: Dify is an open-source LLM app development platform.
+                      sign_content: ''
+                      answer: ''
+                      word_count: 9
+                      tokens: 12
+                      keywords:
+                      - dify
+                      - platform
+                      - llm
+                      index_node_id: a1b2c3d4-e5f6-7890-abcd-000000000001
+                      index_node_hash: abc123def456
+                      hit_count: 0
+                      enabled: true
+                      disabled_at: null
+                      disabled_by: null
+                      status: completed
+                      created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      created_at: 1741267200
+                      updated_at: 1741267200
+                      updated_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      indexing_at: 1741267200
+                      completed_at: 1741267200
+                      error: null
+                      stopped_at: null
+                      child_chunks: []
+                      attachments: []
+                      summary: null
+                    doc_form: text_model
+        '400':
+          description: '`invalid_param` : The knowledge base uses high-quality indexing but its embedding
+            model is missing or misconfigured.'
+          content:
+            application/json:
+              examples:
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: No Embedding Model available. Please configure a valid provider in the Settings
+                      -> Model Provider.
+        '403':
+          description: '`forbidden` : Dataset api access is not enabled.'
+          content:
+            application/json:
+              examples:
+                forbidden:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+        '404':
+          description: '- `not_found` : Dataset not found.
+
+            - `not_found` : Document not found.
+
+            - `not_found` : Segment not found.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+                not_found_3:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Segment not found.
+      x-mint:
+        href: /en/api-reference/chunks/get-chunk
+        metadata:
+          title: Get Chunk
+          sidebarTitle: Get Chunk
+    post:
+      tags:
+      - Chunks
+      summary: Update Chunk
+      description: Update a chunk's fields. The update re-triggers indexing for that chunk.
+      operationId: updateSegment
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. Obtain it from [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. Obtain it from [List Documents](/en/api-reference/documents/list-documents).
+      - name: segment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Chunk ID. Obtain it from [List Chunks](/en/api-reference/chunks/list-chunks).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - segment
+              properties:
+                segment:
+                  type: object
+                  properties:
+                    content:
+                      type: string
+                      description: Chunk text content.
+                    answer:
+                      type: string
+                      description: Answer text for Q&A-mode (`qa_model`) documents.
+                    keywords:
+                      type: array
+                      items:
+                        type: string
+                      description: Keywords for the chunk.
+                    enabled:
+                      type: boolean
+                      description: Whether the chunk is enabled.
+                    regenerate_child_chunks:
+                      type: boolean
+                      default: false
+                      description: Whether to regenerate child chunks.
+                    attachment_ids:
+                      type: array
+                      items:
+                        type: string
+                      description: Attachment file IDs.
+                    summary:
+                      type: string
+                      nullable: true
+                      description: Summary content for summary index.
+                  description: Chunk data to update.
+      responses:
+        '200':
+          description: Chunk updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/Segment'
+                  doc_form:
+                    type: string
+                    description: Document chunking mode used by this document.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    data:
+                      id: f3d1c7be-9f3a-40d8-8eb8-3a1ef9c3f2c1
+                      position: 1
+                      document_id: a8e0e5b5-78c6-4130-a5ce-25feb0e0b4ac
+                      content: Dify is an open-source LLM app development platform.
+                      sign_content: ''
+                      answer: ''
+                      word_count: 9
+                      tokens: 12
+                      keywords:
+                      - dify
+                      - platform
+                      - llm
+                      index_node_id: a1b2c3d4-e5f6-7890-abcd-000000000001
+                      index_node_hash: abc123def456
+                      hit_count: 0
+                      enabled: true
+                      disabled_at: null
+                      disabled_by: null
+                      status: completed
+                      created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      created_at: 1741267200
+                      updated_at: 1741267200
+                      updated_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      indexing_at: 1741267200
+                      completed_at: 1741267200
+                      error: null
+                      stopped_at: null
+                      child_chunks: []
+                      attachments: []
+                      summary: null
+                    doc_form: text_model
+        '400':
+          description: '- `provider_not_initialize` : The knowledge base uses high-quality indexing but
+            its embedding model is missing or misconfigured.
+
+            - `invalid_param` : The chunk is indexing or disabled and cannot be updated, or index configuration
+            is invalid.'
+          content:
+            application/json:
+              examples:
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No Embedding Model available. Please configure a valid provider in the Settings
+                      -> Model Provider.
+                invalid_param_state:
+                  summary: invalid_param (state)
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Segment is indexing, please try again later
+        '403':
+          description: '- `forbidden` : Dataset api access is not enabled.
+
+            - `forbidden` : The capacity of the vector space has reached the limit of your subscription.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (vector space)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: The capacity of the vector space has reached the limit of your subscription.
+                forbidden_3:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '- `not_found` : Dataset not found.
+
+            - `not_found` : Document not found.
+
+            - `not_found` : Segment not found.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+                not_found_3:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Segment not found.
+        '503':
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
+            the Dify Cloud Sandbox plan only; retry the request later.'
+          content:
+            application/json:
+              examples:
+                service_unavailable:
+                  summary: service_unavailable
+                  value:
+                    status: 503
+                    code: service_unavailable
+                    message: Unable to verify vector space usage right now. Please try again later.
+      x-mint:
+        href: /en/api-reference/chunks/update-chunk
+        metadata:
+          title: Update Chunk
+          sidebarTitle: Update Chunk
+    delete:
+      tags:
+      - Chunks
+      summary: Delete Chunk
+      description: Permanently delete a chunk from the document.
+      operationId: deleteSegment
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. Obtain it from [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. Obtain it from [List Documents](/en/api-reference/documents/list-documents).
+      - name: segment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Chunk ID. Obtain it from [List Chunks](/en/api-reference/chunks/list-chunks).
+      responses:
+        '204':
+          description: Success.
+        '400':
+          description: '- `invalid_param` : The knowledge base uses high-quality indexing but its embedding
+            model is missing or misconfigured.
+
+            - `invalid_param` : The chunk is already being deleted by a concurrent request.'
+          content:
+            application/json:
+              examples:
+                invalid_param_model_setting:
+                  summary: invalid_param (model setting)
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: No Embedding Model available. Please configure a valid provider in the Settings
+                      -> Model Provider.
+                invalid_param_deleting:
+                  summary: invalid_param (deleting)
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Segment is deleting.
+        '403':
+          description: '- `forbidden` : Dataset api access is not enabled.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '- `not_found` : Dataset not found.
+
+            - `not_found` : Document not found.
+
+            - `not_found` : Segment not found.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+                not_found_3:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Segment not found.
+      x-mint:
+        href: /en/api-reference/chunks/delete-chunk
+        metadata:
+          title: Delete Chunk
+          sidebarTitle: Delete Chunk
+  /datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}/child_chunks:
+    post:
+      tags:
+      - Chunks
+      summary: Create Child Chunk
+      description: Create a child chunk under a parent chunk. Intended for documents that use the parent-child
+        (`hierarchical_model`) chunking mode.
+      operationId: createChildChunk
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. Obtain it from [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. Obtain it from [List Documents](/en/api-reference/documents/list-documents).
+      - name: segment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Parent chunk ID. Obtain it from [List Chunks](/en/api-reference/chunks/list-chunks).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - content
+              properties:
+                content:
+                  type: string
+                  description: Child chunk text content.
+      responses:
+        '200':
+          description: Child chunk created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ChildChunk'
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    data:
+                      id: d7e8f9a0-1b2c-3d4e-5f6a-7b8c9d0e1f2a
+                      segment_id: f3d1c7be-9f3a-40d8-8eb8-3a1ef9c3f2c1
+                      content: Dify is an open-source platform.
+                      position: 1
+                      word_count: 6
+                      type: customized
+                      created_at: 1741267200
+                      updated_at: 1741267200
+        '400':
+          description: '- `provider_not_initialize` : The knowledge base uses high-quality indexing but
+            its embedding model is missing or misconfigured.
+
+            - `invalid_param` : Indexing the child chunk in the vector store failed; the message carries
+            the underlying vector-store error.'
+          content:
+            application/json:
+              examples:
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No Embedding Model available. Please configure a valid provider in the Settings
+                      -> Model Provider.
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: 'Vector store operation failed: [Errno 111] Connection refused'
+        '403':
+          description: '- `forbidden` : Dataset api access is not enabled.
+
+            - `forbidden` : The capacity of the vector space has reached the limit of your subscription.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.
+
+            - `forbidden` : To unlock this feature and elevate your Dify experience, please upgrade to
+            a paid plan.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (vector space)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: The capacity of the vector space has reached the limit of your subscription.
+                forbidden_3:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+                forbidden_4:
+                  summary: forbidden (upgrade plan)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: To unlock this feature and elevate your Dify experience, please upgrade to
+                      a paid plan.
+        '404':
+          description: '- `not_found` : Dataset not found.
+
+            - `not_found` : Document not found.
+
+            - `not_found` : Segment not found.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+                not_found_3:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Segment not found.
+        '503':
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
+            the Dify Cloud Sandbox plan only; retry the request later.'
+          content:
+            application/json:
+              examples:
+                service_unavailable:
+                  summary: service_unavailable
+                  value:
+                    status: 503
+                    code: service_unavailable
+                    message: Unable to verify vector space usage right now. Please try again later.
+      x-mint:
+        href: /en/api-reference/chunks/create-child-chunk
+        metadata:
+          title: Create Child Chunk
+          sidebarTitle: Create Child Chunk
+    get:
+      tags:
+      - Chunks
+      summary: List Child Chunks
+      description: Returns a paginated list of child chunks under a specific parent chunk.
+      operationId: getChildChunks
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. Obtain it from [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. Obtain it from [List Documents](/en/api-reference/documents/list-documents).
+      - name: segment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Parent chunk ID. Obtain it from [List Chunks](/en/api-reference/chunks/list-chunks).
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+        description: Page number.
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+        description: Number of items per page. Server caps at `100`.
+      - name: keyword
+        in: query
+        schema:
+          type: string
+        description: Search keyword.
+      responses:
+        '200':
+          description: List of child chunks.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: List of child chunks.
+                    items:
+                      $ref: '#/components/schemas/ChildChunk'
+                  total:
+                    type: integer
+                    description: Total number of child chunks.
+                  total_pages:
+                    type: integer
+                    description: Total number of pages.
+                  page:
+                    type: integer
+                    description: Current page number.
+                  limit:
+                    type: integer
+                    description: Number of items per page.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    data:
+                    - id: d7e8f9a0-1b2c-3d4e-5f6a-7b8c9d0e1f2a
+                      segment_id: f3d1c7be-9f3a-40d8-8eb8-3a1ef9c3f2c1
+                      content: Dify is an open-source platform.
+                      position: 1
+                      word_count: 6
+                      type: customized
+                      created_at: 1741267200
+                      updated_at: 1741267200
+                    total: 1
+                    total_pages: 1
+                    page: 1
+                    limit: 20
+        '403':
+          description: '`forbidden` : Dataset api access is not enabled.'
+          content:
+            application/json:
+              examples:
+                forbidden:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+        '404':
+          description: '- `not_found` : Dataset not found.
+
+            - `not_found` : Document not found.
+
+            - `not_found` : Segment not found.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+                not_found_3:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Segment not found.
+      x-mint:
+        href: /en/api-reference/chunks/list-child-chunks
+        metadata:
+          title: List Child Chunks
+          sidebarTitle: List Child Chunks
+  /datasets/{dataset_id}/documents/{document_id}/segments/{segment_id}/child_chunks/{child_chunk_id}:
+    patch:
+      tags:
+      - Chunks
+      summary: Update Child Chunk
+      description: Update the content of an existing child chunk.
+      operationId: updateChildChunk
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. Obtain it from [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. Obtain it from [List Documents](/en/api-reference/documents/list-documents).
+      - name: segment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Parent chunk ID. Obtain it from [List Chunks](/en/api-reference/chunks/list-chunks).
+      - name: child_chunk_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Child chunk ID.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - content
+              properties:
+                content:
+                  type: string
+                  description: Child chunk text content.
+      responses:
+        '200':
+          description: Child chunk updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    $ref: '#/components/schemas/ChildChunk'
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    data:
+                      id: d7e8f9a0-1b2c-3d4e-5f6a-7b8c9d0e1f2a
+                      segment_id: f3d1c7be-9f3a-40d8-8eb8-3a1ef9c3f2c1
+                      content: Dify is an open-source platform.
+                      position: 1
+                      word_count: 6
+                      type: customized
+                      created_at: 1741267200
+                      updated_at: 1741267200
+        '400':
+          description: '`invalid_param` : Re-indexing the child chunk in the vector store failed; the
+            message carries the underlying vector-store error.'
+          content:
+            application/json:
+              examples:
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: 'Vector store operation failed: [Errno 111] Connection refused'
+        '403':
+          description: '- `forbidden` : Dataset api access is not enabled.
+
+            - `forbidden` : The capacity of the vector space has reached the limit of your subscription.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.
+
+            - `forbidden` : To unlock this feature and elevate your Dify experience, please upgrade to
+            a paid plan.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (vector space)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: The capacity of the vector space has reached the limit of your subscription.
+                forbidden_3:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+                forbidden_4:
+                  summary: forbidden (upgrade plan)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: To unlock this feature and elevate your Dify experience, please upgrade to
+                      a paid plan.
+        '404':
+          description: '- `not_found` : Dataset not found.
+
+            - `not_found` : Document not found.
+
+            - `not_found` : Segment not found.
+
+            - `not_found` : Child chunk not found.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+                not_found_3:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Segment not found.
+                not_found_4:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Child chunk not found.
+        '503':
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
+            the Dify Cloud Sandbox plan only; retry the request later.'
+          content:
+            application/json:
+              examples:
+                service_unavailable:
+                  summary: service_unavailable
+                  value:
+                    status: 503
+                    code: service_unavailable
+                    message: Unable to verify vector space usage right now. Please try again later.
+      x-mint:
+        href: /en/api-reference/chunks/update-child-chunk
+        metadata:
+          title: Update Child Chunk
+          sidebarTitle: Update Child Chunk
+    delete:
+      tags:
+      - Chunks
+      summary: Delete Child Chunk
+      description: Permanently delete a child chunk from its parent chunk.
+      operationId: deleteChildChunk
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. Obtain it from [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. Obtain it from [List Documents](/en/api-reference/documents/list-documents).
+      - name: segment_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Parent chunk ID. Obtain it from [List Chunks](/en/api-reference/chunks/list-chunks).
+      - name: child_chunk_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Child chunk ID.
+      responses:
+        '204':
+          description: Success.
+        '400':
+          description: '`invalid_param` : Removing the child chunk index from the vector store failed;
+            the message carries the underlying vector-store error.'
+          content:
+            application/json:
+              examples:
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: 'Vector store operation failed: [Errno 111] Connection refused'
+        '403':
+          description: '- `forbidden` : Dataset api access is not enabled.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.
+
+            - `forbidden` : To unlock this feature and elevate your Dify experience, please upgrade to
+            a paid plan.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+                forbidden_3:
+                  summary: forbidden (upgrade plan)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: To unlock this feature and elevate your Dify experience, please upgrade to
+                      a paid plan.
+        '404':
+          description: '- `not_found` : Dataset not found.
+
+            - `not_found` : Document not found.
+
+            - `not_found` : Segment not found.
+
+            - `not_found` : Child chunk not found.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+                not_found_3:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Segment not found.
+                not_found_4:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Child chunk not found.
+      x-mint:
+        href: /en/api-reference/chunks/delete-child-chunk
+        metadata:
+          title: Delete Child Chunk
+          sidebarTitle: Delete Child Chunk
+components:
+  schemas:
+    ChildChunk:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the child chunk.
+        segment_id:
+          type: string
+          description: ID of the parent chunk this child chunk belongs to.
+        content:
+          type: string
+          description: Text content of the child chunk.
+        position:
+          type: integer
+          description: Position of the child chunk within the parent chunk.
+        word_count:
+          type: integer
+          description: Word count of the child chunk content.
+        type:
+          type: string
+          description: How the child chunk was created. Child chunks created or updated through the API
+            are always `customized`. System-generated child chunks are `automatic`.
+        created_at:
+          type: number
+          description: Creation timestamp (Unix epoch in seconds).
+        updated_at:
+          type: number
+          description: Last update timestamp (Unix epoch in seconds).
+    Segment:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the chunk.
+        position:
+          type: integer
+          description: Position of the chunk within the document.
+        document_id:
+          type: string
+          description: ID of the document this chunk belongs to.
+        content:
+          type: string
+          description: Text content of the chunk.
+        sign_content:
+          type: string
+          description: Signed content hash for integrity verification.
+        answer:
+          type: string
+          description: Answer content, used in Q&A mode documents.
+        word_count:
+          type: integer
+          description: Word count of the chunk content.
+        tokens:
+          type: integer
+          description: Token count of the chunk content.
+        keywords:
+          type: array
+          description: Keywords associated with this chunk for keyword-based retrieval.
+          items:
+            type: string
+        index_node_id:
+          type: string
+          description: ID of the index node in the vector store.
+        index_node_hash:
+          type: string
+          description: Hash of the indexed content, used to detect changes.
+        hit_count:
+          type: integer
+          description: Number of times this chunk has been matched in retrieval queries.
+        enabled:
+          type: boolean
+          description: Whether the chunk is enabled for retrieval.
+        disabled_at:
+          type: number
+          nullable: true
+          description: Timestamp when the chunk was disabled. `null` if enabled.
+        disabled_by:
+          type: string
+          nullable: true
+          description: ID of the user who disabled the chunk. `null` if enabled.
+        status:
+          type: string
+          description: Current indexing status of the chunk, e.g. `completed`, `indexing`, `error`.
+        created_by:
+          type: string
+          description: ID of the user who created the chunk.
+        created_at:
+          type: number
+          description: Creation timestamp (Unix epoch in seconds).
+        updated_at:
+          type: number
+          description: Last update timestamp (Unix epoch in seconds).
+        updated_by:
+          type: string
+          description: ID of the user who last updated the chunk.
+        indexing_at:
+          type: number
+          nullable: true
+          description: Timestamp when indexing started. `null` if not yet started.
+        completed_at:
+          type: number
+          nullable: true
+          description: Timestamp when indexing completed. `null` if not yet completed.
+        error:
+          type: string
+          nullable: true
+          description: Error message if indexing failed. `null` when no error.
+        stopped_at:
+          type: number
+          nullable: true
+          description: Timestamp when indexing was stopped. `null` if not stopped.
+        child_chunks:
+          type: array
+          description: Child chunks belonging to this chunk. Only present for hierarchical mode documents.
+          items:
+            $ref: '#/components/schemas/ChildChunk'
+        attachments:
+          type: array
+          description: Files attached to this chunk.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Attachment file identifier.
+              name:
+                type: string
+                description: Original file name.
+              size:
+                type: integer
+                description: File size in bytes.
+              extension:
+                type: string
+                description: File extension.
+              mime_type:
+                type: string
+                description: MIME type of the file.
+              source_url:
+                type: string
+                description: URL to access the attachment.
+        summary:
+          type: string
+          nullable: true
+          description: AI-generated summary of the chunk content. `null` if summary indexing is not enabled.
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API_KEY
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
+        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+
+
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
+        fail with HTTP `401` (`unauthorized`).'
+x-provenance:
+  generated: '2026-09-06'
+  method: derived
+  source: openapi/_original/dify-service-api-openapi.json
+  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
+    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
+    spec.

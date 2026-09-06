@@ -1,0 +1,165 @@
+generated: '2026-09-06'
+method: searched
+source: >-
+  https://docs.dify.ai/en/api-reference/guides/get-started,
+  https://docs.dify.ai/en/api-reference/guides/errors,
+  https://docs.dify.ai/en/api-reference/guides/streaming,
+  https://docs.dify.ai/en/api-reference/guides/end-user-identity,
+  openapi/_original/dify-service-api-openapi.json
+description: >-
+  Cross-cutting runtime semantics of the Dify Service API — how it authenticates, paginates,
+  identifies end users, signals errors and rate limits, and what can and cannot be taken back.
+authentication:
+  style: bearer-api-key
+  header: 'Authorization: Bearer {API_KEY}'
+  key_families:
+    - name: app API key
+      scope: one published app; one key serves all that app's end users
+      minted: inside the app in the Dify console
+    - name: knowledge base API key
+      scope: >-
+        every knowledge base visible to the account that created it — deliberately broader than an
+        app key, and called out in the spec description as a data-security concern
+      minted: Knowledge → Service API
+  posture: server-side only; the docs warn a key in frontend code can be extracted
+  docs: https://docs.dify.ai/en/api-reference/guides/get-started
+  artifact: authentication/dify-authentication.yml
+base_url:
+  cloud: https://api.dify.ai/v1
+  self_hosted: templated — the OpenAPI declares https://{api_base_url} with default api.dify.ai/v1
+versioning:
+  api: path-embedded major version (/v1). No version header and no dated version pinning.
+  product: >-
+    The platform is versioned by open-source release (1.17.0 as of 2026-09-01). Release notes live
+    on GitHub, not on a docs changelog page. See changelog/dify-changelog.yml.
+pagination:
+  style: page-and-limit, with cursor-style id paging on message history
+  params:
+    - name: page
+      description: 1-based page number. Used by list endpoints across knowledge, documents and logs.
+    - name: limit
+      description: Page size.
+    - name: first_id
+      description: Cursor for listing conversation messages.
+    - name: last_id
+      description: Cursor for listing conversations.
+  note: >-
+    Two paging idioms coexist — page/limit on knowledge and log listings, first_id/last_id on
+    conversation and message listings. A client cannot use one loop for both.
+subject_identity:
+  param: user
+  applies_to: every app-scoped request
+  description: >-
+    A caller-chosen identifier that tells one end user from another inside a single app key. It
+    scopes conversations, files and run records; a mismatched `user` on a resume or detail call
+    returns 404 rather than someone else's data.
+  docs: https://docs.dify.ai/en/api-reference/guides/end-user-identity
+request_id_tracing:
+  present: false
+  note: >-
+    Checked, nothing to record. No request-id or trace header is documented. The closest handles are
+    `task_id` (controls the in-flight generation, accepted by the stop endpoints) and
+    `workflow_run_id` (names the persistent run record and is the only handle for reconnecting a
+    dropped stream).
+error_envelope:
+  shape: '{code, message, status}'
+  media_type: application/json
+  rfc9457: false
+  artifact: errors/dify-problem-types.yml
+rate_limit_signaling:
+  headers: none documented
+  exhaustion: 429 with code too_many_requests (concurrency) or rate_limit_error (plan quota); 403 with code forbidden for plan limits on knowledge writes
+  artifact: rate-limits/dify-rate-limits.yml
+streaming:
+  transport: Server-Sent Events
+  selector: 'response_mode: streaming | blocking, chosen per request'
+  keepalive: 'bare `event: ping` line roughly every 10 seconds; no data payload'
+  reconnect: >-
+    Workflow-backed runs can be resumed with streamWorkflowEvents using workflow_run_id and the same
+    user; include_state_snapshot=true replays already-finished nodes. Chat replies have no resume
+    endpoint.
+  artifact: asyncapi/dify-events.yml
+idempotency:
+  supported: false
+  coverage: none
+  mechanism: null
+  header: null
+  note: >-
+    Checked, nothing to record. No Idempotency-Key header, no client-supplied request key, and no
+    replay-protection language appears anywhere in the API reference or in the 82-operation
+    OpenAPI. A retried sendChatMessage, executeWorkflow, createDocumentFromText or createSegments
+    creates a second record. The retry guidance in the error guide tells clients to retry
+    too_many_requests and 500 with backoff without offering any mechanism to make that retry safe —
+    which is the gap, not an oversight in this reading.
+  compensating_controls:
+    - >-
+      `workflow_run_id` arrives on the stream and names the persistent run, so a client that saves it
+      can check the outcome of a run whose connection dropped instead of blindly re-firing.
+    - >-
+      List Conversation Messages shows what was actually saved for a chat-style app after a dropped
+      reply.
+reversibility:
+  grade: documented
+  summary: >-
+    Reversal paths exist for the two state toggles on knowledge documents and for in-flight
+    generation, and nowhere else. Every delete in the API is documented as permanent, and no
+    reversal window is stated anywhere — so this grades `documented`, not `verified`.
+  windows_published: false
+  operations:
+    - write: batchUpdateDocumentStatus (action=archive)
+      reversal: batchUpdateDocumentStatus (action=un_archive)
+      window: null
+      note: Archive and un-archive are the same operation with a different action segment.
+      docs: https://docs.dify.ai/en/api-reference/documents/update-document-status-in-batch
+    - write: batchUpdateDocumentStatus (action=disable)
+      reversal: batchUpdateDocumentStatus (action=enable)
+      window: null
+      docs: https://docs.dify.ai/en/api-reference/documents/update-document-status-in-batch
+    - write: toggleBuiltInMetadataField (action=enable)
+      reversal: toggleBuiltInMetadataField (action=disable)
+      window: null
+    - write: initialAnnotationReplySettings (action=enable)
+      reversal: initialAnnotationReplySettings (action=disable)
+      window: null
+      note: Asynchronous; poll getInitialAnnotationReplySettingsStatus.
+    - write: sendChatMessage
+      reversal: stopChatMessageGeneration
+      window: while the generation is in flight, addressed by task_id
+      note: Cancels generation; it does not remove what was already produced.
+    - write: executeWorkflow / runWorkflowById
+      reversal: stopWorkflowTaskGeneration
+      window: while the task is in flight, addressed by task_id
+  irreversible:
+    - deleteConversation
+    - deleteDataset
+    - deleteDocument
+    - deleteSegment
+    - deleteChildChunk
+    - deleteAnnotation
+    - deleteMetadataField
+    - deleteKnowledgeTag
+  irreversible_note: >-
+    The published descriptions use the word "permanently" — for example deleteDataset
+    "Permanently deletes a knowledge base and all of its documents". No trash, restore or
+    undo endpoint exists, and no retention window is stated. An agent must treat every delete here
+    as final.
+dry_run_mode:
+  supported: false
+  note: >-
+    No preview or validate flag on any operation. The nearest facility is outside the API: a
+    workflow's test webhook URL, which keeps test traffic separate from production traffic
+    (sandbox/dify-sandbox.yml).
+field_expansion:
+  supported: false
+sparse_fieldsets:
+  supported: false
+metadata:
+  note: >-
+    "Metadata" in this API is a first-class knowledge-base feature (custom and built-in fields on
+    documents), not a generic key-value bag on every object.
+cross_links:
+  errors: errors/dify-problem-types.yml
+  lifecycle: lifecycle/dify-lifecycle.yml
+  authentication: authentication/dify-authentication.yml
+  rate_limits: rate-limits/dify-rate-limits.yml
+  events: asyncapi/dify-events.yml

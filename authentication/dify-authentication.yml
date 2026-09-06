@@ -1,12 +1,73 @@
-generated: '2026-07-11'
-method: derived
-source: openapi/dify-openapi.yml
+generated: '2026-09-06'
+method: searched
+source: https://docs.dify.ai/en/api-reference/guides/get-started + openapi/_original/dify-service-api-openapi.json
 summary:
   types:
   - http
 schemes:
-- name: bearerAuth
+- name: ApiKeyAuth
   type: http
   scheme: bearer
+  bearerFormat: API_KEY
+  description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App endpoints
+    take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+
+
+    Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail
+    with HTTP `401` (`unauthorized`).'
   sources:
-  - openapi/dify-openapi.yml
+  - openapi/dify-annotations-api-openapi.yml
+  - openapi/dify-applications-api-openapi.yml
+  - openapi/dify-audio-api-openapi.yml
+  - openapi/dify-chat-api-openapi.yml
+  - openapi/dify-chunks-api-openapi.yml
+  - openapi/dify-completion-api-openapi.yml
+  - openapi/dify-conversations-api-openapi.yml
+  - openapi/dify-datasets-api-openapi.yml
+  - openapi/dify-documents-api-openapi.yml
+  - openapi/dify-end-users-api-openapi.yml
+  - openapi/dify-feedback-api-openapi.yml
+  - openapi/dify-files-api-openapi.yml
+  - openapi/dify-human-input-api-openapi.yml
+  - openapi/dify-knowledge-pipeline-api-openapi.yml
+  - openapi/dify-metadata-api-openapi.yml
+  - openapi/dify-models-api-openapi.yml
+  - openapi/dify-tags-api-openapi.yml
+  - openapi/dify-workflows-api-openapi.yml
+docs: https://docs.dify.ai/en/api-reference/guides/get-started
+description: Dify authenticates every Service API request with a bearer API key. There is exactly one
+  securityScheme across all 82 operations, but two distinct key FAMILIES flow through it, with very different
+  blast radii — a fact the spec states in prose and the scheme itself cannot express.
+key_families:
+- name: app API key
+  scope: one published app; one key serves all of that app's end users
+  minted: inside the app in the Dify console
+  used_by: chat messages, completion messages, workflow runs, conversations, files, audio, annotations,
+    feedback, applications, end users, human input
+- name: knowledge base API key
+  scope: every knowledge base visible to the account that created the key
+  minted: Knowledge -> Service API in the Dify console
+  used_by: knowledge bases, documents, chunks, metadata, tags, models, knowledge pipeline
+  caution: Broader than an app key. Dify's own spec description flags it as a data-security concern; there
+    is no per-knowledge-base scoping.
+transport:
+  header: Authorization
+  format: Bearer {API_KEY}
+  scheme: bearer
+  bearerFormat: API_KEY
+failure:
+  status: 401
+  code: unauthorized
+  note: Missing or invalid key.
+guidance:
+- Call the API from a backend only; a key in frontend code can be extracted.
+- Rotate by minting a new key in the console; no rotation endpoint exists in the API.
+oauth2:
+  present: false
+  note: No oauth2 or openIdConnect securityScheme, and no OAuth discovery document on any Dify host. SSO
+    exists on the Enterprise tier but is a console feature, not an API auth mode.
+scopes:
+  present: false
+  note: Key-auth only; there is no scope surface, so no scopes/ artifact is written.
+mtls:
+  present: false

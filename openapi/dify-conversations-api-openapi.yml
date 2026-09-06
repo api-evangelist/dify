@@ -1,67 +1,1084 @@
-openapi: 3.1.0
+openapi: 3.0.1
 info:
-  title: Dify Chat Conversations API
-  description: Dify is an open-source platform for building AI applications and agentic workflows. This API provides access to chat messages, completion messages, workflow execution, conversations, knowledge bases (datasets) and file uploads.
-  version: '1.0'
+  title: Dify Conversations API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
+    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  version: 1.0.0
 servers:
-- url: https://api.dify.ai/v1
-  description: Dify Cloud API
+- url: https://{api_base_url}
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
+    API base URL.
+  variables:
+    api_base_url:
+      default: api.dify.ai/v1
+      description: Host and path of the API base URL, without the `https://` prefix.
 security:
-- bearerAuth: []
+- ApiKeyAuth: []
 tags:
 - name: Conversations
+  description: Operations related to managing conversations.
 paths:
   /conversations:
     get:
+      summary: List Conversations
+      description: '**Available for**: Chatflow, Agent, Chatbot, Legacy Agent apps.
+
+
+        Lists an end user''s conversations, most recently active first.'
+      operationId: getConversationsList
       tags:
       - Conversations
-      summary: List conversations
-      operationId: listConversations
       parameters:
       - name: user
         in: query
-        required: true
+        required: false
+        description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
+        schema:
+          type: string
+      - name: last_id
+        in: query
+        required: false
+        description: 'Pagination cursor: the `id` of the last conversation on the current page. Omit to
+          fetch the first page.'
         schema:
           type: string
       - name: limit
         in: query
+        required: false
+        description: Number of records to return.
         schema:
           type: integer
+          default: 20
+          minimum: 1
+          maximum: 100
+      - name: sort_by
+        in: query
+        required: false
+        description: Field to sort by. Prefix with `-` for descending order.
+        schema:
+          type: string
+          enum:
+          - created_at
+          - -created_at
+          - updated_at
+          - -updated_at
+          default: -updated_at
       responses:
         '200':
-          description: Conversations
-  /conversations/{conversation_id}:
-    delete:
+          description: Successfully retrieved conversations list.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationsListResponse'
+              examples:
+                conversationsList:
+                  summary: Response Example
+                  value:
+                    limit: 20
+                    has_more: false
+                    data:
+                    - id: 45701982-8118-4bc5-8e9b-64562b4555f2
+                      name: iPhone Specs Chat
+                      inputs:
+                        city: San Francisco
+                      status: normal
+                      introduction: Welcome! How can I help you today?
+                      created_at: 1705407629
+                      updated_at: 1705411229
+        '400':
+          description: '`not_chat_app` : App mode does not match the API route.'
+          content:
+            application/json:
+              examples:
+                not_chat_app:
+                  summary: not_chat_app
+                  value:
+                    status: 400
+                    code: not_chat_app
+                    message: Please check if your app mode matches the right API route.
+        '404':
+          description: '`not_found` : Last conversation does not exist (invalid `last_id`).'
+          content:
+            application/json:
+              examples:
+                last_conversation_not_exists:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Last Conversation Not Exists.
+      x-mint:
+        href: /en/api-reference/conversations/list-conversations
+        metadata:
+          title: List Conversations
+          sidebarTitle: List Conversations
+  /messages:
+    get:
+      summary: List Conversation Messages
+      description: '**Available for**: Chatflow, Agent, Chatbot, Legacy Agent apps.
+
+
+        Returns a conversation''s message history, newest first. Pass `first_id` to page backward into
+        older messages.'
+      operationId: getConversationHistory
       tags:
       - Conversations
-      summary: Delete a conversation
-      operationId: deleteConversation
+      parameters:
+      - name: conversation_id
+        in: query
+        required: true
+        description: ID of the conversation to read. Get conversation IDs from [List Conversations](/en/api-reference/conversations/list-conversations).
+        schema:
+          type: string
+      - name: user
+        in: query
+        required: false
+        description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
+        schema:
+          type: string
+      - name: first_id
+        in: query
+        required: false
+        description: 'Pagination cursor: the `id` of the first message on the current page. Pass it to
+          fetch the previous (older) page; omit to fetch the latest messages.'
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        description: Number of chat history messages to return per request.
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 100
+      responses:
+        '200':
+          description: Successfully retrieved conversation history.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationHistoryResponse'
+              examples:
+                conversationHistory:
+                  summary: Response Example
+                  value:
+                    limit: 20
+                    has_more: false
+                    data:
+                    - id: 9da23599-e713-473b-982c-4328d4f5c78a
+                      conversation_id: 45701982-8118-4bc5-8e9b-64562b4555f2
+                      parent_message_id: null
+                      inputs:
+                        city: San Francisco
+                      query: What are the specs of the iPhone 13 Pro Max?
+                      answer: iPhone 13 Pro Max specs are listed here:...
+                      status: normal
+                      error: null
+                      message_files: []
+                      feedback:
+                        rating: like
+                      retriever_resources: []
+                      agent_thoughts: []
+                      created_at: 1705407629
+                      extra_contents: []
+                      message_tokens: 100
+                      answer_tokens: 58
+                      total_tokens: 158
+                      provider_response_latency: 1.234
+                      total_price: '0.0012825'
+                      currency: USD
+        '400':
+          description: '`not_chat_app` : App mode does not match the API route.'
+          content:
+            application/json:
+              examples:
+                not_chat_app:
+                  summary: not_chat_app
+                  value:
+                    status: 400
+                    code: not_chat_app
+                    message: Please check if your app mode matches the right API route.
+        '404':
+          description: '- `not_found` : Conversation does not exist.
+
+            - `not_found` : First message does not exist (invalid `first_id`).'
+          content:
+            application/json:
+              examples:
+                conversation_not_exists:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Conversation Not Exists.
+                first_message_not_exists:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: First Message Not Exists.
+      x-mint:
+        href: /en/api-reference/conversations/list-conversation-messages
+        metadata:
+          title: List Conversation Messages
+          sidebarTitle: List Conversation Messages
+  /conversations/{conversation_id}/variables:
+    get:
+      summary: List Conversation Variables
+      description: '**Available for**: Chatflow, Chatbot, Legacy Agent apps.
+
+
+        Lists the variables stored in a conversation.'
+      operationId: getConversationVariables
+      tags:
+      - Conversations
       parameters:
       - name: conversation_id
         in: path
         required: true
+        description: ID of the conversation whose variables to list. Get conversation IDs from [List Conversations](/en/api-reference/conversations/list-conversations).
         schema:
           type: string
+      - name: user
+        in: query
+        required: false
+        description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
+        schema:
+          type: string
+      - name: last_id
+        in: query
+        required: false
+        description: 'Pagination cursor: the `id` of the last variable on the current page. Omit to fetch
+          the first page.'
+        schema:
+          type: string
+      - name: limit
+        in: query
+        required: false
+        description: Number of records to return.
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 100
+      - name: variable_name
+        in: query
+        required: false
+        description: Filter variables by a specific name.
+        schema:
+          type: string
+          minLength: 1
+          maxLength: 255
       responses:
-        '204':
-          description: Deleted
+        '200':
+          description: Successfully retrieved conversation variables.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationVariablesResponse'
+              examples:
+                conversationVariables:
+                  summary: Response Example
+                  value:
+                    limit: 20
+                    has_more: false
+                    data:
+                    - id: a1b2c3d4-5678-90ab-cdef-1234567890ab
+                      name: user_preference
+                      value_type: string
+                      value: dark_mode
+                      description: User preference setting
+                      created_at: 1705407629
+                      updated_at: 1705411229
+        '400':
+          description: '- `not_chat_app` : App mode does not match the API route.
+
+            - `invalid_param` : The `last_id` does not match any variable in this conversation.'
+          content:
+            application/json:
+              examples:
+                not_chat_app:
+                  summary: not_chat_app
+                  value:
+                    status: 400
+                    code: not_chat_app
+                    message: Please check if your app mode matches the right API route.
+                invalid_last_id:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: ''
+        '404':
+          description: '`not_found` : Conversation does not exist.'
+          content:
+            application/json:
+              examples:
+                conversation_not_exists:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Conversation Not Exists.
+      x-mint:
+        href: /en/api-reference/conversations/list-conversation-variables
+        metadata:
+          title: List Conversation Variables
+          sidebarTitle: List Conversation Variables
   /conversations/{conversation_id}/name:
     post:
+      summary: Rename Conversation
+      description: '**Available for**: Chatflow, Agent, Chatbot, Legacy Agent apps.
+
+
+        Renames a conversation, or auto-generates a name from its messages when `auto_generate` is `true`.
+        The name is what clients display in a multi-conversation list.'
+      operationId: renameConversation
       tags:
       - Conversations
-      summary: Rename a conversation
-      operationId: renameConversation
       parameters:
       - name: conversation_id
         in: path
         required: true
+        description: ID of the conversation to rename. Get conversation IDs from [List Conversations](/en/api-reference/conversations/list-conversations).
         schema:
           type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationRenameRequest'
+            examples:
+              renameExample:
+                summary: Request Example
+                value:
+                  name: iPhone Specs Chat
+                  user: abc-123
       responses:
         '200':
-          description: Renamed
+          description: Conversation renamed successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationListItem'
+              examples:
+                renamedConversation:
+                  summary: Response Example
+                  value:
+                    id: 45701982-8118-4bc5-8e9b-64562b4555f2
+                    name: iPhone Specs Chat
+                    inputs:
+                      city: San Francisco
+                    status: normal
+                    introduction: Welcome! How can I help you today?
+                    created_at: 1705407629
+                    updated_at: 1705411229
+        '400':
+          description: '- `not_chat_app` : App mode does not match the API route.
+
+            - `invalid_param` : `auto_generate` is `true` but the conversation has no messages to generate
+            a name from.'
+          content:
+            application/json:
+              examples:
+                not_chat_app:
+                  summary: not_chat_app
+                  value:
+                    status: 400
+                    code: not_chat_app
+                    message: Please check if your app mode matches the right API route.
+                no_messages:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: ''
+        '404':
+          description: '`not_found` : Conversation does not exist.'
+          content:
+            application/json:
+              examples:
+                conversation_not_exists:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Conversation Not Exists.
+      x-mint:
+        href: /en/api-reference/conversations/rename-conversation
+        metadata:
+          title: Rename Conversation
+          sidebarTitle: Rename Conversation
+  /conversations/{conversation_id}/variables/{variable_id}:
+    put:
+      summary: Update Conversation Variable
+      description: '**Available for**: Chatflow, Chatbot, Legacy Agent apps.
+
+
+        Updates a conversation variable''s value. The new value must match the variable''s existing type.'
+      operationId: updateChatConversationVariable
+      tags:
+      - Conversations
+      parameters:
+      - name: conversation_id
+        in: path
+        required: true
+        description: ID of the conversation that owns the variable. Get conversation IDs from [List Conversations](/en/api-reference/conversations/list-conversations).
+        schema:
+          type: string
+          format: uuid
+      - name: variable_id
+        in: path
+        required: true
+        description: ID of the variable to update. Get variable IDs from [List Conversation Variables](/en/api-reference/conversations/list-conversation-variables).
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ConversationVariableUpdateRequest'
+            examples:
+              updateStringVariable:
+                summary: Request Example
+                value:
+                  value: new value
+                  user: abc-123
+      responses:
+        '200':
+          description: Variable updated successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ConversationVariableItem'
+              examples:
+                updatedVariable:
+                  summary: Response Example
+                  value:
+                    id: a1b2c3d4-5678-90ab-cdef-1234567890ab
+                    name: user_preference
+                    value_type: string
+                    value: new value
+                    description: User preference setting
+                    created_at: 1705407629
+                    updated_at: 1705411229
+        '400':
+          description: '- `not_chat_app` : App mode does not match the API route.
+
+            - `bad_request` : Variable value type mismatch.'
+          content:
+            application/json:
+              examples:
+                not_chat_app:
+                  summary: not_chat_app
+                  value:
+                    status: 400
+                    code: not_chat_app
+                    message: Please check if your app mode matches the right API route.
+                type_mismatch:
+                  summary: bad_request
+                  value:
+                    status: 400
+                    code: bad_request
+                    message: 'Type mismatch: variable ''user_preference'' expects string, but got number
+                      type'
+        '404':
+          description: '- `not_found` : Conversation does not exist.
+
+            - `not_found` : Conversation variable does not exist.'
+          content:
+            application/json:
+              examples:
+                conversation_not_exists:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Conversation Not Exists.
+                variable_not_exists:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Conversation Variable Not Exists.
+      x-mint:
+        href: /en/api-reference/conversations/update-conversation-variable
+        metadata:
+          title: Update Conversation Variable
+          sidebarTitle: Update Conversation Variable
+  /conversations/{conversation_id}:
+    delete:
+      summary: Delete Conversation
+      description: '**Available for**: Chatflow, Agent, Chatbot, Legacy Agent apps.
+
+
+        Deletes a conversation.'
+      operationId: deleteConversation
+      tags:
+      - Conversations
+      parameters:
+      - name: conversation_id
+        in: path
+        required: true
+        description: ID of the conversation to delete. Get conversation IDs from [List Conversations](/en/api-reference/conversations/list-conversations).
+        schema:
+          type: string
+      requestBody:
+        description: A JSON body is always required, even when `user` is omitted; send `{}` in that case.
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                user:
+                  type: string
+                  description: End-user identifier, defined by your app and unique within it. See [End
+                    User Identity](/en/api-reference/guides/end-user-identity).
+            examples:
+              deleteExample:
+                value:
+                  user: abc-123
+                summary: Request Example
+      responses:
+        '204':
+          description: Conversation deleted successfully. No content returned.
+        '400':
+          description: '`not_chat_app` : App mode does not match the API route.'
+          content:
+            application/json:
+              examples:
+                not_chat_app:
+                  summary: not_chat_app
+                  value:
+                    status: 400
+                    code: not_chat_app
+                    message: Please check if your app mode matches the right API route.
+        '404':
+          description: '`not_found` : Conversation does not exist.'
+          content:
+            application/json:
+              examples:
+                conversation_not_exists:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Conversation Not Exists.
+      x-mint:
+        href: /en/api-reference/conversations/delete-conversation
+        metadata:
+          title: Delete Conversation
+          sidebarTitle: Delete Conversation
 components:
+  schemas:
+    AgentThoughtItem:
+      type: object
+      description: An agent thought step in the message.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Agent thought ID.
+        chain_id:
+          type: string
+          nullable: true
+          description: Chain ID for this thought.
+        message_id:
+          type: string
+          format: uuid
+          description: Unique message ID this thought belongs to.
+        position:
+          type: integer
+          description: Position of this thought.
+        thought:
+          type: string
+          description: What LLM is thinking.
+        tool:
+          type: string
+          description: Tools called, split by `;`.
+        tool_labels:
+          type: object
+          nullable: true
+          additionalProperties: true
+          description: Labels for tools used.
+        tool_input:
+          type: string
+          description: Input of tools in JSON format.
+        observation:
+          type: string
+          description: Response from tool calls.
+        files:
+          type: array
+          items:
+            type: string
+          description: File IDs related to this thought.
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp.
+    ConversationHistoryResponse:
+      type: object
+      properties:
+        limit:
+          type: integer
+          description: Number of items per page.
+        has_more:
+          type: boolean
+          description: Whether there are more messages.
+        data:
+          type: array
+          description: List of messages.
+          items:
+            $ref: '#/components/schemas/ConversationMessageItem'
+    ConversationListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Conversation ID.
+        name:
+          type: string
+          description: Conversation name.
+        inputs:
+          type: object
+          additionalProperties: true
+          description: Input variables for the conversation.
+        status:
+          type: string
+          description: Conversation status. `normal` for active conversations.
+        introduction:
+          type: string
+          description: Conversation introduction.
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp.
+        updated_at:
+          type: integer
+          format: int64
+          description: Last update timestamp.
+    ConversationMessageItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Message ID.
+        conversation_id:
+          type: string
+          format: uuid
+          description: Conversation ID.
+        parent_message_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Parent message ID for threaded conversations.
+        inputs:
+          type: object
+          additionalProperties: true
+          description: Input variables for this message.
+        query:
+          type: string
+          description: User query text.
+        answer:
+          type: string
+          description: Assistant answer text.
+        status:
+          type: string
+          description: Message status. `normal` for successful messages, `error` when generation failed.
+        error:
+          type: string
+          nullable: true
+          description: Error message if `status` is `error`.
+        message_files:
+          type: array
+          description: Files attached to this message.
+          items:
+            $ref: '#/components/schemas/MessageFileItem'
+        feedback:
+          type: object
+          nullable: true
+          description: User feedback for this message.
+          properties:
+            rating:
+              type: string
+              description: Feedback rating. `like` for positive, `dislike` for negative.
+        retriever_resources:
+          type: array
+          description: Retriever resources used for this message.
+          items:
+            $ref: '#/components/schemas/RetrieverResource'
+        agent_thoughts:
+          type: array
+          description: Agent thoughts for this message.
+          items:
+            $ref: '#/components/schemas/AgentThoughtItem'
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp (Unix epoch seconds).
+        extra_contents:
+          type: array
+          description: Additional execution content associated with this message, such as human input
+            form data from Human Input nodes in Chatflow workflows.
+          items:
+            $ref: '#/components/schemas/HumanInputContent'
+        message_tokens:
+          type: integer
+          description: Number of tokens in the input message.
+        answer_tokens:
+          type: integer
+          description: Number of tokens in the generated answer.
+        total_tokens:
+          type: integer
+          description: Total tokens used, the sum of `message_tokens` and `answer_tokens`.
+        provider_response_latency:
+          type: number
+          format: double
+          description: Model provider response latency in seconds.
+        total_price:
+          type: string
+          format: decimal
+          nullable: true
+          description: Total price for the tokens used, or `null` when pricing is unavailable.
+        currency:
+          type: string
+          nullable: true
+          description: Currency for `total_price` (for example, `USD`), or `null` when pricing is unavailable.
+    ConversationRenameRequest:
+      type: object
+      description: Request body for renaming a conversation.
+      properties:
+        name:
+          type: string
+          description: New conversation name. Required unless `auto_generate` is `true`.
+        auto_generate:
+          type: boolean
+          default: false
+          description: Automatically generate the conversation name. When `true`, the `name` field is
+            ignored.
+        user:
+          type: string
+          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
+    ConversationVariableItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Variable ID.
+        name:
+          type: string
+          description: Variable name.
+        value_type:
+          type: string
+          description: 'Variable value type. Possible values: `string`, `number`, `object`, `secret`,
+            `file`, `boolean`, `array[any]`, `array[string]`, `array[number]`, `array[object]`, `array[file]`,
+            `array[boolean]`.'
+        value:
+          type: string
+          description: Variable value (can be a JSON string for complex types).
+        description:
+          type: string
+          description: Variable description.
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp.
+        updated_at:
+          type: integer
+          format: int64
+          description: Last update timestamp.
+    ConversationVariableUpdateRequest:
+      type: object
+      description: Request body for updating a conversation variable.
+      required:
+      - value
+      properties:
+        value:
+          description: The new value for the variable. Must match the variable's expected type.
+        user:
+          type: string
+          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
+    ConversationVariablesResponse:
+      type: object
+      properties:
+        limit:
+          type: integer
+          description: Number of items per page.
+        has_more:
+          type: boolean
+          description: Whether there is a next page.
+        data:
+          type: array
+          description: List of conversation variables.
+          items:
+            $ref: '#/components/schemas/ConversationVariableItem'
+    ConversationsListResponse:
+      type: object
+      properties:
+        limit:
+          type: integer
+          description: Number of items per page.
+        has_more:
+          type: boolean
+          description: Whether there are more conversations.
+        data:
+          type: array
+          description: List of conversations.
+          items:
+            $ref: '#/components/schemas/ConversationListItem'
+    FormInput:
+      type: object
+      description: A form input field definition.
+      properties:
+        type:
+          type: string
+          description: 'Form input control type. Available values: `paragraph` (multi-line text input),
+            `select` (single-choice from a list), `file` (single file upload), and `file-list` (multiple
+            file uploads).'
+        output_variable_name:
+          type: string
+          description: Variable name where the input value is stored.
+        default:
+          nullable: true
+          description: Default value configuration for this input.
+          $ref: '#/components/schemas/FormInputDefault'
+    FormInputDefault:
+      type: object
+      description: Default value configuration for a form input.
+      properties:
+        type:
+          type: string
+          description: '`variable` for dynamic values from workflow variables, `constant` for static values.'
+        selector:
+          type: array
+          items:
+            type: string
+          description: Variable selector path when `type` is `variable`.
+        value:
+          type: string
+          description: Static value when `type` is `constant`.
+    HumanInputContent:
+      type: object
+      description: Execution content from a Human Input node, including form definition and submission
+        data.
+      properties:
+        workflow_run_id:
+          type: string
+          description: ID of the workflow run this content belongs to.
+        submitted:
+          type: boolean
+          description: Whether the human input form has been submitted.
+        type:
+          type: string
+          description: '`human_input` for human input content.'
+        form_definition:
+          nullable: true
+          description: Form definition from the Human Input node. `null` when the content represents a
+            submission response.
+          $ref: '#/components/schemas/HumanInputFormDefinition'
+        form_submission_data:
+          nullable: true
+          description: Submitted form data. `null` when the form has not been submitted yet.
+          $ref: '#/components/schemas/HumanInputFormSubmissionData'
+    HumanInputFormDefinition:
+      type: object
+      description: Definition of a human input form rendered by a Human Input node.
+      properties:
+        form_id:
+          type: string
+          description: Unique form identifier.
+        node_id:
+          type: string
+          description: ID of the Human Input node that generated this form.
+        node_title:
+          type: string
+          description: Title of the Human Input node.
+        form_content:
+          type: string
+          description: Markdown or text content displayed with the form.
+        inputs:
+          type: array
+          description: Input fields in the form.
+          items:
+            $ref: '#/components/schemas/FormInput'
+        actions:
+          type: array
+          description: Action buttons available on the form.
+          items:
+            $ref: '#/components/schemas/UserAction'
+        display_in_ui:
+          type: boolean
+          description: Whether the form should be displayed in the UI.
+        form_token:
+          type: string
+          nullable: true
+          description: Token for form submission authentication.
+        resolved_default_values:
+          type: object
+          additionalProperties: true
+          description: Resolved default values for form inputs, keyed by output variable name.
+        expiration_time:
+          type: integer
+          description: Unix timestamp when the form expires.
+    HumanInputFormSubmissionData:
+      type: object
+      description: Data from a submitted human input form.
+      properties:
+        node_id:
+          type: string
+          description: ID of the Human Input node.
+        node_title:
+          type: string
+          description: Title of the Human Input node.
+        rendered_content:
+          type: string
+          description: Rendered content of the form submission.
+        action_id:
+          type: string
+          description: ID of the action button that was clicked.
+        action_text:
+          type: string
+          description: Display text of the action button that was clicked.
+    MessageFileItem:
+      type: object
+      description: A file attached to a message.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File ID.
+        filename:
+          type: string
+          description: Original filename.
+        type:
+          type: string
+          description: File type, e.g., `image`.
+        url:
+          type: string
+          format: url
+          nullable: true
+          description: Preview URL for the file.
+        mime_type:
+          type: string
+          nullable: true
+          description: MIME type of the file.
+        size:
+          type: integer
+          nullable: true
+          description: File size in bytes.
+        transfer_method:
+          type: string
+          description: Transfer method used. `remote_url` for URL-based files, `local_file` for uploaded
+            files, `tool_file` for tool-generated files.
+        belongs_to:
+          type: string
+          nullable: true
+          description: Who this file belongs to. `user` for user-uploaded files, `assistant` for assistant-generated
+            files.
+        upload_file_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Upload file ID if transferred via `local_file`.
+    RetrieverResource:
+      type: object
+      description: Citation and attribution information for a retriever resource.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique ID of the retriever resource.
+        message_id:
+          type: string
+          format: uuid
+          description: ID of the message this resource belongs to.
+        position:
+          type: integer
+          description: Position of the resource in the list.
+        dataset_id:
+          type: string
+          format: uuid
+          description: ID of the knowledge base.
+        dataset_name:
+          type: string
+          description: Name of the knowledge base.
+        document_id:
+          type: string
+          format: uuid
+          description: ID of the document.
+        document_name:
+          type: string
+          description: Name of the document.
+        data_source_type:
+          type: string
+          description: Type of the data source.
+        segment_id:
+          type: string
+          format: uuid
+          description: ID of the specific chunk within the document.
+        score:
+          type: number
+          format: float
+          description: Similarity score of the resource.
+        hit_count:
+          type: integer
+          description: Number of times this chunk was hit.
+        word_count:
+          type: integer
+          description: Word count of the chunk.
+        segment_position:
+          type: integer
+          description: Position of the chunk within the document.
+        index_node_hash:
+          type: string
+          description: Hash of the index node.
+        content:
+          type: string
+          description: Content snippet from the resource.
+        summary:
+          type: string
+          nullable: true
+          description: Summary of the chunk content.
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp (Unix epoch seconds).
+    UserAction:
+      type: object
+      description: An action button on a human input form.
+      properties:
+        id:
+          type: string
+          description: Unique action identifier.
+        title:
+          type: string
+          description: Button display text.
+        button_style:
+          type: string
+          description: '`primary`, `default`, `accent`, or `ghost`.'
   securitySchemes:
-    bearerAuth:
+    ApiKeyAuth:
       type: http
       scheme: bearer
+      bearerFormat: API_KEY
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
+        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+
+
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
+        fail with HTTP `401` (`unauthorized`).'
+x-provenance:
+  generated: '2026-09-06'
+  method: derived
+  source: openapi/_original/dify-service-api-openapi.json
+  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
+    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
+    spec.

@@ -1,0 +1,53 @@
+generated: '2026-09-06'
+method: searched
+source: https://github.com/langgenius/dify/releases.atom
+description: >-
+  Dify's dated change record is its open-source release feed on GitHub. There is no changelog or
+  release-notes page on dify.ai or docs.dify.ai — probes of https://dify.ai/changelog and
+  https://docs.dify.ai/en/changelog both returned 404, and the documentation index carries no
+  changelog entry. The releases the platform ships are the changelog, and they cover the Service API
+  because the API is part of the same distribution.
+scheme: semver
+current_version: 1.17.0
+current_version_date: '2026-09-01'
+url: https://github.com/langgenius/dify/releases
+feed: https://github.com/langgenius/dify/releases.atom
+docs_changelog_page: null
+docs_changelog_note: >-
+  https://dify.ai/changelog → 404; https://docs.dify.ai/en/changelog → 404. Recorded as an honest
+  absence, not a missing probe.
+entries:
+  - version: 1.17.0
+    date: '2026-09-01'
+    url: https://github.com/langgenius/dify/releases/tag/1.17.0
+  - version: 1.16.1
+    date: '2026-09-01'
+    title: Bug Fixes and Security Enhancements
+    url: https://github.com/langgenius/dify/releases/tag/1.16.1
+    security: true
+  - version: 1.16.0
+    date: '2026-09-01'
+    url: https://github.com/langgenius/dify/releases/tag/1.16.0
+  - version: 1.15.0
+    date: '2026-09-01'
+    url: https://github.com/langgenius/dify/releases/tag/1.15.0
+  - version: 1.14.2
+    date: '2026-05-19'
+    title: Security fixes, agent groundwork, workflow reliability, and deployment updates
+    url: https://github.com/langgenius/dify/releases/tag/1.14.2
+    security: true
+  - version: 1.14.1
+    date: '2026-05-12'
+    title: Security hardening, workflow stability, and cleaner self-hosted deployments
+    url: https://github.com/langgenius/dify/releases/tag/1.14.1
+    security: true
+  - version: 1.14.0
+    date: '2026-04-29'
+    url: https://github.com/langgenius/dify/releases/tag/1.14.0
+  - version: 1.13.3
+    date: '2026-05-26'
+    url: https://github.com/langgenius/dify/releases/tag/1.13.3
+breaking_changes_flagged: false
+breaking_changes_note: >-
+  Release titles distinguish security releases but do not flag breaking API changes. A consumer of
+  the Service API cannot tell from the feed alone whether a release changes the contract.

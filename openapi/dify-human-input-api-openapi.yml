@@ -1,0 +1,419 @@
+openapi: 3.0.1
+info:
+  title: Dify Human Input API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
+    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  version: 1.0.0
+servers:
+- url: https://{api_base_url}
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
+    API base URL.
+  variables:
+    api_base_url:
+      default: api.dify.ai/v1
+      description: Host and path of the API base URL, without the `https://` prefix.
+security:
+- ApiKeyAuth: []
+tags:
+- name: Human Input
+  description: Endpoints for resuming paused workflows that require human input.
+paths:
+  /form/human_input/{form_token}:
+    get:
+      tags:
+      - Human Input
+      summary: Get Human Input Form
+      description: '**Available for**: Chatflow, Workflow apps.
+
+
+        Returns the contents of a paused Human Input form. Requires web app delivery.
+
+
+        For the full sequence of Human Input calls, see [Human Input Flow](/en/api-reference/guides/human-input-flow).'
+      operationId: getChatflowHumanInputForm
+      parameters:
+      - name: form_token
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Access token for the paused form, returned in the `human_input_required` event from
+          the Run Workflow or Send Chat Message endpoint in streaming mode.
+      responses:
+        '200':
+          description: Form contents retrieved successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  form_content:
+                    type: string
+                    description: Pre-rendered form body with workflow variables substituted.
+                  inputs:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        type:
+                          type: string
+                          description: 'Form input control type. Available values: `paragraph` (multi-line
+                            text input), `select` (single-choice from a list), `file` (single file upload),
+                            and `file-list` (multiple file uploads).'
+                        output_variable_name:
+                          type: string
+                          description: Variable name used to reference this input's submitted value inside
+                            the workflow. Corresponds to the key in the submission `inputs` object.
+                        default:
+                          type: object
+                          nullable: true
+                          description: Raw default-value configuration for `paragraph` inputs. The client
+                            should not resolve this directly; use `resolved_default_values` to display
+                            defaults. absent for other input types or when no default is configured.
+                          properties:
+                            type:
+                              type: string
+                              description: Source of the default. `constant` means `value` is used as
+                                a literal string; `variable` means `selector` points to a workflow variable.
+                            selector:
+                              type: array
+                              items:
+                                type: string
+                              description: Variable reference path (for example, `["node_id", "var_name"]`)
+                                when `type` is `variable`. Must contain at least two elements.
+                            value:
+                              type: string
+                              description: Literal default value when `type` is `constant`. Always a string.
+                        option_source:
+                          type: object
+                          description: Source of options for `select` inputs. Present only when `type`
+                            is `select`.
+                          properties:
+                            type:
+                              type: string
+                              enum:
+                              - variable
+                              - constant
+                              description: Origin of the options. `constant` means `value` lists the options
+                                literally; `variable` means `selector` points to an `array[string]` workflow
+                                variable that provides them.
+                            selector:
+                              type: array
+                              items:
+                                type: string
+                              description: Variable reference path when `type` is `variable`.
+                            value:
+                              type: array
+                              items:
+                                type: string
+                              description: Literal option list when `type` is `constant`.
+                        allowed_file_types:
+                          type: array
+                          items:
+                            type: string
+                            enum:
+                            - image
+                            - document
+                            - audio
+                            - video
+                            - custom
+                          description: 'File categories the recipient may upload. Present for `file` and
+                            `file-list` inputs. Values: `image`, `document`, `audio`, `video`, `custom`.'
+                        allowed_file_extensions:
+                          type: array
+                          items:
+                            type: string
+                          description: Allowed file extensions when `allowed_file_types` includes `custom`.
+                            Include the leading `.` in each extension, for example `.md`. Present for
+                            `file` and `file-list` inputs.
+                        allowed_file_upload_methods:
+                          type: array
+                          items:
+                            type: string
+                            enum:
+                            - local_file
+                            - remote_url
+                          description: 'Upload methods the recipient may use. Values: `local_file`, `remote_url`.
+                            Present for `file` and `file-list` inputs.'
+                        number_limits:
+                          type: integer
+                          description: Maximum number of files the recipient may upload. Present only
+                            for `file-list` inputs.
+                    description: Form input field definitions.
+                  resolved_default_values:
+                    type: object
+                    additionalProperties:
+                      type: string
+                    description: Pre-rendered values to display in the form. Keyed by input `output_variable_name`.
+                      Populated for `paragraph` inputs whose default resolves from a workflow variable;
+                      empty for inputs with no resolvable default. Display these values; do not re-resolve
+                      `default` on the client. All values are stringified.
+                  user_actions:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          maxLength: 20
+                          pattern: ^[A-Za-z_][A-Za-z0-9_]*$
+                          description: Identifier of the action button. Pass as `action` on [Submit Human
+                            Input Form](/en/api-reference/human-input/submit-human-input-form) when the
+                            recipient selects this button.
+                        title:
+                          type: string
+                          maxLength: 100
+                          description: Button label shown to the recipient.
+                        button_style:
+                          type: string
+                          description: 'Visual style of the button. Available values: `primary`, `default`,
+                            `accent`, `ghost`.'
+                    description: Available submission actions.
+                  expiration_time:
+                    type: integer
+                    format: int64
+                    description: Unix timestamp (seconds) after which this form can no longer be submitted.
+                    nullable: true
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    form_content: Please review the draft, set a priority, and confirm or request changes.
+                    inputs:
+                    - type: paragraph
+                      output_variable_name: feedback
+                      default:
+                        type: constant
+                        selector: []
+                        value: ''
+                    - type: select
+                      output_variable_name: priority
+                      option_source:
+                        type: constant
+                        selector: []
+                        value:
+                        - low
+                        - medium
+                        - high
+                    - type: file
+                      output_variable_name: attachment
+                      allowed_file_types:
+                      - image
+                      - document
+                      allowed_file_extensions: []
+                      allowed_file_upload_methods:
+                      - local_file
+                      - remote_url
+                    - type: file-list
+                      output_variable_name: attachments
+                      allowed_file_types:
+                      - image
+                      - document
+                      allowed_file_extensions: []
+                      allowed_file_upload_methods:
+                      - local_file
+                      - remote_url
+                      number_limits: 5
+                    resolved_default_values:
+                      feedback: ''
+                    user_actions:
+                    - id: approve
+                      title: Approve
+                      button_style: primary
+                    - id: reject
+                      title: Request changes
+                      button_style: default
+                    expiration_time: 1745510400
+        '404':
+          description: '`not_found` : Form not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Form not found
+        '412':
+          description: '- `human_input_form_submitted` : Form already submitted. Forms are one-shot; the
+            first response wins regardless of which user submits it.
+
+            - `human_input_form_expired` : The form''s expiration time passed before submission arrived.'
+          content:
+            application/json:
+              examples:
+                human_input_form_submitted:
+                  summary: human_input_form_submitted
+                  value:
+                    status: 412
+                    code: human_input_form_submitted
+                    message: This form has already been submitted by another user, form_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                human_input_form_expired:
+                  summary: human_input_form_expired
+                  value:
+                    status: 412
+                    code: human_input_form_expired
+                    message: This form has expired, form_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+      x-mint:
+        href: /en/api-reference/human-input/get-human-input-form
+        metadata:
+          title: Get Human Input Form
+          sidebarTitle: Get Human Input Form
+    post:
+      tags:
+      - Human Input
+      summary: Submit Human Input Form
+      description: '**Available for**: Chatflow, Workflow apps.
+
+
+        Submits the recipient''s response to a paused Human Input form. On acceptance the workflow resumes;
+        follow the resumed run via [Stream Workflow Events](/en/api-reference/workflow-runs/stream-workflow-events).
+        Requires web app delivery.'
+      operationId: submitChatflowHumanInputForm
+      parameters:
+      - name: form_token
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Access token for the paused form, returned in the `human_input_required` event from
+          the Run Workflow or Send Chat Message endpoint in streaming mode.
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - inputs
+              - action
+              - user
+              properties:
+                inputs:
+                  type: object
+                  additionalProperties: true
+                  description: 'Submitted values keyed by each input''s `output_variable_name`. Paragraph
+                    and select inputs take a string; a `file` input takes one file mapping; a `file-list`
+                    input takes an array of file mappings.
+
+
+                    A file mapping is `{transfer_method: local_file, upload_file_id, type}` or `{transfer_method:
+                    remote_url, url, type}`, where `type` is one of the field''s `allowed_file_types`.
+                    For `local_file`, `upload_file_id` is the `id` from [Upload File](/en/api-reference/files/upload-file).
+
+
+                    Use a consistent `user` across the run, upload, and submit.'
+                action:
+                  type: string
+                  description: ID of the action button the recipient selected. Must match one of the `id`
+                    values from the form's `user_actions` list (returned by [Get Human Input Form](/en/api-reference/human-input/get-human-input-form)).
+                user:
+                  type: string
+                  description: End-user identifier, defined by your app and unique within it. Service
+                    API and web app user IDs are separate, even when identical. See [End User Identity](/en/api-reference/guides/end-user-identity).
+            examples:
+              approve:
+                summary: Request Example
+                value:
+                  inputs:
+                    feedback: Looks good to ship
+                    priority: high
+                    attachment:
+                      transfer_method: local_file
+                      upload_file_id: 3c8fa1b2-7d4e-4f9a-b0c1-d2e3f4a5b6c7
+                      type: image
+                    attachments:
+                    - transfer_method: local_file
+                      upload_file_id: 1a77f0df-c0e6-461c-987c-e72526f341ee
+                      type: document
+                    - transfer_method: remote_url
+                      url: https://example.com/report.pdf
+                      type: document
+                  action: approve
+                  user: abc-123
+      responses:
+        '200':
+          description: Form submitted successfully. The response body is an empty object.
+          content:
+            application/json:
+              schema:
+                type: object
+              examples:
+                success:
+                  summary: Response Example
+                  value: {}
+        '400':
+          description: '- `bad_request` : Form recipient type is invalid.
+
+            - `invalid_form_data` : Submission failed validation against the form definition.'
+          content:
+            application/json:
+              examples:
+                bad_request:
+                  summary: bad_request
+                  value:
+                    status: 400
+                    code: bad_request
+                    message: Form recipient type is invalid
+                invalid_form_data:
+                  summary: invalid_form_data
+                  value:
+                    status: 400
+                    code: invalid_form_data
+                    message: 'Missing required inputs: feedback'
+        '404':
+          description: '`not_found` : Form not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Form not found
+        '412':
+          description: '- `human_input_form_submitted` : Form already submitted. Forms are one-shot; the
+            first response wins regardless of which user submits it.
+
+            - `human_input_form_expired` : The form''s expiration time passed before submission arrived.'
+          content:
+            application/json:
+              examples:
+                human_input_form_submitted:
+                  summary: human_input_form_submitted
+                  value:
+                    status: 412
+                    code: human_input_form_submitted
+                    message: This form has already been submitted by another user, form_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                human_input_form_expired:
+                  summary: human_input_form_expired
+                  value:
+                    status: 412
+                    code: human_input_form_expired
+                    message: This form has expired, form_id=a1b2c3d4-e5f6-7890-abcd-ef1234567890
+      x-mint:
+        href: /en/api-reference/human-input/submit-human-input-form
+        metadata:
+          title: Submit Human Input Form
+          sidebarTitle: Submit Human Input Form
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API_KEY
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
+        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+
+
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
+        fail with HTTP `401` (`unauthorized`).'
+x-provenance:
+  generated: '2026-09-06'
+  method: derived
+  source: openapi/_original/dify-service-api-openapi.json
+  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
+    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
+    spec.

@@ -11,96 +11,337 @@ apis:
   - Artificial Intelligence
   - Backend-As-A-Service
   - LLMOps
-  humanURL: ' https://docs.dify.ai/'
+  humanURL: https://docs.dify.ai/
   properties:
-  - url: ' https://docs.dify.ai/'
-    type: Documentation
-  description: >-
-    Dify is an open-source platform for building AI applications. We combine Backend-as-a-Service and
-    LLMOps to streamline the development of generative AI solutions, making it accessible to both developers
-    and non-technical innovators.
+  - type: Documentation
+    url: https://docs.dify.ai/
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference
+  - type: GettingStarted
+    url: https://docs.dify.ai/en/api-reference/guides/get-started
+  - type: OpenAPI
+    url: openapi/_original/dify-service-api-openapi.json
+  - type: Overlay
+    url: overlays/dify-service-api-overlay.yaml
+  description: Dify is an open-source platform for building AI applications, combining Backend-as-a-Service
+    and LLMOps. Every app published in Dify doubles as a REST API, and so does every knowledge base. The
+    Dify Service API is one OpenAPI 3.0.1 contract of 82 operations across 64 paths, published first-party
+    at docs.dify.ai and reachable at https://api.dify.ai/v1 on Dify Cloud or at your own base URL when
+    self-hosted.
+  baseURL: https://api.dify.ai/v1
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
 - aid: dify:dify-chat-api
-  name: Dify Chat API
-  description: The Chat API from Dify — 2 operation(s) for chat.
-  humanURL: ' https://docs.dify.ai/'
+  name: Dify Chat Messages API
+  description: Operations related to chat messages and interactions. 3 operation(s) from the Dify Service
+    API.
+  humanURL: https://docs.dify.ai/en/api-reference/chat-messages/send-chat-message
+  baseURL: https://api.dify.ai/v1
   tags:
   - Chat
+  - Messaging
+  - Streaming
   properties:
   - type: OpenAPI
     url: openapi/dify-chat-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/chat-messages/send-chat-message
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
 - aid: dify:dify-completion-api
-  name: Dify Completion API
-  description: The Completion API from Dify — 2 operation(s) for completion.
-  humanURL: ' https://docs.dify.ai/'
+  name: Dify Completion Messages API
+  description: Operations related to text generation and completion. 2 operation(s) from the Dify Service
+    API.
+  humanURL: https://docs.dify.ai/en/api-reference/completion-messages/send-completion-message
+  baseURL: https://api.dify.ai/v1
   tags:
   - Completion
+  - Text Generation
   properties:
   - type: OpenAPI
     url: openapi/dify-completion-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/completion-messages/send-completion-message
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
 - aid: dify:dify-conversations-api
   name: Dify Conversations API
-  description: The Conversations API from Dify — 3 operation(s) for conversations.
-  humanURL: ' https://docs.dify.ai/'
+  description: Operations related to managing conversations. 6 operation(s) from the Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/conversations/list-conversations
+  baseURL: https://api.dify.ai/v1
   tags:
   - Conversations
+  - Messaging
   properties:
   - type: OpenAPI
     url: openapi/dify-conversations-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/conversations/list-conversations
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
 - aid: dify:dify-datasets-api
-  name: Dify Datasets API
-  description: The Datasets API from Dify — 2 operation(s) for datasets.
-  humanURL: ' https://docs.dify.ai/'
+  name: Dify Knowledge Bases API
+  description: Operations for managing knowledge bases, including creation, configuration, and retrieval.
+    6 operation(s) from the Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/knowledge-bases/list-knowledge-bases
+  baseURL: https://api.dify.ai/v1
   tags:
   - Datasets
+  - Knowledge Management
+  - RAG
   properties:
   - type: OpenAPI
     url: openapi/dify-datasets-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/knowledge-bases/list-knowledge-bases
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
 - aid: dify:dify-files-api
   name: Dify Files API
-  description: The Files API from Dify — 1 operation(s) for files.
-  humanURL: ' https://docs.dify.ai/'
+  description: File upload and preview operations. 2 operation(s) from the Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/files/upload-file
+  baseURL: https://api.dify.ai/v1
   tags:
   - File
-  tags_raw:
-  - Files
+  - File Upload
   properties:
   - type: OpenAPI
     url: openapi/dify-files-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/files/upload-file
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
 - aid: dify:dify-workflows-api
-  name: Dify Workflows API
-  description: The Workflows API from Dify — 3 operation(s) for workflows.
-  humanURL: ' https://docs.dify.ai/'
+  name: Dify Workflow Runs API
+  description: Operations for executing and managing workflows. 6 operation(s) from the Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/workflow-runs/run-workflow
+  baseURL: https://api.dify.ai/v1
   tags:
   - Workflows
+  - Orchestration
+  - Streaming
   properties:
   - type: OpenAPI
     url: openapi/dify-workflows-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/workflow-runs/run-workflow
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
+- aid: dify:dify-applications-api
+  name: Dify Applications API
+  description: Operations to retrieve application settings and information. 4 operation(s) from the Dify
+    Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/applications/get-app-info
+  baseURL: https://api.dify.ai/v1
+  tags:
+  - Applications
+  - Configuration
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-applications-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/applications/get-app-info
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
+- aid: dify:dify-annotations-api
+  name: Dify Annotations API
+  description: Operations related to managing annotations for direct replies. 6 operation(s) from the
+    Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/annotations/list-annotations
+  baseURL: https://api.dify.ai/v1
+  tags:
+  - Annotations
+  - Quality
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-annotations-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/annotations/list-annotations
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
+- aid: dify:dify-audio-api
+  name: Dify Audio API
+  description: Text-to-Speech and Speech-to-Text operations. 2 operation(s) from the Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/audio/convert-audio-to-text
+  baseURL: https://api.dify.ai/v1
+  tags:
+  - Audio
+  - Speech To Text
+  - Text To Speech
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-audio-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/audio/convert-audio-to-text
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
+- aid: dify:dify-feedback-api
+  name: Dify Feedback API
+  description: User feedback operations. 2 operation(s) from the Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/feedback/submit-message-feedback
+  baseURL: https://api.dify.ai/v1
+  tags:
+  - Feedback
+  - Quality
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-feedback-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/feedback/submit-message-feedback
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
+- aid: dify:dify-end-users-api
+  name: Dify End Users API
+  description: Operations related to end user information. 1 operation(s) from the Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/end-users/get-end-user-info
+  baseURL: https://api.dify.ai/v1
+  tags:
+  - Users
+  - Identity
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-end-users-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/end-users/get-end-user-info
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
+- aid: dify:dify-human-input-api
+  name: Dify Human Input API
+  description: Endpoints for resuming paused workflows that require human input. 2 operation(s) from the
+    Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/human-input/get-human-input-form
+  baseURL: https://api.dify.ai/v1
+  tags:
+  - Human In The Loop
+  - Workflows
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-human-input-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/human-input/get-human-input-form
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
+- aid: dify:dify-documents-api
+  name: Dify Documents API
+  description: Operations for creating, updating, and managing documents within a knowledge base. 12 operation(s)
+    from the Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/documents/list-documents
+  baseURL: https://api.dify.ai/v1
+  tags:
+  - Documents
+  - Knowledge Management
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-documents-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/documents/list-documents
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
+- aid: dify:dify-chunks-api
+  name: Dify Chunks API
+  description: Operations for managing document chunks and child chunks. 9 operation(s) from the Dify
+    Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/chunks/list-chunks
+  baseURL: https://api.dify.ai/v1
+  tags:
+  - Chunks
+  - Knowledge Management
+  - RAG
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-chunks-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/chunks/list-chunks
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
+- aid: dify:dify-tags-api
+  name: Dify Knowledge Tags API
+  description: Operations for managing knowledge base tags and tag bindings. 7 operation(s) from the Dify
+    Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/knowledge-bases/list-knowledge-bases
+  baseURL: https://api.dify.ai/v1
+  tags:
+  - Tags
+  - Knowledge Management
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-tags-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/knowledge-bases/list-knowledge-bases
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
+- aid: dify:dify-metadata-api
+  name: Dify Metadata API
+  description: Operations for managing knowledge base metadata fields and document metadata values. 7
+    operation(s) from the Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/knowledge-bases/list-knowledge-bases
+  baseURL: https://api.dify.ai/v1
+  tags:
+  - Metadata
+  - Knowledge Management
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-metadata-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/knowledge-bases/list-knowledge-bases
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
+- aid: dify:dify-models-api
+  name: Dify Models API
+  description: Operations for retrieving available models. 1 operation(s) from the Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/knowledge-bases/list-knowledge-bases
+  baseURL: https://api.dify.ai/v1
+  tags:
+  - Models
+  - Artificial Intelligence
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-models-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/knowledge-bases/list-knowledge-bases
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
+- aid: dify:dify-knowledge-pipeline-api
+  name: Dify Knowledge Pipeline API
+  description: Operations for managing and running knowledge pipelines, including datasource plugins and
+    pipeline execution. 4 operation(s) from the Dify Service API.
+  humanURL: https://docs.dify.ai/en/api-reference/knowledge-bases/list-knowledge-bases
+  baseURL: https://api.dify.ai/v1
+  tags:
+  - Pipelines
+  - Knowledge Management
+  properties:
+  - type: OpenAPI
+    url: openapi/dify-knowledge-pipeline-api-openapi.yml
+  - type: APIReference
+    url: https://docs.dify.ai/en/api-reference/knowledge-bases/list-knowledge-bases
+  image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
 name: Dify
 tags:
-  - Artificial Intelligence
-  - Backend-as-a-Service
-  - LLMOps
+- Artificial Intelligence
+- LLMOps
+- Backend-as-a-Service
+- Agents
+- Workflows
+- Knowledge Management
+- RAG
+- Model Context Protocol
+- Low Code
+- Open Source
 tags_raw:
-  - Artificial Intelligence
-  - Backend-As-A-Service
-  - LLMOps
+- Artificial Intelligence
+- LLMOps
+- Backend-As-A-Service
+- Agents
+- Workflows
+- Knowledge Management
+- RAG
+- Model Context Protocol
+- Low Code
+- Open Source
 type: Index
 deliveryModel:
-  model: saas
-  open_source: false
+  model: saas+self-hosted
+  open_source: true
   commercial: true
   callable_host: true
-  label: Hosted service · you call their endpoint
+  label: Hosted service or self-hosted · open-source core with a commercial cloud and enterprise edition
   confidence: high
   source:
   - openapi
   - pricing
-  generated: '2026-08-28'
+  - github
+  generated: '2026-09-06'
   method: derived
+  note: 'Corrected 2026-09-06: open_source was recorded as false. Dify ships a free, self-deployable Community
+    Edition under the Dify Open Source License (github.com/langgenius/dify, 154k stars) alongside Dify
+    Cloud and a commercial Enterprise edition; the pricing page lists all three.'
 accessModel:
   pricing: freemium
   onboarding: self-serve
-  trial: false
+  trial: true
   try_now: true
   public: false
   label: Freemium · Self-serve signup
@@ -109,65 +350,146 @@ accessModel:
   - plans
   - authentication
   - security
-  generated: '2026-09-03'
+  - pricing
+  generated: '2026-09-06'
   method: derived
+  note: Free "Sandbox" tier with 200 message credits and 5,000 API requests/month; self-serve signup at
+    cloud.dify.ai/signup. API access requires an account-minted key, so no operation is callable anonymously.
 image: https://kinlane-images.s3.amazonaws.com/shared/apis-json/icons/dify.png
 access: 3rd-Party
 created: '2025-02-08'
-modified: '2026-04-28'
+modified: '2026-09-06'
 position: Consuming
-description: >-
-  Dify is an open-source platform for building AI applications. We combine Backend-as-a-Service
-  and LLMOps to streamline the development of generative AI solutions, making it accessible
-  to both developers and non-technical innovators.
+description: Dify is an open-source platform for building AI applications, combining Backend-as-a-Service
+  and LLMOps to streamline the development of generative AI solutions for developers and non-technical
+  innovators alike. Teams build agentic workflows, chatflows, agents and RAG knowledge pipelines on a
+  visual canvas, then publish each one as a web app, an embeddable widget, a REST API or an MCP server.
+  Dify is operated by Langgenius, Inc. and ships as Dify Cloud, a self-hosted Community Edition and a
+  commercial Enterprise edition.
 maintainers:
-  - FN: Kin Lane
-    email: kin@apievangelist.com
+- FN: Kin Lane
+  email: kin@apievangelist.com
 specificationVersion: '0.23'
 common:
-  - type: AgenticAccess
-    url: agentic-access/dify-agentic-access.yml
-  - type: TrustCenter
-    url: security/dify-trust-center.yml
-  - type: DomainSecurity
-    url: security/dify-domain-security.yml
-  - type: Authentication
-    url: authentication/dify-authentication.yml
-  - type: GitHubOrganization
-    url: https://github.com/langgenius
-  - type: LinkedIn
-    url: https://www.linkedin.com/company/langgenius
-  - name: Dify.AI � The Innovation Engine for Generative AI Applications
-    description: 'null'
-    url: https://dify.ai/
-    type: Website
-  - name: Dify AI � Plans and Pricing
-    description: 'null'
-    url: https://dify.ai/pricing
-    type: Pricing
-  - name: Dify Marketplace
-    description: 'null'
-    url: https://marketplace.dify.ai/
-    type: Marketplace
-  - name: Welcome to Dify | Dify
-    description: 'null'
-    url: https://docs.dify.ai/
-    type: Documentation
-  - name: Dify Blog
-    description: 'null'
-    url: https://dify.ai/blog
-    type: Blog
-  - name: Roadmap - Dify.AI
-    description: 'null'
-    url: https://roadmap.dify.ai/roadmap
-    type: RoadMap
-  - name: Dify.AI Terms of Service - Dify
-    description: 'null'
-    url: https://dify.ai/terms
-    type: TermsOfService
-  - name: Privacy Policy � Dify.AI
-    description: 'null'
-    url: https://dify.ai/privacy
-    type: PrivacyPolicy
-  - type: LlmsText
-    url: https://docs.dify.ai/llms.txt
+- type: OpenAPI
+  url: openapi/_original/dify-service-api-openapi.json
+- type: Overlay
+  url: overlays/dify-service-api-overlay.yaml
+- type: Authentication
+  url: authentication/dify-authentication.yml
+- type: Conventions
+  url: conventions/dify-conventions.yml
+- type: ErrorCatalog
+  url: errors/dify-problem-types.yml
+- type: DataModel
+  url: data-model/dify-data-model.yml
+- type: Lifecycle
+  url: lifecycle/dify-lifecycle.yml
+- type: ChangeLog
+  url: changelog/dify-changelog.yml
+- type: StatusPage
+  url: https://status.dify.ai/
+- type: Conformance
+  url: conformance/dify-conformance.yml
+- type: Compliance
+  url: conformance/dify-conformance.yml
+- type: TrustCenter
+  url: security/dify-trust-center.yml
+- type: Security
+  url: security/dify-vulnerability-disclosure.yml
+- type: VulnerabilityDisclosure
+  url: security/dify-vulnerability-disclosure.yml
+- type: DomainSecurity
+  url: security/dify-domain-security.yml
+- type: Packages
+  url: packages/dify-packages.yml
+- type: SDKs
+  url: packages/dify-packages.yml
+- type: CLI
+  url: cli/dify-cli.yml
+- type: Components
+  url: components/dify-components.yml
+- type: Sandbox
+  url: sandbox/dify-sandbox.yml
+- type: Plans
+  url: plans/dify-plans-pricing.yml
+- type: RateLimits
+  url: rate-limits/dify-rate-limits.yml
+- type: FinOps
+  url: finops/dify-finops.yml
+- type: Webhooks
+  url: asyncapi/dify-events.yml
+- type: MCPServer
+  url: mcp/dify-mcp.yml
+- type: ToolCrosswalk
+  url: mcp/dify-tool-crosswalk.yml
+- type: AgentCard
+  url: a2a/dify-a2a.yml
+- type: AgentSkill
+  url: skills/_index.yml
+- type: WellKnown
+  url: well-known/dify-well-known.yml
+- type: AgenticAccess
+  url: agentic-access/dify-agentic-access.yml
+- type: LLMsTxt
+  url: llms/dify-llms.txt
+- type: Website
+  name: Dify.AI — The Innovation Engine for Generative AI Applications
+  url: https://dify.ai/
+- type: DeveloperPortal
+  name: Dify Documentation
+  url: https://docs.dify.ai/
+- type: Documentation
+  name: Welcome to Dify
+  url: https://docs.dify.ai/
+- type: APIReference
+  name: Dify API Reference
+  url: https://docs.dify.ai/en/api-reference
+- type: GettingStarted
+  name: Get Started with the Dify API
+  url: https://docs.dify.ai/en/api-reference/guides/get-started
+- type: LlmsText
+  name: Dify Docs llms.txt
+  url: https://docs.dify.ai/llms.txt
+- type: Pricing
+  name: Dify AI — Plans and Pricing
+  url: https://dify.ai/pricing
+- type: SignUp
+  name: Sign up for Dify Cloud
+  url: https://cloud.dify.ai/signup
+- type: Login
+  name: Sign in to Dify Cloud
+  url: https://cloud.dify.ai/signin
+- type: TermsOfService
+  name: Dify.AI Terms of Service
+  url: https://dify.ai/legal/terms-of-service
+- type: PrivacyPolicy
+  name: Dify.AI Privacy Policy
+  url: https://dify.ai/legal/privacy-policy
+- type: Support
+  name: Dify Discord community
+  url: https://discord.gg/FngNHpbcY7
+- type: Community
+  name: Dify GitHub Discussions
+  url: https://github.com/langgenius/dify/discussions
+- type: Blog
+  name: Dify Blog
+  url: https://dify.ai/blog
+- type: RoadMap
+  name: Dify Roadmap
+  url: https://roadmap.dify.ai/roadmap
+- type: Marketplace
+  name: Dify Marketplace
+  url: https://marketplace.dify.ai/
+- type: GitHubOrganization
+  url: https://github.com/langgenius
+- type: LinkedIn
+  url: https://www.linkedin.com/company/langgenius
+- type: Twitter
+  name: '@dify_ai'
+  url: https://x.com/dify_ai
+x-enrichment:
+  date: '2026-09-06'
+  status: enriched
+  artifacts_added: 40
+  pass: local-v3

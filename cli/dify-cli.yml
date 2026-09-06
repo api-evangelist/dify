@@ -1,0 +1,52 @@
+generated: '2026-09-06'
+method: searched
+source: >-
+  https://github.com/langgenius/homebrew-dify,
+  https://github.com/langgenius/dify-plugin-daemon
+description: >-
+  Dify ships one first-party command-line tool, named `dify`. It is a plugin-development CLI, not a
+  client for the Service API — it scaffolds, develops, signs and packages Dify Marketplace plugins.
+  There is no CLI that calls chat, workflow or knowledge endpoints.
+name: dify
+purpose: Dify plugin development
+scope: plugin-tooling
+covers_service_api: false
+version: '0.6.10'
+released: '2026-08-07'
+source_repo: https://github.com/langgenius/dify-plugin-daemon
+tap_repo: https://github.com/langgenius/homebrew-dify
+install:
+  - method: homebrew
+    command: brew install langgenius/dify/dify
+    note: Taps langgenius/dify automatically. `brew tap langgenius/dify && brew install dify` is equivalent.
+  - method: direct-binary
+    url: https://github.com/langgenius/dify-plugin-daemon/releases
+    note: >-
+      Prebuilt binaries are published per release for darwin/linux on amd64 and arm64, plus
+      windows amd64/arm64. The Homebrew formula pins SHA-256 checksums for the four Unix builds.
+    artifacts:
+      - dify-plugin-darwin-amd64
+      - dify-plugin-darwin-arm64
+      - dify-plugin-linux-amd64
+      - dify-plugin-linux-arm64
+      - dify-plugin-slim-linux-amd64
+      - dify-plugin-slim-linux-arm64
+      - dify-plugin-windows-amd64.exe
+      - dify-plugin-windows-arm64.exe
+platforms: [macOS, Linux, Windows]
+architectures: [amd64, arm64]
+verify: dify version
+commands:
+  note: >-
+    The published README describes the command surface as scaffolding, developing, signing and
+    packaging plugins. The full command tree is not enumerated in a published reference page, so no
+    command list is recorded here rather than inventing one — run `dify --help` against the binary
+    to enumerate it.
+  documented_capabilities:
+    - scaffold a new plugin
+    - develop and run a plugin locally
+    - sign a plugin
+    - package a plugin for the Marketplace
+related:
+  packages: packages/dify-packages.yml
+  marketplace: https://marketplace.dify.ai/

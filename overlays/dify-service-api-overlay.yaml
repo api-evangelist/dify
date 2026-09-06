@@ -1,0 +1,143 @@
+overlay: 1.0.0
+info:
+  title: API Evangelist enrichment overlay — Dify Service API
+  version: 1.0.0
+extends: ../openapi/_original/dify-service-api-openapi.json
+x-provenance:
+  generated: '2026-09-06'
+  method: generated
+  source: >-
+    Derived from API Evangelist artifacts in this repository — conventions/dify-conventions.yml,
+    errors/dify-problem-types.yml, rate-limits/dify-rate-limits.yml, lifecycle/dify-lifecycle.yml,
+    authentication/dify-authentication.yml and asyncapi/dify-events.yml.
+  note: >-
+    Captures our enhancements without mutating the harvested specification. Every statement here is
+    grounded in Dify's own published documentation; none of it invents API behaviour.
+actions:
+  - target: $.info
+    description: Record the provenance of the harvested contract and where it was found.
+    update:
+      x-api-evangelist:
+        harvested_from: https://docs.dify.ai/en/api-reference/openapi_service.json
+        discovered_via: https://docs.dify.ai/llms.txt
+        harvested: '2026-09-06'
+        provider: Dify (Langgenius, Inc.)
+        base_url_cloud: https://api.dify.ai/v1
+        sibling_spec: https://docs.dify.ai/en/api-reference/openapi_knowledge.json
+        sibling_note: >-
+          The separately published Knowledge API specification is a strict subset of this document —
+          all 46 of its operations appear here — so it is archived rather than registered.
+  - target: $.info
+    description: Record the cross-cutting runtime semantics an agent needs before it calls anything.
+    update:
+      x-conventions:
+        subject_identity_param: user
+        pagination: page/limit on knowledge and log listings; first_id/last_id on conversation and message listings
+        idempotency:
+          supported: false
+          coverage: none
+          note: No Idempotency-Key or client-supplied request key is documented anywhere in this API.
+        reversibility:
+          grade: documented
+          reversible: [archive/un_archive on documents, disable/enable on documents, stop generation while in flight]
+          irreversible: [deleteConversation, deleteDataset, deleteDocument, deleteSegment, deleteChildChunk, deleteAnnotation, deleteMetadataField, deleteKnowledgeTag]
+          windows_published: false
+        dry_run: false
+  - target: $.info
+    description: Record the error envelope, which is not RFC 9457.
+    update:
+      x-error-envelope:
+        media_type: application/json
+        rfc9457: false
+        fields: [code, message, status]
+        catalog: errors/dify-problem-types.yml
+        docs: https://docs.dify.ai/en/api-reference/guides/errors
+  - target: $.info
+    description: Record rate-limit reality — there are limits, and there are no headers announcing them.
+    update:
+      x-rate-limits:
+        headers: none
+        exhaustion_status: [429, 403]
+        exhaustion_codes: [too_many_requests, rate_limit_error, forbidden]
+        published_limits: rate-limits/dify-rate-limits.yml
+        note: >-
+          No X-RateLimit-*, RateLimit-* or Retry-After header is documented. A client cannot see how
+          close it is to a limit before it hits one.
+  - target: $.info
+    description: Record the event surface, which has no AsyncAPI document.
+    update:
+      x-event-surface:
+        outbound: Server-Sent Events on generation endpoints (27 documented event types)
+        inbound: hosted webhook trigger URLs per Workflow app
+        outbound_webhooks: false
+        asyncapi_published: false
+        catalog: asyncapi/dify-events.yml
+  - target: $.info
+    description: Record lifecycle facts the specification does not carry.
+    update:
+      x-lifecycle:
+        status_page: https://status.dify.ai/
+        roadmap: https://roadmap.dify.ai/roadmap
+        changelog: https://github.com/langgenius/dify/releases
+        deprecation_policy_published: false
+        sunset_header: false
+        sla_published: false
+  - target: $.components.securitySchemes.ApiKeyAuth
+    description: Make the two key families explicit — they are different credentials with different blast radii.
+    update:
+      x-key-families:
+        - name: app API key
+          scope: one published app
+          minted: inside the app in the Dify console
+        - name: knowledge base API key
+          scope: every knowledge base visible to the creating account
+          minted: Knowledge → Service API
+          caution: >-
+            Broader than an app key. Dify's own specification calls this out as a data-security
+            concern.
+  - target: $.paths['/datasets/{dataset_id}'].delete
+    description: Flag a permanent, cascading delete so an agent does not treat it as recoverable.
+    update:
+      x-agentic-access:
+        consequence: destructive
+        cascade: all documents in the knowledge base
+        reversible: false
+        confirmation: required
+  - target: $.paths['/datasets/{dataset_id}/documents/{document_id}'].delete
+    description: Flag a permanent, cascading delete.
+    update:
+      x-agentic-access:
+        consequence: destructive
+        cascade: all chunks of the document
+        reversible: false
+        confirmation: required
+        alternative: >-
+          batchUpdateDocumentStatus with action=archive removes the document from retrieval and can
+          be undone with action=un_archive.
+  - target: $.paths['/conversations/{conversation_id}'].delete
+    description: Flag a permanent delete.
+    update:
+      x-agentic-access:
+        consequence: destructive
+        reversible: false
+        confirmation: required
+  - target: $.paths['/datasets/{dataset_id}/documents/status/{action}'].patch
+    description: Name the reversal pairing explicitly so an agent can plan an undo.
+    update:
+      x-reversibility:
+        pairs:
+          - action: archive
+            reverses_with: un_archive
+          - action: disable
+            reverses_with: enable
+        window: null
+        window_note: No time limit is published on un-archiving.
+  - target: $.paths['/datasets/{dataset_id}/documents/{document_id}/update-by-file'].post
+    description: Carry the deprecation forward as structured data rather than prose.
+    update:
+      x-deprecation:
+        deprecated: true
+        replacement_operation_id: updateDocument
+        replacement_path: /datasets/{dataset_id}/documents/{document_id}
+        sunset: null
+        sunset_note: No removal date is published.

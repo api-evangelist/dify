@@ -1,0 +1,177 @@
+generated: '2026-09-06'
+method: derived
+source: openapi/_original/dify-service-api-openapi.json
+description: >-
+  Entity-relationship graph derived from the 64 paths, 82 operations and 128 component schemas of
+  the harvested Dify Service API OpenAPI. Relationships are read from path nesting and from
+  *_id reference fields; nothing is inferred beyond what the contract states. The graph has two
+  largely separate halves that share only the API-key boundary: an APPLICATION runtime (apps,
+  conversations, messages, workflow runs) and a KNOWLEDGE store (datasets, documents, chunks).
+id_format: 'UUID on knowledge entities (declared format uuid in the spec); opaque strings elsewhere'
+key_boundary: >-
+  An app API key reaches the application half for exactly one app. A knowledge-base API key reaches
+  the knowledge half for every knowledge base visible to the creating account. No operation crosses
+  from one key family to the other.
+entities:
+  - name: App
+    description: A published Dify application. Implicit — the app is identified by the API key, never by an id in a path.
+    schemas: [AppInfoResponse, AppParametersResponse, AppMetaResponse, WebAppSettingsResponse]
+    operations: [getChatAppInfo, getChatAppParameters, getChatAppMeta, getChatWebAppSettings]
+    relationships:
+      - has_many: Conversation
+      - has_many: WorkflowRun
+      - has_many: Annotation
+      - has_many: Feedback
+  - name: EndUser
+    id_field: end_user_id
+    description: An end user of an app, identified by the caller-supplied `user` value.
+    schemas: [EndUserDetail, EndUserSummary]
+    operations: [getEndUserChat]
+    relationships:
+      - has_many: Conversation
+        via: user
+  - name: Conversation
+    id_field: conversation_id
+    schemas: [ConversationListItem, ConversationsListResponse]
+    operations: [getConversationsList, renameConversation, deleteConversation]
+    relationships:
+      - belongs_to: App
+      - belongs_to: EndUser
+        via: user
+      - has_many: Message
+      - has_many: ConversationVariable
+  - name: Message
+    id_field: message_id
+    schemas: [ConversationMessageItem, ConversationHistoryResponse, ChatCompletionResponse, CompletionResponse]
+    operations: [sendChatMessage, stopChatMessageGeneration, getSuggestedQuestions, getConversationHistory, createCompletionMessage, stopGenerate]
+    relationships:
+      - belongs_to: Conversation
+        via: conversation_id
+      - has_many: MessageFile
+      - has_one: Feedback
+      - has_many: AgentThought
+  - name: ConversationVariable
+    id_field: variable_id
+    schemas: [ConversationVariableItem, ConversationVariablesResponse]
+    operations: [getConversationVariables, updateChatConversationVariable]
+    relationships:
+      - belongs_to: Conversation
+        via: conversation_id
+  - name: MessageFile
+    id_field: file_id
+    schemas: [MessageFileItem, FileUploadResponse, InputFileObject]
+    operations: [uploadChatFile, previewChatFile]
+    relationships:
+      - belongs_to: Message
+  - name: Feedback
+    schemas: [FeedbackItem, MessageFeedbackRequest, AppFeedbacksResponse]
+    operations: [postChatMessageFeedback, getChatAppFeedbacks]
+    relationships:
+      - belongs_to: Message
+        via: message_id
+  - name: Annotation
+    id_field: annotation_id
+    schemas: [AnnotationItem, AnnotationListResponse, CreateAnnotationRequest, UpdateAnnotationRequest]
+    operations: [createAnnotation, getAnnotationList, updateAnnotation, deleteAnnotation, initialAnnotationReplySettings, getInitialAnnotationReplySettingsStatus]
+    relationships:
+      - belongs_to: App
+      - has_one: AnnotationReplyJob
+        via: job_id
+  - name: WorkflowRun
+    id_field: workflow_run_id
+    schemas: [WorkflowRunDetailResponse, WorkflowRunSummary, WorkflowBlockingResponse, WorkflowFinishedData]
+    operations: [executeWorkflow, runWorkflowById, stopWorkflowTaskGeneration, getWorkflowRunDetail, getWorkflowLogs, streamWorkflowEvents]
+    relationships:
+      - belongs_to: App
+      - has_many: WorkflowNodeExecution
+        via: node_id
+      - has_one: HumanInputForm
+        via: form_token
+    note: >-
+      `task_id` addresses the in-flight generation and is what the stop endpoints take;
+      `workflow_run_id` names the persistent run record. They are different identifiers for the same
+      run at different lifetimes.
+  - name: WorkflowLog
+    schemas: [WorkflowLogItem, WorkflowLogsResponse]
+    operations: [getWorkflowLogs]
+    relationships:
+      - belongs_to: WorkflowRun
+  - name: HumanInputForm
+    id_field: form_token
+    schemas: [HumanInputFormDefinition, HumanInputContent, HumanInputFormSubmissionData, FormInput, FormInputDefault]
+    operations: [getChatflowHumanInputForm, submitChatflowHumanInputForm]
+    relationships:
+      - belongs_to: WorkflowRun
+    note: Carries an expiration_time; an unanswered form times out and the run resumes as timed out.
+  - name: Dataset
+    aka: Knowledge Base
+    id_field: dataset_id
+    schemas: [Dataset, RetrievalModel]
+    operations: [createDataset, listDatasets, getDatasetDetail, updateDataset, deleteDataset, retrieveSegments]
+    relationships:
+      - has_many: Document
+      - has_many: MetadataField
+      - has_many: KnowledgeTag
+        via: tag_ids
+      - has_one: RetrievalModel
+  - name: Document
+    id_field: document_id
+    schemas: [Document, ParagraphControl, ParagraphControlWrapper]
+    operations: [createDocumentFromText, createDocumentFromFile, listDocuments, getDocumentDetail, deleteDocument, updateDocument, downloadDocument, getDocumentIndexingStatus, updateDocumentByText, updateDocumentByFile, downloadDocumentsZip, batchUpdateDocumentStatus]
+    relationships:
+      - belongs_to: Dataset
+        via: dataset_id
+      - has_many: Segment
+      - has_many: DocumentMetadataValue
+    lifecycle:
+      indexing_states: [waiting, parsing, cleaning, splitting, indexing, completed, error]
+      status_actions: [enable, disable, archive, un_archive]
+      batch_handle: batch
+  - name: Segment
+    aka: Chunk
+    id_field: segment_id
+    schemas: [Segment]
+    operations: [createSegments, listSegments, getSegmentDetail, updateSegment, deleteSegment]
+    relationships:
+      - belongs_to: Document
+        via: document_id
+      - has_many: ChildChunk
+  - name: ChildChunk
+    id_field: child_chunk_id
+    schemas: [ChildChunk]
+    operations: [createChildChunk, getChildChunks, updateChildChunk, deleteChildChunk]
+    relationships:
+      - belongs_to: Segment
+        via: segment_id
+  - name: MetadataField
+    id_field: metadata_id
+    operations: [createMetadataField, listMetadataFields, updateMetadataField, deleteMetadataField, getBuiltInMetadataFields, toggleBuiltInMetadataField, batchUpdateDocumentMetadata]
+    relationships:
+      - belongs_to: Dataset
+        via: dataset_id
+      - has_many: DocumentMetadataValue
+    note: Built-in fields are toggled per knowledge base; custom fields are created per knowledge base.
+  - name: KnowledgeTag
+    operations: [createKnowledgeTag, getKnowledgeTags, updateKnowledgeTag, deleteKnowledgeTag, bindTagsToDataset, unbindTagFromDataset, queryDatasetTags]
+    relationships:
+      - has_many: Dataset
+        via: binding
+    note: Many-to-many with Dataset through explicit binding and unbinding operations.
+  - name: KnowledgePipeline
+    operations: [uploadPipelineFile, listDatasourcePlugins, runDatasourceNode, runPipeline]
+    relationships:
+      - belongs_to: Dataset
+        via: dataset_id
+      - has_many: DatasourcePlugin
+        via: node_id
+  - name: Model
+    operations: [getAvailableModels]
+    scope: workspace
+    note: Listed by model_type for the current workspace; not owned by an app or a dataset.
+stream_event_schemas:
+  count: 60
+  note: >-
+    Nearly half the component schemas are SSE event envelopes (StreamEvent*, WorkflowStreamEvent*,
+    CompletionStreamEvent*, Chunk*Event). They model the event stream rather than stored entities,
+    and are catalogued in asyncapi/dify-events.yml.
+subway: null

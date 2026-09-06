@@ -1,0 +1,66 @@
+generated: '2026-09-06'
+method: searched
+source: >-
+  https://status.dify.ai/, https://github.com/langgenius/dify/releases,
+  https://roadmap.dify.ai/roadmap, https://dify.ai/pricing,
+  openapi/_original/dify-service-api-openapi.json
+description: >-
+  Versioning, deprecation and operational-transparency posture for the Dify Service API. Dify runs a
+  public status page and a public roadmap and ships dated releases, but publishes no written
+  deprecation policy and emits no Sunset or Deprecation headers.
+versioning:
+  scheme: path-embedded major version
+  current: v1
+  base_url: https://api.dify.ai/v1
+  policy_published: false
+  note: >-
+    No version header, no dated pinning, and no published statement of how long v1 is supported.
+    Platform releases are versioned separately (semver on the open-source distribution, 1.17.0 on
+    2026-09-01).
+deprecation:
+  policy_published: false
+  rfc8594_headers: false
+  sunset_header: false
+  deprecation_header: false
+  note: >-
+    Checked, nothing to record. No deprecation policy page exists, and neither Sunset nor
+    Deprecation appears in the harvested OpenAPI or the API reference. Deprecation is communicated
+    inline, one operation at a time, in the operation's own description.
+  deprecated_operations:
+    - operationId: updateDocumentByFile
+      path: /datasets/{dataset_id}/documents/{document_id}/update-by-file
+      method: post
+      flagged_in_spec: true
+      replacement: updateDocument
+      sunset_date: null
+      note: >-
+        Marked `deprecated: true` in the OpenAPI and told to use Update Document instead. No removal
+        date is stated.
+status_page:
+  url: https://status.dify.ai/
+  http_status: 200
+  components:
+    - Dify Cloud
+  feed: RSS available from the status page
+  note: First-party status page operated by Langgenius, Inc. Times shown in UTC.
+roadmap:
+  url: https://roadmap.dify.ai/roadmap
+  http_status: 200
+  public: true
+sla:
+  published: false
+  note: >-
+    No SLA is published for Dify Cloud's paid tiers. The pricing page offers "Negotiated SLAs by
+    Dify Partners" on the Enterprise tier only, which is a contract term rather than a published
+    commitment.
+support:
+  channels:
+    - name: GitHub Issues and Discussions
+      url: https://github.com/langgenius/dify/issues
+    - name: Support
+      url: https://dify.ai/pricing
+      note: Linked from the site footer as "Support".
+release_channel:
+  name: GitHub Releases
+  url: https://github.com/langgenius/dify/releases
+  artifact: changelog/dify-changelog.yml

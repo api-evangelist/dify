@@ -1,0 +1,2377 @@
+openapi: 3.0.1
+info:
+  title: Dify Documents API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
+    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  version: 1.0.0
+servers:
+- url: https://{api_base_url}
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
+    API base URL.
+  variables:
+    api_base_url:
+      default: api.dify.ai/v1
+      description: Host and path of the API base URL, without the `https://` prefix.
+security:
+- ApiKeyAuth: []
+tags:
+- name: Documents
+  description: Operations for creating, updating, and managing documents within a knowledge base.
+paths:
+  /datasets/{dataset_id}/document/create-by-text:
+    post:
+      tags:
+      - Documents
+      summary: Create Document by Text
+      description: Creates a document in a knowledge base from raw text. Indexing runs asynchronously;
+        track it with the returned `batch` ID via [Get Document Indexing Status](/en/api-reference/documents/get-document-indexing-status).
+      operationId: createDocumentFromText
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. From [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              - text
+              properties:
+                name:
+                  type: string
+                  description: Document name.
+                text:
+                  type: string
+                  description: Document text content.
+                indexing_technique:
+                  type: string
+                  enum:
+                  - high_quality
+                  - economy
+                  description: Required when adding the first document to a knowledge base. Subsequent
+                    documents inherit the knowledge base's indexing technique if omitted. `high_quality`
+                    uses embedding models for precise search; `economy` uses keyword-based indexing.
+                doc_form:
+                  type: string
+                  enum:
+                  - text_model
+                  - hierarchical_model
+                  - qa_model
+                  default: text_model
+                  description: '`text_model` for standard text chunking, `hierarchical_model` for parent-child
+                    chunk structure, `qa_model` for question-answer pair extraction.'
+                doc_language:
+                  type: string
+                  default: English
+                  description: Language of the document for processing optimization.
+                process_rule:
+                  type: object
+                  description: Processing rules for chunking.
+                  required:
+                  - mode
+                  properties:
+                    mode:
+                      type: string
+                      enum:
+                      - automatic
+                      - custom
+                      - hierarchical
+                      description: '`automatic` uses built-in rules, `custom` allows manual configuration,
+                        `hierarchical` enables parent-child chunk structure (use with `doc_form: hierarchical_model`).'
+                    rules:
+                      type: object
+                      properties:
+                        pre_processing_rules:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                enum:
+                                - remove_stopwords
+                                - remove_extra_spaces
+                                - remove_urls_emails
+                                description: Rule identifier.
+                              enabled:
+                                type: boolean
+                                description: Whether this preprocessing rule is enabled.
+                        segmentation:
+                          type: object
+                          properties:
+                            separator:
+                              type: string
+                              default: '
+
+                                '
+                              description: Custom separator for splitting text.
+                            max_tokens:
+                              type: integer
+                              description: Maximum token count per chunk.
+                            chunk_overlap:
+                              type: integer
+                              default: 0
+                              description: Token overlap between chunks.
+                retrieval_model:
+                  $ref: '#/components/schemas/RetrievalModel'
+                  description: Controls how chunks are searched and ranked when querying this knowledge
+                    base.
+                embedding_model:
+                  type: string
+                  description: Embedding model name. Use the `model` field from [Get Available Models](/en/api-reference/models/get-available-models)
+                    with `model_type=text-embedding`.
+                embedding_model_provider:
+                  type: string
+                  description: Embedding model provider. Use the `provider` field from [Get Available
+                    Models](/en/api-reference/models/get-available-models) with `model_type=text-embedding`.
+                original_document_id:
+                  type: string
+                  description: Original document ID for versioning. Get it from [List Documents](/en/api-reference/documents/list-documents).
+      responses:
+        '200':
+          description: Document created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document:
+                    $ref: '#/components/schemas/Document'
+                  batch:
+                    type: string
+                    description: Batch ID for tracking indexing progress.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    document:
+                      id: a8e0e5b5-78c6-4130-a5ce-25feb0e0b4ac
+                      position: 1
+                      data_source_type: upload_file
+                      data_source_info:
+                        upload_file_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      data_source_detail_dict:
+                        upload_file:
+                          id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                          name: guide.txt
+                          size: 2048
+                          extension: txt
+                          mime_type: text/plain
+                          created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                          created_at: 1741267200
+                      dataset_process_rule_id: e1f2a3b4-c5d6-7890-ef12-345678901234
+                      name: guide.txt
+                      created_from: api
+                      created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      created_at: 1741267200
+                      tokens: 0
+                      indexing_status: indexing
+                      error: null
+                      enabled: true
+                      disabled_at: null
+                      disabled_by: null
+                      archived: false
+                      display_status: indexing
+                      word_count: 0
+                      hit_count: 0
+                      doc_form: text_model
+                      doc_metadata: []
+                      summary_index_status: null
+                      need_summary: false
+                    batch: '20250306150245647595'
+        '400':
+          description: '- `provider_not_initialize` : No model provider credentials are configured for
+            the workspace.
+
+            - `invalid_param` : `indexing_technique` is required when adding the first document, or `doc_form`
+            is invalid.'
+          content:
+            application/json:
+              examples:
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No valid model provider credentials found. Please go to Settings -> Model
+                      Provider to complete your provider credentials.
+                invalid_param_indexing:
+                  summary: invalid_param (indexing_technique)
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: indexing_technique is required.
+        '403':
+          description: '- `forbidden` : Knowledge base API access is not enabled.
+
+            - `forbidden` : The capacity of the vector space has reached the limit of your subscription.
+
+            - `forbidden` : The number of documents has reached the limit of your subscription.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (vector space)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: The capacity of the vector space has reached the limit of your subscription.
+                forbidden_3:
+                  summary: forbidden (documents limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: The number of documents has reached the limit of your subscription.
+                forbidden_4:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '`not_found` : Knowledge base not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+        '503':
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
+            the Dify Cloud Sandbox plan only; retry the request later.'
+          content:
+            application/json:
+              examples:
+                service_unavailable:
+                  summary: service_unavailable
+                  value:
+                    status: 503
+                    code: service_unavailable
+                    message: Unable to verify vector space usage right now. Please try again later.
+      x-mint:
+        href: /en/api-reference/documents/create-document-by-text
+        metadata:
+          title: Create Document by Text
+          sidebarTitle: Create Document by Text
+  /datasets/{dataset_id}/document/create-by-file:
+    post:
+      tags:
+      - Documents
+      summary: Create Document by File
+      description: Creates a document in a knowledge base from an uploaded file. Common formats such as
+        PDF, TXT, and DOCX are supported. Indexing runs asynchronously; track it with the returned `batch`
+        ID via [Get Document Indexing Status](/en/api-reference/documents/get-document-indexing-status).
+      operationId: createDocumentFromFile
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. From [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              required:
+              - file
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 'File to upload, capped at 15 MB by default.
+
+
+                    Self-hosted deployments adjust the limit with the `UPLOAD_FILE_SIZE_LIMIT` [environment
+                    variable](/en/self-host/deploy/configuration/environments). On Dify Cloud, Professional
+                    and Team plans raise the cap to 50 MB.'
+                data:
+                  type: string
+                  description: JSON string containing configuration. Accepts the same fields as [Create
+                    Document by Text](/en/api-reference/documents/create-document-by-text) (`indexing_technique`,
+                    `doc_form`, `doc_language`, `process_rule`, `retrieval_model`, `embedding_model`,
+                    `embedding_model_provider`) except `name` and `text`.
+                  example: '{"indexing_technique":"high_quality","doc_form":"text_model","doc_language":"English","process_rule":{"mode":"automatic"}}'
+      responses:
+        '200':
+          description: Document created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document:
+                    $ref: '#/components/schemas/Document'
+                  batch:
+                    type: string
+                    description: Batch ID for tracking indexing progress.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    document:
+                      id: a8e0e5b5-78c6-4130-a5ce-25feb0e0b4ac
+                      position: 1
+                      data_source_type: upload_file
+                      data_source_info:
+                        upload_file_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      data_source_detail_dict:
+                        upload_file:
+                          id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                          name: guide.txt
+                          size: 2048
+                          extension: txt
+                          mime_type: text/plain
+                          created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                          created_at: 1741267200
+                      dataset_process_rule_id: e1f2a3b4-c5d6-7890-ef12-345678901234
+                      name: guide.txt
+                      created_from: api
+                      created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      created_at: 1741267200
+                      tokens: 0
+                      indexing_status: indexing
+                      error: null
+                      enabled: true
+                      disabled_at: null
+                      disabled_by: null
+                      archived: false
+                      display_status: indexing
+                      word_count: 0
+                      hit_count: 0
+                      doc_form: text_model
+                      doc_metadata: []
+                      summary_index_status: null
+                      need_summary: false
+                    batch: '20250306150245647595'
+        '400':
+          description: '- `no_file_uploaded` : No file was provided in the request.
+
+            - `too_many_files` : Only one file is allowed per request.
+
+            - `filename_not_exists_error` : The uploaded file has no filename.
+
+            - `provider_not_initialize` : No model provider credentials are configured for the workspace.
+
+            - `invalid_param` : The knowledge base is external, `indexing_technique` is required, or `process_rule`
+            is missing.'
+          content:
+            application/json:
+              examples:
+                no_file_uploaded:
+                  summary: no_file_uploaded
+                  value:
+                    status: 400
+                    code: no_file_uploaded
+                    message: Please upload your file.
+                too_many_files:
+                  summary: too_many_files
+                  value:
+                    status: 400
+                    code: too_many_files
+                    message: Only one file is allowed.
+                filename_not_exists_error:
+                  summary: filename_not_exists_error
+                  value:
+                    status: 400
+                    code: filename_not_exists_error
+                    message: The specified filename does not exist.
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No valid model provider credentials found. Please go to Settings -> Model
+                      Provider to complete your provider credentials.
+                invalid_param_external:
+                  summary: invalid_param (external)
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: External datasets are not supported.
+        '403':
+          description: '- `forbidden` : Knowledge base API access is not enabled.
+
+            - `forbidden` : The capacity of the vector space has reached the limit of your subscription.
+
+            - `forbidden` : The number of documents has reached the limit of your subscription.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (vector space)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: The capacity of the vector space has reached the limit of your subscription.
+                forbidden_3:
+                  summary: forbidden (documents limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: The number of documents has reached the limit of your subscription.
+                forbidden_4:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '`not_found` : Knowledge base not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+        '413':
+          description: '`file_too_large` : The uploaded file exceeds the maximum size.'
+          content:
+            application/json:
+              examples:
+                file_too_large:
+                  summary: file_too_large
+                  value:
+                    status: 413
+                    code: file_too_large
+                    message: File size exceeded.
+        '503':
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
+            the Dify Cloud Sandbox plan only; retry the request later.'
+          content:
+            application/json:
+              examples:
+                service_unavailable:
+                  summary: service_unavailable
+                  value:
+                    status: 503
+                    code: service_unavailable
+                    message: Unable to verify vector space usage right now. Please try again later.
+      x-mint:
+        href: /en/api-reference/documents/create-document-by-file
+        metadata:
+          title: Create Document by File
+          sidebarTitle: Create Document by File
+  /datasets/{dataset_id}/documents:
+    get:
+      tags:
+      - Documents
+      summary: List Documents
+      description: Returns a paginated list of documents in a knowledge base.
+      operationId: listDocuments
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. From [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: page
+        in: query
+        schema:
+          type: integer
+          default: 1
+        description: Page number.
+      - name: limit
+        in: query
+        schema:
+          type: integer
+          default: 20
+        description: Number of items per page. Server caps at `100`.
+      - name: keyword
+        in: query
+        schema:
+          type: string
+        description: Search keyword to filter by document name.
+      - name: status
+        in: query
+        schema:
+          type: string
+          enum:
+          - queuing
+          - indexing
+          - paused
+          - error
+          - available
+          - disabled
+          - archived
+        description: Filter by display status.
+      responses:
+        '200':
+          description: List of documents.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: Array of document objects.
+                    items:
+                      $ref: '#/components/schemas/Document'
+                  has_more:
+                    type: boolean
+                    description: Whether more items exist on the next page.
+                  limit:
+                    type: integer
+                    description: Number of items per page.
+                  total:
+                    type: integer
+                    description: Total number of matching items.
+                  page:
+                    type: integer
+                    description: Current page number.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    data:
+                    - id: a8e0e5b5-78c6-4130-a5ce-25feb0e0b4ac
+                      position: 1
+                      data_source_type: upload_file
+                      data_source_info:
+                        upload_file_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      data_source_detail_dict:
+                        upload_file:
+                          id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                          name: guide.txt
+                          size: 2048
+                          extension: txt
+                          mime_type: text/plain
+                          created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                          created_at: 1741267200
+                      dataset_process_rule_id: e1f2a3b4-c5d6-7890-ef12-345678901234
+                      name: guide.txt
+                      created_from: api
+                      created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      created_at: 1741267200
+                      tokens: 512
+                      indexing_status: completed
+                      error: null
+                      enabled: true
+                      disabled_at: null
+                      disabled_by: null
+                      archived: false
+                      display_status: available
+                      word_count: 350
+                      hit_count: 0
+                      doc_form: text_model
+                      doc_metadata: []
+                      summary_index_status: null
+                      need_summary: false
+                    has_more: false
+                    limit: 20
+                    total: 1
+                    page: 1
+        '403':
+          description: '`forbidden` : Knowledge base API access is not enabled.'
+          content:
+            application/json:
+              examples:
+                forbidden:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+        '404':
+          description: '`not_found` : Knowledge base not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+      x-mint:
+        href: /en/api-reference/documents/list-documents
+        metadata:
+          title: List Documents
+          sidebarTitle: List Documents
+  /datasets/{dataset_id}/documents/{document_id}:
+    get:
+      tags:
+      - Documents
+      summary: Get Document
+      description: Returns detailed information for a single document.
+      operationId: getDocumentDetail
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. From [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. From [List Documents](/en/api-reference/documents/list-documents).
+      - name: metadata
+        in: query
+        schema:
+          type: string
+          enum:
+          - all
+          - only
+          - without
+          default: all
+        description: '`all` returns all fields including metadata. `only` returns only `id`, `doc_type`,
+          and `doc_metadata`. `without` returns all fields except `doc_metadata`.'
+      responses:
+        '200':
+          description: Document details. The returned fields depend on the `metadata` query parameter.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Document identifier.
+                  position:
+                    type: integer
+                    description: Position index within the knowledge base.
+                  data_source_type:
+                    type: string
+                    description: How the document was uploaded. `upload_file` for file uploads, `notion_import`
+                      for Notion imports.
+                  data_source_info:
+                    type: object
+                    description: Data source details. For file uploads, this detail endpoint returns the
+                      full file object under `upload_file` (the list endpoint returns only `upload_file_id`).
+                    properties:
+                      upload_file:
+                        type: object
+                        description: Uploaded file details. Present when `data_source_type` is `upload_file`.
+                        properties:
+                          id:
+                            type: string
+                            description: File identifier.
+                          name:
+                            type: string
+                            description: Original file name.
+                          size:
+                            type: integer
+                            description: File size in bytes.
+                          extension:
+                            type: string
+                            description: File extension.
+                          mime_type:
+                            type: string
+                            description: File MIME type.
+                          created_by:
+                            type: string
+                            description: ID of the user who uploaded the file.
+                          created_at:
+                            type: integer
+                            description: Unix timestamp of file upload.
+                  dataset_process_rule_id:
+                    type: string
+                    description: ID of the processing rule applied to this document.
+                  dataset_process_rule:
+                    type: object
+                    description: Knowledge-base-level processing rule configuration.
+                  document_process_rule:
+                    type: object
+                    description: Document-level processing rule configuration.
+                  name:
+                    type: string
+                    description: Document name.
+                  created_from:
+                    type: string
+                    description: Origin of the document. `api` for API creation, `web` for UI creation.
+                  created_by:
+                    type: string
+                    description: ID of the user who created the document.
+                  created_at:
+                    type: number
+                    description: Unix timestamp of document creation.
+                  tokens:
+                    type: integer
+                    description: Number of tokens in the document.
+                  indexing_status:
+                    type: string
+                    description: Current indexing status, e.g. `waiting`, `parsing`, `cleaning`, `splitting`,
+                      `indexing`, `completed`, `error`, `paused`.
+                  error:
+                    type: string
+                    nullable: true
+                    description: Error message if indexing failed, `null` otherwise.
+                  enabled:
+                    type: boolean
+                    description: Whether the document is enabled for retrieval.
+                  disabled_at:
+                    type: number
+                    nullable: true
+                    description: Unix timestamp when the document was disabled, `null` if enabled.
+                  disabled_by:
+                    type: string
+                    nullable: true
+                    description: ID of the user who disabled the document, `null` if enabled.
+                  archived:
+                    type: boolean
+                    description: Whether the document is archived.
+                  display_status:
+                    type: string
+                    description: Display-friendly indexing status for the UI.
+                  hit_count:
+                    type: integer
+                    description: Number of times this document has been retrieved.
+                  doc_form:
+                    type: string
+                    description: Document chunking mode. `text_model` for standard text, `hierarchical_model`
+                      for parent-child, `qa_model` for QA pairs.
+                  doc_language:
+                    type: string
+                    description: Language of the document content.
+                  doc_type:
+                    type: string
+                    nullable: true
+                    description: Document type classification, `null` if not set.
+                  doc_metadata:
+                    type: array
+                    description: Custom metadata key-value pairs for this document.
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Metadata field identifier.
+                        name:
+                          type: string
+                          description: Metadata field name.
+                        type:
+                          type: string
+                          description: Metadata field type.
+                        value:
+                          type: string
+                          description: Metadata field value for this document.
+                  completed_at:
+                    type: number
+                    nullable: true
+                    description: Unix timestamp when processing completed, `null` if not yet completed.
+                  updated_at:
+                    type: number
+                    nullable: true
+                    description: Unix timestamp of last update, `null` if never updated.
+                  indexing_latency:
+                    type: number
+                    nullable: true
+                    description: Time taken for indexing in seconds, `null` if not completed.
+                  segment_count:
+                    type: integer
+                    description: Number of chunks in the document.
+                  average_segment_length:
+                    type: number
+                    description: Average character length of chunks.
+                  summary_index_status:
+                    type: string
+                    nullable: true
+                    description: Status of summary indexing, `null` if summary index is not enabled.
+                  need_summary:
+                    type: boolean
+                    description: Whether the document needs summary generation.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    id: a8e0e5b5-78c6-4130-a5ce-25feb0e0b4ac
+                    position: 1
+                    data_source_type: upload_file
+                    data_source_info:
+                      upload_file:
+                        id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                        name: guide.txt
+                        size: 2048
+                        extension: txt
+                        mime_type: text/plain
+                        created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                        created_at: 1741267200
+                    dataset_process_rule_id: e1f2a3b4-c5d6-7890-ef12-345678901234
+                    dataset_process_rule:
+                      id: e1f2a3b4-c5d6-7890-ef12-345678901234
+                      mode: custom
+                    document_process_rule:
+                      mode: custom
+                      rules:
+                        pre_processing_rules: []
+                        segmentation:
+                          separator: '###'
+                          max_tokens: 500
+                          chunk_overlap: 50
+                    name: guide.txt
+                    created_from: api
+                    created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                    created_at: 1741267200
+                    tokens: 512
+                    indexing_status: completed
+                    error: null
+                    enabled: true
+                    disabled_at: null
+                    disabled_by: null
+                    archived: false
+                    display_status: available
+                    hit_count: 0
+                    doc_form: text_model
+                    doc_language: English
+                    doc_type: null
+                    doc_metadata: []
+                    completed_at: 1741267260
+                    updated_at: 1741267260
+                    indexing_latency: 60.0
+                    segment_count: 5
+                    average_segment_length: 70.0
+                    summary_index_status: null
+                    need_summary: false
+        '400':
+          description: '`invalid_metadata` : The `metadata` query parameter value is invalid (must be
+            `all`, `only`, or `without`).'
+          content:
+            application/json:
+              examples:
+                invalid_metadata:
+                  summary: invalid_metadata
+                  value:
+                    status: 400
+                    code: invalid_metadata
+                    message: 'Invalid metadata value: only'
+        '403':
+          description: '- `forbidden` : You do not have permission to access this document.
+
+            - `forbidden` : Knowledge base API access is not enabled.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (no permission)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: No permission.
+                forbidden_2:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+        '404':
+          description: '`not_found` : Document not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+      x-mint:
+        href: /en/api-reference/documents/get-document
+        metadata:
+          title: Get Document
+          sidebarTitle: Get Document
+    delete:
+      tags:
+      - Documents
+      summary: Delete Document
+      description: Permanently deletes a document and all its chunks from the knowledge base.
+      operationId: deleteDocument
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. From [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. From [List Documents](/en/api-reference/documents/list-documents).
+      responses:
+        '204':
+          description: Success.
+        '403':
+          description: '- `archived_document_immutable` : The archived document is not editable.
+
+            - `forbidden` : Knowledge base API access is not enabled.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                archived_document_immutable:
+                  summary: archived_document_immutable
+                  value:
+                    status: 403
+                    code: archived_document_immutable
+                    message: The archived document is not editable.
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '`not_found` : The document does not exist. Also returned as "Dataset not found."
+            when the knowledge base itself does not exist.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document Not Exists.
+                not_found_2:
+                  summary: not_found_2
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+      x-mint:
+        href: /en/api-reference/documents/delete-document
+        metadata:
+          title: Delete Document
+          sidebarTitle: Delete Document
+    patch:
+      tags:
+      - Documents
+      summary: Update Document
+      description: Updates a document by uploading a new file, then re-indexes it. This is the canonical
+        endpoint for file-based document updates. Track progress with the returned `batch` ID via [Get
+        Document Indexing Status](/en/api-reference/documents/get-document-indexing-status).
+      operationId: updateDocument
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. From [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. From [List Documents](/en/api-reference/documents/list-documents).
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 'File to upload, capped at 15 MB by default.
+
+
+                    Self-hosted deployments adjust the limit with the `UPLOAD_FILE_SIZE_LIMIT` [environment
+                    variable](/en/self-host/deploy/configuration/environments). On Dify Cloud, Professional
+                    and Team plans raise the cap to 50 MB.'
+                data:
+                  type: string
+                  description: JSON string containing configuration. Accepts the same fields as [Create
+                    Document by Text](/en/api-reference/documents/create-document-by-text) (`doc_form`,
+                    `doc_language`, `process_rule`, `retrieval_model`, `embedding_model`, `embedding_model_provider`)
+                    except `name` and `text`.
+                  example: '{"doc_form":"text_model","doc_language":"English","process_rule":{"mode":"automatic"}}'
+      responses:
+        '200':
+          description: Document updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document:
+                    $ref: '#/components/schemas/Document'
+                  batch:
+                    type: string
+                    description: Batch ID for tracking indexing progress.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    document:
+                      id: a8e0e5b5-78c6-4130-a5ce-25feb0e0b4ac
+                      position: 1
+                      data_source_type: upload_file
+                      data_source_info:
+                        upload_file_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      data_source_detail_dict:
+                        upload_file:
+                          id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                          name: guide.txt
+                          size: 2048
+                          extension: txt
+                          mime_type: text/plain
+                          created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                          created_at: 1741267200
+                      dataset_process_rule_id: e1f2a3b4-c5d6-7890-ef12-345678901234
+                      name: guide.txt
+                      created_from: api
+                      created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      created_at: 1741267200
+                      tokens: 512
+                      indexing_status: completed
+                      error: null
+                      enabled: true
+                      disabled_at: null
+                      disabled_by: null
+                      archived: false
+                      display_status: available
+                      word_count: 350
+                      hit_count: 0
+                      doc_form: text_model
+                      doc_metadata: []
+                      summary_index_status: null
+                      need_summary: false
+                    batch: '20250306150245647595'
+        '400':
+          description: '- `too_many_files` : Only one file is allowed per request.
+
+            - `filename_not_exists_error` : The uploaded file has no filename.
+
+            - `provider_not_initialize` : No model provider credentials are configured for the workspace.
+
+            - `invalid_param` : The document is not available for update (only available documents can
+            be updated).'
+          content:
+            application/json:
+              examples:
+                too_many_files:
+                  summary: too_many_files
+                  value:
+                    status: 400
+                    code: too_many_files
+                    message: Only one file is allowed.
+                filename_not_exists_error:
+                  summary: filename_not_exists_error
+                  value:
+                    status: 400
+                    code: filename_not_exists_error
+                    message: The specified filename does not exist.
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No valid model provider credentials found. Please go to Settings -> Model
+                      Provider to complete your provider credentials.
+                invalid_param_not_available:
+                  summary: invalid_param (not available)
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Document is not available
+        '403':
+          description: '- `forbidden` : Knowledge base API access is not enabled.
+
+            - `forbidden` : The capacity of the vector space has reached the limit of your subscription.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (vector space)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: The capacity of the vector space has reached the limit of your subscription.
+                forbidden_3:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '- `not_found` : Knowledge base not found.
+
+            - `not_found` : Document not found.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+        '413':
+          description: '`file_too_large` : The uploaded file exceeds the maximum size.'
+          content:
+            application/json:
+              examples:
+                file_too_large:
+                  summary: file_too_large
+                  value:
+                    status: 413
+                    code: file_too_large
+                    message: File size exceeded.
+        '415':
+          description: '`unsupported_file_type` : The uploaded file''s type is not supported.'
+          content:
+            application/json:
+              examples:
+                unsupported_file_type:
+                  summary: unsupported_file_type
+                  value:
+                    status: 415
+                    code: unsupported_file_type
+                    message: File type not allowed.
+        '503':
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
+            the Dify Cloud Sandbox plan only; retry the request later.'
+          content:
+            application/json:
+              examples:
+                service_unavailable:
+                  summary: service_unavailable
+                  value:
+                    status: 503
+                    code: service_unavailable
+                    message: Unable to verify vector space usage right now. Please try again later.
+      x-mint:
+        href: /en/api-reference/documents/update-document
+        metadata:
+          title: Update Document
+          sidebarTitle: Update Document
+  /datasets/{dataset_id}/documents/{document_id}/download:
+    get:
+      tags:
+      - Documents
+      summary: Download Document
+      description: Returns a signed URL for downloading a document's original uploaded file.
+      operationId: downloadDocument
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. From [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. From [List Documents](/en/api-reference/documents/list-documents).
+      responses:
+        '200':
+          description: Download URL generated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  url:
+                    type: string
+                    description: Signed URL to download the original uploaded file.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    url: https://storage.example.com/datasets/documents/abc123/original-file.pdf?token=xyz789&expires=1741353600
+        '403':
+          description: '- `forbidden` : You do not have permission to access this document.
+
+            - `forbidden` : Knowledge base API access is not enabled.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (no permission)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: No permission.
+                forbidden_2:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_3:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '`not_found` : Document not found. Also returned as "Uploaded file not found."
+            when the stored file is missing, and "Document does not have an uploaded file to download."
+            for non-file documents.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+                not_found_2:
+                  summary: not_found_2
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Uploaded file not found.
+                not_found_3:
+                  summary: not_found_3
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document does not have an uploaded file to download.
+      x-mint:
+        href: /en/api-reference/documents/download-document
+        metadata:
+          title: Download Document
+          sidebarTitle: Download Document
+  /datasets/{dataset_id}/documents/{batch}/indexing-status:
+    get:
+      tags:
+      - Documents
+      summary: Get Document Indexing Status
+      description: 'Returns indexing progress for every document in a batch: the current stage and chunk
+        completion counts. Poll until each `indexing_status` reaches `completed` or `error`. Status advances
+        through `waiting` → `parsing` → `cleaning` → `splitting` → `indexing` → `completed`.'
+      operationId: getDocumentIndexingStatus
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. From [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: batch
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Batch ID returned when you create or update a document.
+      responses:
+        '200':
+          description: Indexing status for documents in the batch.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: List of indexing status entries.
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Document identifier.
+                        indexing_status:
+                          type: string
+                          description: 'Current indexing status: `waiting`, `parsing`, `cleaning`, `splitting`,
+                            `indexing`, `completed`, or `error`.'
+                        processing_started_at:
+                          type: number
+                          nullable: true
+                          description: Unix timestamp when processing started.
+                        parsing_completed_at:
+                          type: number
+                          nullable: true
+                          description: Unix timestamp when parsing completed.
+                        cleaning_completed_at:
+                          type: number
+                          nullable: true
+                          description: Unix timestamp when cleaning completed.
+                        splitting_completed_at:
+                          type: number
+                          nullable: true
+                          description: Unix timestamp when splitting completed.
+                        completed_at:
+                          type: number
+                          nullable: true
+                          description: Unix timestamp when indexing completed.
+                        paused_at:
+                          type: number
+                          nullable: true
+                          description: Timestamp when indexing was paused. `null` if not paused.
+                        error:
+                          type: string
+                          nullable: true
+                          description: Error message if indexing failed. `null` if no error.
+                        stopped_at:
+                          type: number
+                          nullable: true
+                          description: Timestamp when indexing was stopped. `null` if not stopped.
+                        completed_segments:
+                          type: integer
+                          description: Number of chunks that have been indexed.
+                        total_segments:
+                          type: integer
+                          description: Total number of chunks to be indexed.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    data:
+                    - id: a8e0e5b5-78c6-4130-a5ce-25feb0e0b4ac
+                      indexing_status: completed
+                      processing_started_at: 1741267200
+                      parsing_completed_at: 1741267200
+                      cleaning_completed_at: 1741267200
+                      splitting_completed_at: 1741267200
+                      completed_at: 1741267200
+                      paused_at: null
+                      error: null
+                      stopped_at: null
+                      completed_segments: 5
+                      total_segments: 5
+        '403':
+          description: '`forbidden` : Knowledge base API access is not enabled.'
+          content:
+            application/json:
+              examples:
+                forbidden:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+        '404':
+          description: '- `not_found` : Knowledge base not found.
+
+            - `not_found` : Documents not found.'
+          content:
+            application/json:
+              examples:
+                dataset_not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                documents_not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Documents not found.
+      x-mint:
+        href: /en/api-reference/documents/get-document-indexing-status
+        metadata:
+          title: Get Document Indexing Status
+          sidebarTitle: Get Document Indexing Status
+  /datasets/{dataset_id}/documents/{document_id}/update-by-text:
+    post:
+      tags:
+      - Documents
+      summary: Update Document by Text
+      description: Updates a document's text content, name, or processing configuration. Re-indexes the
+        document when its text changes.
+      operationId: updateDocumentByText
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. From [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. From [List Documents](/en/api-reference/documents/list-documents).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                name:
+                  type: string
+                  description: Document name. Required when `text` is provided.
+                text:
+                  type: string
+                  description: Document text content.
+                process_rule:
+                  type: object
+                  description: Processing rules for chunking.
+                  required:
+                  - mode
+                  properties:
+                    mode:
+                      type: string
+                      enum:
+                      - automatic
+                      - custom
+                      - hierarchical
+                      description: '`automatic` uses built-in rules, `custom` allows manual configuration,
+                        `hierarchical` enables parent-child chunk structure (use with `doc_form: hierarchical_model`).'
+                    rules:
+                      type: object
+                      properties:
+                        pre_processing_rules:
+                          type: array
+                          items:
+                            type: object
+                            properties:
+                              id:
+                                type: string
+                                enum:
+                                - remove_stopwords
+                                - remove_extra_spaces
+                                - remove_urls_emails
+                                description: Rule identifier.
+                              enabled:
+                                type: boolean
+                                description: Whether this preprocessing rule is enabled.
+                        segmentation:
+                          type: object
+                          properties:
+                            separator:
+                              type: string
+                              default: '
+
+                                '
+                              description: Custom separator for splitting text.
+                            max_tokens:
+                              type: integer
+                              description: Maximum token count per chunk.
+                            chunk_overlap:
+                              type: integer
+                              default: 0
+                              description: Token overlap between chunks.
+                doc_form:
+                  type: string
+                  enum:
+                  - text_model
+                  - hierarchical_model
+                  - qa_model
+                  default: text_model
+                  description: '`text_model` for standard text chunking, `hierarchical_model` for parent-child
+                    chunk structure, `qa_model` for question-answer pair extraction.'
+                doc_language:
+                  type: string
+                  default: English
+                  description: Language of the document for processing optimization.
+                retrieval_model:
+                  $ref: '#/components/schemas/RetrievalModel'
+                  description: Controls how chunks are searched and ranked when querying this knowledge
+                    base.
+      responses:
+        '200':
+          description: Document updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document:
+                    $ref: '#/components/schemas/Document'
+                  batch:
+                    type: string
+                    description: Batch ID for tracking indexing progress.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    document:
+                      id: a8e0e5b5-78c6-4130-a5ce-25feb0e0b4ac
+                      position: 1
+                      data_source_type: upload_file
+                      data_source_info:
+                        upload_file_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      data_source_detail_dict:
+                        upload_file:
+                          id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                          name: guide.txt
+                          size: 2048
+                          extension: txt
+                          mime_type: text/plain
+                          created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                          created_at: 1741267200
+                      dataset_process_rule_id: e1f2a3b4-c5d6-7890-ef12-345678901234
+                      name: guide.txt
+                      created_from: api
+                      created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      created_at: 1741267200
+                      tokens: 512
+                      indexing_status: completed
+                      error: null
+                      enabled: true
+                      disabled_at: null
+                      disabled_by: null
+                      archived: false
+                      display_status: available
+                      word_count: 350
+                      hit_count: 0
+                      doc_form: text_model
+                      doc_metadata: []
+                      summary_index_status: null
+                      need_summary: false
+                    batch: '20250306150245647595'
+        '400':
+          description: '- `provider_not_initialize` : No model provider credentials are configured for
+            the workspace.
+
+            - `invalid_param` : `name` is required when `text` is provided, or `doc_form` is invalid.
+
+            - `invalid_param` : The document is not available for update (only available documents can
+            be updated).'
+          content:
+            application/json:
+              examples:
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No valid model provider credentials found. Please go to Settings -> Model
+                      Provider to complete your provider credentials.
+                invalid_param_name:
+                  summary: invalid_param (name required)
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: name is required when text is provided.
+                invalid_param_not_available:
+                  summary: invalid_param (not available)
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Document is not available
+        '403':
+          description: '- `forbidden` : Knowledge base API access is not enabled.
+
+            - `forbidden` : The capacity of the vector space has reached the limit of your subscription.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (vector space)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: The capacity of the vector space has reached the limit of your subscription.
+                forbidden_3:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '- `not_found` : Knowledge base not found.
+
+            - `not_found` : Document not found.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+        '503':
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
+            the Dify Cloud Sandbox plan only; retry the request later.'
+          content:
+            application/json:
+              examples:
+                service_unavailable:
+                  summary: service_unavailable
+                  value:
+                    status: 503
+                    code: service_unavailable
+                    message: Unable to verify vector space usage right now. Please try again later.
+      x-mint:
+        href: /en/api-reference/documents/update-document-by-text
+        metadata:
+          title: Update Document by Text
+          sidebarTitle: Update Document by Text
+  /datasets/{dataset_id}/documents/{document_id}/update-by-file:
+    post:
+      tags:
+      - Documents
+      summary: Update Document by File
+      description: Deprecated. Use [Update Document](/en/api-reference/documents/update-document) instead.
+        Updates a document by uploading a new file, then re-indexes it.
+      operationId: updateDocumentByFile
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. From [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: document_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Document ID. From [List Documents](/en/api-reference/documents/list-documents).
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              type: object
+              properties:
+                file:
+                  type: string
+                  format: binary
+                  description: 'File to upload, capped at 15 MB by default.
+
+
+                    Self-hosted deployments adjust the limit with the `UPLOAD_FILE_SIZE_LIMIT` [environment
+                    variable](/en/self-host/deploy/configuration/environments). On Dify Cloud, Professional
+                    and Team plans raise the cap to 50 MB.'
+                data:
+                  type: string
+                  description: JSON string containing configuration. Accepts the same fields as [Create
+                    Document by Text](/en/api-reference/documents/create-document-by-text) (`doc_form`,
+                    `doc_language`, `process_rule`, `retrieval_model`, `embedding_model`, `embedding_model_provider`)
+                    except `name` and `text`.
+                  example: '{"doc_form":"text_model","doc_language":"English","process_rule":{"mode":"automatic"}}'
+      responses:
+        '200':
+          description: Document updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  document:
+                    $ref: '#/components/schemas/Document'
+                  batch:
+                    type: string
+                    description: Batch ID for tracking indexing progress.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    document:
+                      id: a8e0e5b5-78c6-4130-a5ce-25feb0e0b4ac
+                      position: 1
+                      data_source_type: upload_file
+                      data_source_info:
+                        upload_file_id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                      data_source_detail_dict:
+                        upload_file:
+                          id: a1b2c3d4-e5f6-7890-abcd-ef1234567890
+                          name: guide.txt
+                          size: 2048
+                          extension: txt
+                          mime_type: text/plain
+                          created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                          created_at: 1741267200
+                      dataset_process_rule_id: e1f2a3b4-c5d6-7890-ef12-345678901234
+                      name: guide.txt
+                      created_from: api
+                      created_by: ad313dd6-ef04-4dd1-a5b0-c0f0b9e2e7e4
+                      created_at: 1741267200
+                      tokens: 512
+                      indexing_status: completed
+                      error: null
+                      enabled: true
+                      disabled_at: null
+                      disabled_by: null
+                      archived: false
+                      display_status: available
+                      word_count: 350
+                      hit_count: 0
+                      doc_form: text_model
+                      doc_metadata: []
+                      summary_index_status: null
+                      need_summary: false
+                    batch: '20250306150245647595'
+        '400':
+          description: '- `too_many_files` : Only one file is allowed per request.
+
+            - `filename_not_exists_error` : The uploaded file has no filename.
+
+            - `provider_not_initialize` : No model provider credentials are configured for the workspace.
+
+            - `invalid_param` : The document is not available for update (only available documents can
+            be updated).'
+          content:
+            application/json:
+              examples:
+                too_many_files:
+                  summary: too_many_files
+                  value:
+                    status: 400
+                    code: too_many_files
+                    message: Only one file is allowed.
+                filename_not_exists_error:
+                  summary: filename_not_exists_error
+                  value:
+                    status: 400
+                    code: filename_not_exists_error
+                    message: The specified filename does not exist.
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No valid model provider credentials found. Please go to Settings -> Model
+                      Provider to complete your provider credentials.
+                invalid_param_not_available:
+                  summary: invalid_param (not available)
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Document is not available
+        '403':
+          description: '- `forbidden` : Knowledge base API access is not enabled.
+
+            - `forbidden` : The capacity of the vector space has reached the limit of your subscription.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (vector space)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: The capacity of the vector space has reached the limit of your subscription.
+                forbidden_3:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+        '404':
+          description: '- `not_found` : Knowledge base not found.
+
+            - `not_found` : Document not found.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+        '413':
+          description: '`file_too_large` : The uploaded file exceeds the maximum size.'
+          content:
+            application/json:
+              examples:
+                file_too_large:
+                  summary: file_too_large
+                  value:
+                    status: 413
+                    code: file_too_large
+                    message: File size exceeded.
+        '415':
+          description: '`unsupported_file_type` : The uploaded file''s type is not supported.'
+          content:
+            application/json:
+              examples:
+                unsupported_file_type:
+                  summary: unsupported_file_type
+                  value:
+                    status: 415
+                    code: unsupported_file_type
+                    message: File type not allowed.
+        '503':
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
+            the Dify Cloud Sandbox plan only; retry the request later.'
+          content:
+            application/json:
+              examples:
+                service_unavailable:
+                  summary: service_unavailable
+                  value:
+                    status: 503
+                    code: service_unavailable
+                    message: Unable to verify vector space usage right now. Please try again later.
+      deprecated: true
+      x-mint:
+        href: /en/api-reference/documents/update-document-by-file
+        metadata:
+          title: Update Document by File
+          sidebarTitle: Update Document by File
+  /datasets/{dataset_id}/documents/download-zip:
+    post:
+      tags:
+      - Documents
+      summary: Download Documents as ZIP
+      description: Downloads one or more documents as a single ZIP archive. Only documents that were uploaded
+        as files can be included.
+      operationId: downloadDocumentsZip
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. From [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - document_ids
+              properties:
+                document_ids:
+                  type: array
+                  minItems: 1
+                  maxItems: 100
+                  items:
+                    type: string
+                    format: uuid
+                  description: Document IDs to include in the archive. Get them from [List Documents](/en/api-reference/documents/list-documents).
+      responses:
+        '200':
+          description: ZIP archive containing the requested documents.
+          content:
+            application/zip:
+              schema:
+                type: string
+                format: binary
+                description: ZIP archive binary stream.
+        '403':
+          description: '- `forbidden` : Knowledge base API access is not enabled.
+
+            - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.
+
+            - `forbidden` : You do not have permission to access this knowledge base.
+
+            - `forbidden` : You do not have permission for one of the requested documents.'
+          content:
+            application/json:
+              examples:
+                forbidden_1:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+                forbidden_2:
+                  summary: forbidden (rate limit)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Sorry, you have reached the knowledge base request rate limit of your subscription.
+                forbidden_3:
+                  summary: forbidden (dataset permission)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: You do not have permission to access this dataset.
+                forbidden_4:
+                  summary: forbidden (document permission)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: No permission.
+        '404':
+          description: '- `not_found` : Document not found.
+
+            - `not_found` : Knowledge base not found. Also returned as "Only uploaded-file documents can
+            be downloaded as ZIP." when a requested document has no uploaded file.'
+          content:
+            application/json:
+              examples:
+                not_found_1:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Document not found.
+                not_found_2:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+                not_found_3:
+                  summary: not_found_3
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Only uploaded-file documents can be downloaded as ZIP.
+      x-mint:
+        href: /en/api-reference/documents/download-documents-as-zip
+        metadata:
+          title: Download Documents as ZIP
+          sidebarTitle: Download Documents as ZIP
+  /datasets/{dataset_id}/documents/status/{action}:
+    patch:
+      tags:
+      - Documents
+      summary: Update Document Status in Batch
+      description: Enables, disables, archives, or unarchives multiple documents in one request.
+      operationId: batchUpdateDocumentStatus
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. From [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      - name: action
+        in: path
+        required: true
+        schema:
+          type: string
+          enum:
+          - enable
+          - disable
+          - archive
+          - un_archive
+        description: '`enable` activates documents for retrieval, `disable` deactivates them, `archive`
+          moves them to the archive, `un_archive` restores them from the archive.'
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - document_ids
+              properties:
+                document_ids:
+                  type: array
+                  items:
+                    type: string
+                  description: Document IDs to update. Get them from [List Documents](/en/api-reference/documents/list-documents).
+      responses:
+        '200':
+          description: Documents updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  result:
+                    type: string
+                    description: Operation result.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    result: success
+        '400':
+          description: '`invalid_action` : Invalid action, or a document is in a state that does not allow
+            the action (e.g. still indexing, or not completed).'
+          content:
+            application/json:
+              examples:
+                invalid_action:
+                  summary: invalid_action
+                  value:
+                    status: 400
+                    code: invalid_action
+                    message: Invalid action.
+        '403':
+          description: '`forbidden` : Knowledge base API access is not enabled.'
+          content:
+            application/json:
+              examples:
+                forbidden:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+        '404':
+          description: '`not_found` : Knowledge base not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+      x-mint:
+        href: /en/api-reference/documents/update-document-status-in-batch
+        metadata:
+          title: Update Document Status in Batch
+          sidebarTitle: Update Document Status in Batch
+components:
+  schemas:
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the document.
+        position:
+          type: integer
+          description: Display position of the document in the list.
+        data_source_type:
+          type: string
+          description: How the document was created. `upload_file` for file uploads, `notion_import` for
+            Notion imports.
+        data_source_info:
+          type: object
+          description: Raw data source information, varies by `data_source_type`.
+        data_source_detail_dict:
+          type: object
+          description: Detailed data source information including file details.
+        dataset_process_rule_id:
+          type: string
+          description: ID of the processing rule applied to this document.
+        name:
+          type: string
+          description: Document name.
+        created_from:
+          type: string
+          description: Origin of the document. `api` for API creation, `web` for UI creation.
+        created_by:
+          type: string
+          description: ID of the user who created the document.
+        created_at:
+          type: number
+          description: Creation timestamp (Unix epoch in seconds).
+        tokens:
+          type: integer
+          description: Total number of tokens in the document.
+        indexing_status:
+          type: string
+          description: Current indexing status. `waiting` for queued, `parsing` while extracting content,
+            `cleaning` while removing noise, `splitting` while chunking, `indexing` while building vectors,
+            `completed` when ready, `error` if failed, `paused` if manually paused.
+        error:
+          type: string
+          nullable: true
+          description: Error message if indexing failed. `null` when no error.
+        enabled:
+          type: boolean
+          description: Whether the document is enabled for retrieval.
+        disabled_at:
+          type: number
+          nullable: true
+          description: Timestamp when the document was disabled. `null` if enabled.
+        disabled_by:
+          type: string
+          nullable: true
+          description: ID of the user who disabled the document. `null` if enabled.
+        archived:
+          type: boolean
+          description: Whether the document is archived.
+        display_status:
+          type: string
+          description: User-facing display status derived from `indexing_status` and `enabled` state.
+        word_count:
+          type: integer
+          description: Total word count of the document.
+        hit_count:
+          type: integer
+          description: Number of times the document has been matched in retrieval queries.
+        doc_form:
+          type: string
+          description: Document chunking mode. `text_model` for standard text chunking, `hierarchical_model`
+            for parent-child structure, `qa_model` for QA pair extraction.
+        doc_metadata:
+          type: array
+          description: Metadata values assigned to this document.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Metadata field identifier.
+              name:
+                type: string
+                description: Metadata field name.
+              type:
+                type: string
+                description: Metadata field value type.
+              value:
+                type: string
+                description: Metadata value for this document.
+        summary_index_status:
+          type: string
+          nullable: true
+          description: Status of the summary index for this document. `null` if summary indexing is not
+            configured.
+        need_summary:
+          type: boolean
+          description: Whether a summary needs to be generated for this document.
+    RetrievalModel:
+      type: object
+      required:
+      - search_method
+      - reranking_enable
+      - top_k
+      - score_threshold_enabled
+      properties:
+        search_method:
+          type: string
+          description: Search method used for retrieval.
+          enum:
+          - keyword_search
+          - semantic_search
+          - full_text_search
+          - hybrid_search
+        reranking_enable:
+          type: boolean
+          description: Whether reranking is enabled.
+        reranking_model:
+          type: object
+          description: Reranking model configuration.
+          properties:
+            reranking_provider_name:
+              type: string
+              description: 'Reranking model provider identifier, formatted as `organization/plugin_name/provider_name`
+                (e.g. `langgenius/cohere/cohere`). A bare name like `cohere` expands to `langgenius/<name>/<name>`
+                and works only for langgenius-published plugins.
+
+
+                Get valid values from the `provider` field of [Get Available Models](/en/api-reference/models/get-available-models)
+                with `model_type=rerank`.'
+            reranking_model_name:
+              type: string
+              description: Name of the reranking model.
+        reranking_mode:
+          type: string
+          enum:
+          - reranking_model
+          - weighted_score
+          nullable: true
+          description: Reranking mode. Required when `reranking_enable` is `true`.
+        top_k:
+          type: integer
+          description: Maximum number of results to return.
+        score_threshold_enabled:
+          type: boolean
+          description: Whether score threshold filtering is enabled.
+        score_threshold:
+          type: number
+          nullable: true
+          description: Minimum similarity score for results. Only effective when `score_threshold_enabled`
+            is `true`.
+        weights:
+          type: object
+          nullable: true
+          description: Weight configuration for hybrid search.
+          properties:
+            weight_type:
+              type: string
+              description: Strategy for balancing semantic and keyword search weights.
+              enum:
+              - semantic_first
+              - keyword_first
+              - customized
+            vector_setting:
+              type: object
+              description: Semantic search weight settings.
+              properties:
+                vector_weight:
+                  type: number
+                  description: Weight assigned to semantic (vector) search results.
+                embedding_provider_name:
+                  type: string
+                  description: Provider of the embedding model used for vector search.
+                embedding_model_name:
+                  type: string
+                  description: Name of the embedding model used for vector search.
+            keyword_setting:
+              type: object
+              description: Keyword search weight settings.
+              properties:
+                keyword_weight:
+                  type: number
+                  description: Weight assigned to keyword search results.
+        metadata_filtering_conditions:
+          type: object
+          nullable: true
+          description: Restrict retrieval to chunks whose document metadata matches the given conditions.
+            Conditions are evaluated server-side against document metadata fields.
+          properties:
+            logical_operator:
+              type: string
+              enum:
+              - and
+              - or
+              default: and
+              nullable: true
+              description: How to combine multiple conditions.
+            conditions:
+              type: array
+              nullable: true
+              description: List of metadata conditions to evaluate.
+              items:
+                type: object
+                required:
+                - name
+                - comparison_operator
+                properties:
+                  name:
+                    type: string
+                    description: Metadata field name to compare against.
+                  comparison_operator:
+                    type: string
+                    description: 'Comparison to apply, by metadata type:
+
+
+                      - String or array metadata: `contains`, `not contains`, `start with`, `end with`,
+                      `is`, `is not`, `empty`, `not empty`, `in`, `not in`
+
+                      - Numeric metadata: `=`, `≠`, `>`, `<`, `≥`, `≤`
+
+                      - Time metadata: `before`, `after`'
+                    enum:
+                    - contains
+                    - not contains
+                    - start with
+                    - end with
+                    - is
+                    - is not
+                    - empty
+                    - not empty
+                    - in
+                    - not in
+                    - '='
+                    - ≠
+                    - '>'
+                    - <
+                    - ≥
+                    - ≤
+                    - before
+                    - after
+                  value:
+                    nullable: true
+                    description: 'Value to compare against. Type depends on `comparison_operator`: string
+                      for most string operators, array of strings for `in` and `not in`, number for numeric
+                      operators, and omitted for `empty` and `not empty`.'
+                    oneOf:
+                    - type: string
+                    - type: array
+                      items:
+                        type: string
+                    - type: number
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API_KEY
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
+        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+
+
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
+        fail with HTTP `401` (`unauthorized`).'
+x-provenance:
+  generated: '2026-09-06'
+  method: derived
+  source: openapi/_original/dify-service-api-openapi.json
+  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
+    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
+    spec.

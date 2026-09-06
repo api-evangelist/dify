@@ -1,60 +1,550 @@
-openapi: 3.1.0
+openapi: 3.0.1
 info:
-  title: Dify Chat Completion API
-  description: Dify is an open-source platform for building AI applications and agentic workflows. This API provides access to chat messages, completion messages, workflow execution, conversations, knowledge bases (datasets) and file uploads.
-  version: '1.0'
+  title: Dify Completion Messages API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
+    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  version: 1.0.0
 servers:
-- url: https://api.dify.ai/v1
-  description: Dify Cloud API
+- url: https://{api_base_url}
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
+    API base URL.
+  variables:
+    api_base_url:
+      default: api.dify.ai/v1
+      description: Host and path of the API base URL, without the `https://` prefix.
 security:
-- bearerAuth: []
+- ApiKeyAuth: []
 tags:
-- name: Completion
+- name: Completion Messages
+  description: Operations related to text generation and completion.
 paths:
   /completion-messages:
     post:
+      summary: Send Completion Message
+      description: '**Available for**: Text Generator apps.
+
+
+        Sends a request to a text-generation app and returns the generated text.'
+      operationId: createCompletionMessage
       tags:
-      - Completion
-      summary: Send a completion request
-      operationId: sendCompletion
+      - Completion Messages
       requestBody:
+        description: Request body to create a completion message.
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CompletionRequest'
+            examples:
+              streaming_example:
+                summary: Request Example - Streaming mode
+                value:
+                  inputs:
+                    city: San Francisco
+                  query: Translate 'hello' to Spanish.
+                  response_mode: streaming
+                  user: abc-123
+                  files:
+                  - type: image
+                    transfer_method: remote_url
+                    url: https://cloud.dify.ai/logo/logo-site.png
+              blocking_example:
+                summary: Request Example - Blocking mode
+                value:
+                  inputs:
+                    city: New York
+                  query: 'Summarize the following text: ...'
+                  response_mode: blocking
+                  user: def-456
+      responses:
+        '200':
+          description: 'Successful response. The content type and structure depend on the `response_mode`
+            parameter in the request.
+
+
+            - If `response_mode` is `blocking`, returns `application/json` with a `CompletionResponse`
+            object.
+
+            - If `response_mode` is `streaming`, returns `text/event-stream` with a stream of `ChunkCompletionEvent`
+            objects.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CompletionResponse'
+              examples:
+                blockingResponse:
+                  summary: Response Example - Blocking mode
+                  value:
+                    event: message
+                    task_id: c3800678-a077-43df-a102-53f23ed20b88
+                    id: b01a39de-3480-4f3e-9f1e-4841a80f8e5e
+                    message_id: 9da23599-e713-473b-982c-4328d4f5c78a
+                    mode: completion
+                    answer: Hello World!...
+                    metadata:
+                      usage:
+                        prompt_tokens: 1033
+                        prompt_unit_price: '0.001'
+                        prompt_price_unit: '0.001'
+                        prompt_price: '0.0010330'
+                        completion_tokens: 128
+                        completion_unit_price: '0.002'
+                        completion_price_unit: '0.001'
+                        completion_price: '0.0002560'
+                        total_tokens: 1161
+                        total_price: '0.0012890'
+                        currency: USD
+                        latency: 0.7682376249867957
+                    created_at: 1705407629
+            text/event-stream:
+              schema:
+                type: string
+                description: 'A stream of Server-Sent Events. Parse it per the [SSE Streaming guide](/en/api-reference/guides/streaming):
+                  read `data:` lines, dispatch on the `event` field, skip `ping` (keep-alive every 10
+                  seconds). See `ChunkCompletionEvent` for the event structures.
+
+
+                  **Stream lifecycle**: the reply streams as `message` chunks and ends with `message_end`.
+                  An `error` event ends the stream early; HTTP status stays `200`, so inspect the event
+                  payload for details.'
+              examples:
+                streamingResponse:
+                  summary: Response Example - Streaming mode
+                  value: 'data: {"event": "message", "task_id": "900bbd43-dc0b-4383-a372-aa6e6c414227",
+                    "message_id": "5ad4cb98-f0c7-4085-b384-88c403be6290", "answer": " I", "created_at":
+                    1679586595}
+
+
+                    data: {"event": "message", "task_id": "900bbd43-dc0b-4383-a372-aa6e6c414227", "message_id":
+                    "5ad4cb98-f0c7-4085-b384-88c403be6290", "answer": "''m", "created_at": 1679586595}
+
+
+                    data: {"event": "message_end", "task_id": "900bbd43-dc0b-4383-a372-aa6e6c414227",
+                    "id": "5e52ce04-874b-4d27-9045-b3bc80def685", "message_id": "5ad4cb98-f0c7-4085-b384-88c403be6290",
+                    "metadata": {"usage": {"prompt_tokens": 1033, "prompt_unit_price": "0.001", "prompt_price_unit":
+                    "0.001", "prompt_price": "0.0010330", "completion_tokens": 135, "completion_unit_price":
+                    "0.002", "completion_price_unit": "0.001", "completion_price": "0.0002700", "total_tokens":
+                    1168, "total_price": "0.0013030", "currency": "USD", "latency": 1.381760165997548}}}
+
+
+                    '
+        '400':
+          description: '- `app_unavailable` : App unavailable or misconfigured.
+
+            - `provider_not_initialize` : No valid model provider credentials found.
+
+            - `provider_quota_exceeded` : Model provider quota exhausted.
+
+            - `model_currently_not_support` : Current model unavailable.
+
+            - `completion_request_error` : Text generation failed.
+
+            - `invalid_param` : The required `user` field is missing.'
+          content:
+            application/json:
+              examples:
+                app_unavailable:
+                  summary: app_unavailable
+                  value:
+                    status: 400
+                    code: app_unavailable
+                    message: App unavailable, please check your app configurations.
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No valid model provider credentials found. Please go to Settings -> Model
+                      Provider to complete your provider credentials.
+                provider_quota_exceeded:
+                  summary: provider_quota_exceeded
+                  value:
+                    status: 400
+                    code: provider_quota_exceeded
+                    message: Your quota for Dify Hosted OpenAI has been exhausted. Please go to Settings
+                      -> Model Provider to complete your own provider credentials.
+                model_currently_not_support:
+                  summary: model_currently_not_support
+                  value:
+                    status: 400
+                    code: model_currently_not_support
+                    message: Dify Hosted OpenAI trial currently not support the GPT-4 model.
+                completion_request_error:
+                  summary: completion_request_error
+                  value:
+                    status: 400
+                    code: completion_request_error
+                    message: Completion request failed.
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Arg user must be provided.
+        '429':
+          description: '`too_many_requests` : Too many concurrent requests for this app.'
+          content:
+            application/json:
+              examples:
+                too_many_requests:
+                  summary: too_many_requests
+                  value:
+                    status: 429
+                    code: too_many_requests
+                    message: Too many requests. Please try again later. The current maximum concurrent
+                      requests allowed for 5b3d4f2a-1c9e-4a7b-8f6d-2e0c9a1b3d4f is 10.
+        '500':
+          description: '`internal_server_error` : Internal server error.'
+          content:
+            application/json:
+              examples:
+                internal_server_error:
+                  summary: internal_server_error
+                  value:
+                    status: 500
+                    code: internal_server_error
+                    message: The server encountered an internal error and was unable to complete your
+                      request. Either the server is overloaded or there is an error in the application.
+      x-mint:
+        href: /en/api-reference/completion-messages/send-completion-message
+        metadata:
+          title: Send Completion Message
+          sidebarTitle: Send Completion Message
+  /completion-messages/{task_id}/stop:
+    post:
+      summary: Stop Completion Message Generation
+      description: '**Available for**: Text Generator apps.
+
+
+        Stops a completion message generation task. Only supported in `streaming` mode.'
+      operationId: stopGenerate
+      tags:
+      - Completion Messages
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        description: Task ID, from the streaming events of [Send Completion Message](/en/api-reference/completion-messages/send-completion-message).
+        schema:
+          type: string
+      requestBody:
+        required: true
         content:
           application/json:
             schema:
               type: object
               required:
-              - inputs
               - user
               properties:
-                inputs:
-                  type: object
-                response_mode:
-                  type: string
-                  enum:
-                  - streaming
-                  - blocking
                 user:
                   type: string
+                  description: End-user identifier, defined by your app and unique within it. Must match
+                    the `user` sent with the original message; if it differs, the stop silently does nothing
+                    and still returns success. See [End User Identity](/en/api-reference/guides/end-user-identity).
+            examples:
+              example:
+                summary: Request Example
+                value:
+                  user: abc-123
       responses:
         '200':
-          description: Completion response
-  /completion-messages/{task_id}/stop:
-    post:
-      tags:
-      - Completion
-      summary: Stop completion generation
-      operationId: stopCompletion
-      parameters:
-      - name: task_id
-        in: path
-        required: true
-        schema:
-          type: string
-      responses:
-        '200':
-          description: Stopped
+          $ref: '#/components/responses/SuccessResult'
+        '400':
+          description: '- `app_unavailable` : App unavailable or misconfigured.
+
+            - `invalid_param` : The required `user` field is missing.'
+          content:
+            application/json:
+              examples:
+                app_unavailable:
+                  summary: app_unavailable
+                  value:
+                    status: 400
+                    code: app_unavailable
+                    message: App unavailable, please check your app configurations.
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Arg user must be provided.
+      x-mint:
+        href: /en/api-reference/completion-messages/stop-completion-message-generation
+        metadata:
+          title: Stop Completion Message Generation
+          sidebarTitle: Stop Completion Message Generation
 components:
+  responses:
+    SuccessResult:
+      description: Operation successful.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              result:
+                type: string
+                description: Operation result. Always `success`.
+          examples:
+            success:
+              summary: Response Example
+              value:
+                result: success
+  schemas:
+    CompletionRequest:
+      type: object
+      required:
+      - inputs
+      - user
+      properties:
+        inputs:
+          type: object
+          description: Values for the app's input variables, keyed by variable name. The expected names
+            and types come from the `user_input_form` field of [Get App Parameters](/en/api-reference/applications/get-app-parameters).
+          additionalProperties: true
+        query:
+          type: string
+          default: ''
+          description: The text to process. Legacy field; newer apps pass this inside `inputs` instead.
+        response_mode:
+          type: string
+          enum:
+          - streaming
+          - blocking
+          description: Mode of response return. `streaming` (recommended) uses SSE. `blocking` returns
+            after completion (may be interrupted for long processes). Cloudflare timeout is `100 s`. When
+            omitted, defaults to blocking behavior.
+        user:
+          type: string
+          description: End-user identifier, defined by your app and unique within it. Messages and files
+            are visible only to requests carrying the same `user`. See [End User Identity](/en/api-reference/guides/end-user-identity).
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/InputFileObject'
+          description: 'Files to attach to the request. For a local file, first upload it via [Upload
+            File](/en/api-reference/files/upload-file), then reference the returned `id` as `upload_file_id`
+            with `transfer_method: local_file`.'
+    CompletionResponse:
+      type: object
+      properties:
+        event:
+          type: string
+          description: Event type, fixed as `message`.
+        task_id:
+          type: string
+          format: uuid
+          description: Task ID for request tracking and the [Stop Completion Message Generation](/en/api-reference/completion-messages/stop-completion-message-generation)
+            API.
+        id:
+          type: string
+          format: uuid
+          description: Unique ID of this response event.
+        message_id:
+          type: string
+          format: uuid
+          description: Unique message ID. Use this as the `message_id` parameter when calling feedback
+            or suggested questions endpoints.
+        mode:
+          type: string
+          description: App mode, fixed as `completion`.
+        answer:
+          type: string
+          description: Complete response content.
+        metadata:
+          type: object
+          description: Metadata including usage and retriever resources.
+          properties:
+            usage:
+              $ref: '#/components/schemas/Usage'
+            retriever_resources:
+              type: array
+              description: List of retriever resources used.
+              items:
+                $ref: '#/components/schemas/RetrieverResource'
+        created_at:
+          type: integer
+          format: int64
+          description: Message creation timestamp (Unix epoch seconds).
+    InputFileObject:
+      type: object
+      required:
+      - type
+      - transfer_method
+      properties:
+        type:
+          type: string
+          enum:
+          - image
+          - document
+          - audio
+          - video
+          - custom
+          description: File type.
+        transfer_method:
+          type: string
+          enum:
+          - remote_url
+          - local_file
+          description: 'Transfer method: `remote_url` for file URL, `local_file` for uploaded file.'
+        url:
+          type: string
+          format: url
+          description: File URL (when `transfer_method` is `remote_url`).
+        upload_file_id:
+          type: string
+          description: Uploaded file ID, obtained by uploading through the [Upload File](/en/api-reference/files/upload-file)
+            API in advance (when `transfer_method` is `local_file`).
+      anyOf:
+      - properties:
+          transfer_method:
+            enum:
+            - remote_url
+          url:
+            type: string
+            format: url
+        required:
+        - url
+        not:
+          required:
+          - upload_file_id
+      - properties:
+          transfer_method:
+            enum:
+            - local_file
+          upload_file_id:
+            type: string
+        required:
+        - upload_file_id
+        not:
+          required:
+          - url
+    RetrieverResource:
+      type: object
+      description: Citation and attribution information for a retriever resource.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique ID of the retriever resource.
+        message_id:
+          type: string
+          format: uuid
+          description: ID of the message this resource belongs to.
+        position:
+          type: integer
+          description: Position of the resource in the list.
+        dataset_id:
+          type: string
+          format: uuid
+          description: ID of the knowledge base.
+        dataset_name:
+          type: string
+          description: Name of the knowledge base.
+        document_id:
+          type: string
+          format: uuid
+          description: ID of the document.
+        document_name:
+          type: string
+          description: Name of the document.
+        data_source_type:
+          type: string
+          description: Type of the data source.
+        segment_id:
+          type: string
+          format: uuid
+          description: ID of the specific chunk within the document.
+        score:
+          type: number
+          format: float
+          description: Similarity score of the resource.
+        hit_count:
+          type: integer
+          description: Number of times this chunk was hit.
+        word_count:
+          type: integer
+          description: Word count of the chunk.
+        segment_position:
+          type: integer
+          description: Position of the chunk within the document.
+        index_node_hash:
+          type: string
+          description: Hash of the index node.
+        content:
+          type: string
+          description: Content snippet from the resource.
+        summary:
+          type: string
+          nullable: true
+          description: Summary of the chunk content.
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp (Unix epoch seconds).
+    Usage:
+      type: object
+      description: Model usage information.
+      properties:
+        prompt_tokens:
+          type: integer
+          description: Number of tokens in the prompt.
+        prompt_unit_price:
+          type: string
+          format: decimal
+          description: Unit price per prompt token.
+        prompt_price_unit:
+          type: string
+          format: decimal
+          description: Price unit for prompt tokens.
+        prompt_price:
+          type: string
+          format: decimal
+          description: Total price for prompt tokens.
+        completion_tokens:
+          type: integer
+          description: Number of tokens in the completion.
+        completion_unit_price:
+          type: string
+          format: decimal
+          description: Unit price per completion token.
+        completion_price_unit:
+          type: string
+          format: decimal
+          description: Price unit for completion tokens.
+        completion_price:
+          type: string
+          format: decimal
+          description: Total price for completion tokens.
+        total_tokens:
+          type: integer
+          description: Total number of tokens used.
+        total_price:
+          type: string
+          format: decimal
+          description: Total price for all tokens.
+        currency:
+          type: string
+          description: Currency for pricing.
+        latency:
+          type: number
+          format: double
+          description: Latency in seconds.
   securitySchemes:
-    bearerAuth:
+    ApiKeyAuth:
       type: http
       scheme: bearer
+      bearerFormat: API_KEY
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
+        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+
+
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
+        fail with HTTP `401` (`unauthorized`).'
+x-provenance:
+  generated: '2026-09-06'
+  method: derived
+  source: openapi/_original/dify-service-api-openapi.json
+  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
+    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
+    spec.

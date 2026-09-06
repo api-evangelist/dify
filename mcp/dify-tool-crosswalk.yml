@@ -1,0 +1,58 @@
+generated: '2026-09-06'
+method: derived
+source: mcp/dify-mcp-tools.json, openapi/_original/dify-service-api-openapi.json
+description: >-
+  Binding between the tools Dify's live MCP server exposes and the operations its published OpenAPI
+  describes. The two surfaces do not overlap at all: the MCP server is scoped to the documentation
+  site, and the OpenAPI describes the runtime Service API. Every MCP tool is mcp_only and every REST
+  operation is rest_only. Recording that divergence is the point — an agent that connects to
+  https://docs.dify.ai/mcp can read Dify's docs but cannot call a single Dify app.
+surfaces:
+  openapi:
+    file: openapi/_original/dify-service-api-openapi.json
+    source: https://docs.dify.ai/en/api-reference/openapi_service.json
+    base_url: https://api.dify.ai/v1
+    gated: false
+    note: Spec is public; calling it needs an app or knowledge-base API key.
+  mcp:
+    url: https://docs.dify.ai/mcp
+    gated: false
+    note: tools/list answers anonymously.
+  graphql:
+    present: false
+crosswalk: []
+mcp_only:
+  - tool: search_dify_docs
+    reason: >-
+      Documentation search. Dify publishes no REST search endpoint over its docs corpus; the docs
+      site is not part of the Service API.
+  - tool: query_docs_filesystem_dify_docs
+    reason: >-
+      Read-only query over a virtualized docs filesystem synthesised by the docs platform. No REST
+      equivalent exists.
+  - tool: submit_feedback
+    reason: >-
+      Documentation feedback intake. Not exposed in the Service API; the API's own feedback
+      operations (postChatMessageFeedback, getChatAppFeedbacks) are end-user feedback on app
+      messages, an unrelated resource.
+rest_only:
+  - operations: 82
+    reason: >-
+      The entire Dify Service API — chat messages, completion messages, workflow runs, conversations,
+      annotations, audio, files, human input, knowledge bases, documents, chunks, tags, metadata,
+      models and knowledge pipelines — has no MCP tool. Dify's answer to agent access for these is
+      the per-application MCP server (mcp/dify-mcp.yml, tenant_servers), which mints one tenant-bound
+      URL per app rather than exposing the API surface as tools.
+    examples:
+      - sendChatMessage
+      - executeWorkflow
+      - retrieveSegments
+      - createDocumentFromFile
+      - listDatasets
+coverage:
+  mcp_tools: 3
+  rest_operations: 82
+  bound: 0
+  mcp_only: 3
+  rest_only: 82
+  overlap_ratio: 0.0

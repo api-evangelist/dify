@@ -1,0 +1,44 @@
+generated: '2026-09-06'
+method: mixed
+description: >-
+  Agent Skills for Dify. One skill is published by Dify itself and saved verbatim; three are
+  packaged by API Evangelist from the harvested Service API OpenAPI and this repository's
+  conventions, errors and rate-limit artifacts. Every operationId referenced in the generated skills
+  was checked against openapi/_original/dify-service-api-openapi.json.
+skills:
+  - file: dify-provider-published-skill.md
+    name: Dify
+    method: searched
+    source: https://docs.dify.ai/.well-known/agent-skills/dify/skill.md
+    http_status: 200
+    description: >-
+      Dify's own packaged Agent Skill, discovered from the skills[] array of the A2A agent card at
+      https://docs.dify.ai/.well-known/agent-card.json and saved verbatim. Product-level guidance
+      for building with Dify; it is emitted by the documentation platform and carries a
+      mintlify-proj metadata key.
+    scope: product
+  - file: dify-chat-app-conversation.md
+    name: dify-chat-app-conversation
+    method: generated
+    source: openapi/_original/dify-service-api-openapi.json
+    scope: Service API — Chat Messages, Conversations, Files, Feedback
+    operations: 10
+  - file: dify-workflow-run.md
+    name: dify-workflow-run
+    method: generated
+    source: openapi/_original/dify-service-api-openapi.json
+    scope: Service API — Workflow Runs, Human Input
+    operations: 9
+  - file: dify-knowledge-base-ingest.md
+    name: dify-knowledge-base-ingest
+    method: generated
+    source: openapi/_original/dify-service-api-openapi.json
+    scope: Service API — Knowledge Bases, Documents, Chunks, Metadata
+    operations: 17
+grounding:
+  spec: openapi/_original/dify-service-api-openapi.json
+  conventions: conventions/dify-conventions.yml
+  errors: errors/dify-problem-types.yml
+  rate_limits: rate-limits/dify-rate-limits.yml
+  events: asyncapi/dify-events.yml
+  operation_ids_verified: true

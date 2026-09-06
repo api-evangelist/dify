@@ -1,24 +1,38 @@
 {
   "provider": "dify",
   "sources": [
-    "dify-chat-api-openapi.yml",
-    "dify-completion-api-openapi.yml",
-    "dify-conversations-api-openapi.yml",
-    "dify-datasets-api-openapi.yml",
-    "dify-files-api-openapi.yml",
-    "dify-workflows-api-openapi.yml"
+    "_original/dify-service-api-openapi.json"
   ],
   "outputs": [
+    "dify-annotations-api-openapi.yml",
+    "dify-applications-api-openapi.yml",
+    "dify-audio-api-openapi.yml",
     "dify-chat-api-openapi.yml",
+    "dify-chunks-api-openapi.yml",
     "dify-completion-api-openapi.yml",
     "dify-conversations-api-openapi.yml",
     "dify-datasets-api-openapi.yml",
+    "dify-documents-api-openapi.yml",
+    "dify-end-users-api-openapi.yml",
+    "dify-feedback-api-openapi.yml",
     "dify-files-api-openapi.yml",
+    "dify-human-input-api-openapi.yml",
+    "dify-knowledge-pipeline-api-openapi.yml",
+    "dify-metadata-api-openapi.yml",
+    "dify-models-api-openapi.yml",
+    "dify-tags-api-openapi.yml",
     "dify-workflows-api-openapi.yml"
   ],
-  "archived": [],
+  "archived": [
+    "_archive/dify-openapi-scaffold.yml"
+  ],
   "errors": [],
   "warnings": [],
-  "notes": [],
+  "notes": [
+    "2026-09-06 enrichment pass: superseded by the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json (82 operations, 64 paths, 128 schemas).",
+    "The previous six split files were derived from a 13-operation scaffold; that scaffold is now at _archive/dify-openapi-scaffold.yml and the splits were regenerated from the harvested spec.",
+    "Splits are OpenAPI 3.0.1, matching the harvested source. A future refine pass may upgrade them.",
+    "apis.yml register: 18 per-tag API entries wired."
+  ],
   "skipped": []
 }

@@ -1,0 +1,100 @@
+generated: '2026-09-06'
+method: searched
+source: >-
+  https://security.dify.ai/, https://dify.ai/pricing,
+  https://docs.dify.ai/en/cloud/use-dify/publish/publish-mcp,
+  openapi/_original/dify-service-api-openapi.json
+description: >-
+  Standards and compliance posture asserted by Dify, with the evidence each claim rests on. Dify's
+  contract is a plain OpenAPI 3.0.1 REST API with bearer API keys; it implements no identity,
+  finance or vertical data standard, and its market (LLM application platforms) has no ratified
+  domain standard to conform to. The agent-interop specifications it does implement — MCP and A2A —
+  are recorded here because they are the standards that matter for this market.
+conformance:
+  - id: openapi-3.0
+    name: OpenAPI 3.0
+    conforms: true
+    evidence: >-
+      openapi/_original/dify-service-api-openapi.json declares "openapi": "3.0.1" and is published
+      first-party at https://docs.dify.ai/en/api-reference/openapi_service.json, advertised from
+      https://docs.dify.ai/llms.txt.
+  - id: mcp
+    name: Model Context Protocol
+    conforms: true
+    evidence: >-
+      https://docs.dify.ai/mcp answers an anonymous JSON-RPC tools/list with three tools and input
+      schemas (probed 2026-09-06). Dify also mints per-application MCP server URLs, documented at
+      https://docs.dify.ai/en/cloud/use-dify/publish/publish-mcp.
+  - id: a2a
+    name: A2A Agent-to-Agent protocol
+    conforms: true
+    version: '0.3'
+    evidence: >-
+      https://docs.dify.ai/.well-known/agent-card.json returns a conformant agent card declaring
+      protocolVersion 0.3. Graded in a2a/dify-a2a.yml.
+  - id: rfc9727-api-catalog
+    name: RFC 9727 API catalog
+    conforms: true
+    evidence: >-
+      https://docs.dify.ai/.well-known/api-catalog returns a linkset with an anchor and a
+      service-desc pointing at the OpenAPI document (probed 2026-09-06).
+  - id: llmstxt
+    name: llms.txt
+    conforms: true
+    evidence: >-
+      https://docs.dify.ai/llms.txt returns 200 and carries an explicit "OpenAPI Specs" section
+      naming the first-party specification files.
+  - id: sse
+    name: Server-Sent Events (WHATWG)
+    conforms: true
+    evidence: >-
+      Generation endpoints return text/event-stream when response_mode=streaming; the wire format,
+      ping keep-alive and event dispatch are documented at
+      https://docs.dify.ai/en/api-reference/guides/streaming.
+  - id: soc2
+    name: SOC 2 Type 1
+    conforms: true
+    evidence: >-
+      https://security.dify.ai/ (Vanta-hosted trust center) states paid-plan customers can obtain
+      the SOC 2 Type 1 report and penetration-test report by security email.
+  - id: rfc9457
+    name: RFC 9457 Problem Details
+    conforms: false
+    evidence: >-
+      Errors are a custom {code, message, status} envelope returned as application/json. No
+      application/problem+json media type appears in the OpenAPI. See errors/dify-problem-types.yml.
+  - id: oauth2
+    name: OAuth 2.0
+    conforms: false
+    evidence: >-
+      The only securityScheme in the 82-operation OpenAPI is ApiKeyAuth (http bearer). No OAuth
+      authorization-server or protected-resource metadata is served on any Dify host.
+  - id: oidc
+    name: OpenID Connect
+    conforms: false
+    evidence: >-
+      /.well-known/openid-configuration returns 404 on every Dify host probed. SSO is sold as an
+      Enterprise feature but no discovery document is published.
+  - id: scim
+    name: SCIM
+    conforms: false
+    evidence: No urn:ietf:params:scim schema URN or /Users, /Groups surface appears in the contract.
+  - id: rfc8594-sunset
+    name: RFC 8594 Sunset header
+    conforms: false
+    evidence: No Sunset or Deprecation header appears in the OpenAPI or the API reference.
+domain_standard:
+  applicable: false
+  note: >-
+    Reward-only check, deliberately left empty. The LLM application platform / LLMOps market has no
+    ratified domain data standard for this pipeline to test against — no equivalent of FHIR, FDX,
+    OpenRTB or ISO 20022 exists for agentic-workflow orchestration. The closest cross-vendor
+    standards are the agent-interop protocols recorded above (MCP, A2A), and Dify implements both.
+    No conformance is invented to fill this slot.
+certifications:
+  - name: SOC 2 Type 1
+    source: https://security.dify.ai/
+    availability: on request to paid-plan customers
+  - name: Penetration test report
+    source: https://security.dify.ai/
+    availability: on request to paid-plan customers

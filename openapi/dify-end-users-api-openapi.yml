@@ -1,0 +1,140 @@
+openapi: 3.0.1
+info:
+  title: Dify End Users API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
+    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  version: 1.0.0
+servers:
+- url: https://{api_base_url}
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
+    API base URL.
+  variables:
+    api_base_url:
+      default: api.dify.ai/v1
+      description: Host and path of the API base URL, without the `https://` prefix.
+security:
+- ApiKeyAuth: []
+tags:
+- name: End Users
+  description: Operations related to end user information.
+paths:
+  /end-users/{end_user_id}:
+    get:
+      summary: Get End User Info
+      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator
+        apps.
+
+
+        Returns an end user''s details by ID. Useful for resolving an end-user ID returned by another
+        endpoint, such as `created_by` in the [Upload File](/en/api-reference/files/upload-file) response.'
+      operationId: getEndUserChat
+      tags:
+      - End Users
+      parameters:
+      - name: end_user_id
+        in: path
+        required: true
+        description: ID of the end user to look up.
+        schema:
+          type: string
+          format: uuid
+      responses:
+        '200':
+          description: End user retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/EndUserDetail'
+              examples:
+                endUserDetail:
+                  summary: Response Example
+                  value:
+                    id: f1e2d3c4-b5a6-7890-abcd-ef1234567890
+                    tenant_id: 11223344-5566-7788-99aa-bbccddeeff00
+                    app_id: a1b2c3d4-5678-90ab-cdef-1234567890ab
+                    type: service-api
+                    external_user_id: abc-123
+                    name: null
+                    is_anonymous: false
+                    session_id: abc-123
+                    created_at: '2024-01-16T12:00:29Z'
+                    updated_at: '2024-01-16T12:00:29Z'
+        '404':
+          description: '`end_user_not_found` : End user not found.'
+          content:
+            application/json:
+              examples:
+                end_user_not_found:
+                  summary: end_user_not_found
+                  value:
+                    status: 404
+                    code: end_user_not_found
+                    message: End user not found.
+      x-mint:
+        href: /en/api-reference/end-users/get-end-user-info
+        metadata:
+          title: Get End User Info
+          sidebarTitle: Get End User Info
+components:
+  schemas:
+    EndUserDetail:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: End user ID.
+        tenant_id:
+          type: string
+          format: uuid
+          description: Tenant ID.
+        app_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Application ID.
+        type:
+          type: string
+          description: End user type. Always `service-api` for Service API users.
+        external_user_id:
+          type: string
+          nullable: true
+          description: The `user` identifier provided in API requests (e.g., the `user` field in [Send
+            Chat Message](/en/api-reference/chat-messages/send-chat-message)).
+        name:
+          type: string
+          nullable: true
+          description: End user name.
+        is_anonymous:
+          type: boolean
+          description: Whether the user is anonymous. `true` when no `user` identifier was provided in
+            the original API request.
+        session_id:
+          type: string
+          description: Session identifier. Defaults to the `external_user_id` value.
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp.
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp.
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API_KEY
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
+        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+
+
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
+        fail with HTTP `401` (`unauthorized`).'
+x-provenance:
+  generated: '2026-09-06'
+  method: derived
+  source: openapi/_original/dify-service-api-openapi.json
+  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
+    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
+    spec.

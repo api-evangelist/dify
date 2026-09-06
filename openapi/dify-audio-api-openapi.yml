@@ -1,0 +1,335 @@
+openapi: 3.0.1
+info:
+  title: Dify Audio API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
+    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  version: 1.0.0
+servers:
+- url: https://{api_base_url}
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
+    API base URL.
+  variables:
+    api_base_url:
+      default: api.dify.ai/v1
+      description: Host and path of the API base URL, without the `https://` prefix.
+security:
+- ApiKeyAuth: []
+tags:
+- name: Audio
+  description: Text-to-Speech and Speech-to-Text operations.
+paths:
+  /audio-to-text:
+    post:
+      summary: Convert Audio to Text
+      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator
+        apps.
+
+
+        Transcribes an uploaded audio file to text using the workspace''s default speech-to-text model.'
+      operationId: audioToText
+      tags:
+      - Audio
+      requestBody:
+        required: true
+        content:
+          multipart/form-data:
+            schema:
+              $ref: '#/components/schemas/AudioToTextRequest'
+      responses:
+        '200':
+          description: Successfully converted audio to text.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AudioToTextResponse'
+              examples:
+                audioToTextSuccess:
+                  summary: Response Example
+                  value:
+                    text: Hello, I would like to know more about the iPhone 13 Pro Max.
+        '400':
+          description: '- `no_audio_uploaded` : No audio file was provided in the `file` field.
+
+            - `speech_to_text_disabled` : Speech-to-text is disabled for this app.
+
+            - `provider_not_support_speech_to_text` : The model provider does not support speech-to-text.
+
+            - `provider_not_initialize` : No valid model provider credentials are configured.
+
+            - `completion_request_error` : The speech recognition request failed.'
+          content:
+            application/json:
+              examples:
+                no_audio_uploaded:
+                  summary: no_audio_uploaded
+                  value:
+                    status: 400
+                    code: no_audio_uploaded
+                    message: Please upload your audio.
+                speech_to_text_disabled:
+                  summary: speech_to_text_disabled
+                  value:
+                    status: 400
+                    code: speech_to_text_disabled
+                    message: Speech to text is disabled.
+                provider_not_support_speech_to_text:
+                  summary: provider_not_support_speech_to_text
+                  value:
+                    status: 400
+                    code: provider_not_support_speech_to_text
+                    message: Provider not support speech to text.
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No valid model provider credentials found. Please go to Settings -> Model
+                      Provider to complete your provider credentials.
+                completion_request_error:
+                  summary: completion_request_error
+                  value:
+                    status: 400
+                    code: completion_request_error
+                    message: Completion request failed.
+        '413':
+          description: '`audio_too_large` : The audio file exceeds the `30 MB` size limit.'
+          content:
+            application/json:
+              examples:
+                audio_too_large:
+                  summary: audio_too_large
+                  value:
+                    status: 413
+                    code: audio_too_large
+                    message: Audio size larger than 30 mb
+        '415':
+          description: '`unsupported_audio_type` : The file''s MIME type is not one of the accepted audio
+            types (see the `file` field).'
+          content:
+            application/json:
+              examples:
+                unsupported_audio_type:
+                  summary: unsupported_audio_type
+                  value:
+                    status: 415
+                    code: unsupported_audio_type
+                    message: Audio type not allowed.
+        '500':
+          description: '`internal_server_error` : Internal server error.'
+          content:
+            application/json:
+              examples:
+                internal_server_error:
+                  summary: internal_server_error
+                  value:
+                    status: 500
+                    code: internal_server_error
+                    message: The server encountered an internal error and was unable to complete your
+                      request. Either the server is overloaded or there is an error in the application.
+      x-mint:
+        href: /en/api-reference/audio/convert-audio-to-text
+        metadata:
+          title: Convert Audio to Text
+          sidebarTitle: Convert Audio to Text
+  /text-to-audio:
+    post:
+      summary: Convert Text to Audio
+      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator
+        apps.
+
+
+        Converts text to speech audio. Pass `text` to synthesize arbitrary text, or `message_id` to voice
+        an existing message''s answer.'
+      operationId: textToAudioChat
+      tags:
+      - Audio
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TextToAudioRequest'
+            examples:
+              textToAudioExample:
+                summary: Request Example
+                value:
+                  text: Hello, welcome to our service.
+                  user: abc-123
+                  voice: alloy
+                  streaming: false
+      responses:
+        '200':
+          description: 'Returns the generated audio. The `Content-Type` header reflects the provider''s
+            audio container, verified from the response bytes when recognizable.
+
+
+            The body can be AAC, FLAC, MP4, MP3, Ogg, WAV, or WebM. Output that cannot be recognized is
+            labeled with the provider''s declared type, or `audio/mpeg` when none is declared.
+
+
+            Streamed provider output is delivered with chunked transfer encoding; the request `streaming`
+            field does not control this.'
+          content:
+            audio/aac:
+              schema:
+                type: string
+                format: binary
+            audio/flac:
+              schema:
+                type: string
+                format: binary
+            audio/mp4:
+              schema:
+                type: string
+                format: binary
+            audio/mpeg:
+              schema:
+                type: string
+                format: binary
+            audio/ogg:
+              schema:
+                type: string
+                format: binary
+            audio/wav:
+              schema:
+                type: string
+                format: binary
+            audio/webm:
+              schema:
+                type: string
+                format: binary
+        '400':
+          description: '- `app_unavailable` : The app is unavailable or misconfigured.
+
+            - `invalid_param` : Text-to-speech is not enabled, `text` is missing, or no voice is available.
+
+            - `provider_not_initialize` : No valid model provider credentials are configured.
+
+            - `provider_quota_exceeded` : The model provider quota is exhausted.
+
+            - `model_currently_not_support` : The current model does not support this operation.
+
+            - `completion_request_error` : The text-to-speech request failed.'
+          content:
+            application/json:
+              examples:
+                app_unavailable:
+                  summary: app_unavailable
+                  value:
+                    status: 400
+                    code: app_unavailable
+                    message: App unavailable, please check your app configurations.
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: TTS is not enabled
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No valid model provider credentials found. Please go to Settings -> Model
+                      Provider to complete your provider credentials.
+                provider_quota_exceeded:
+                  summary: provider_quota_exceeded
+                  value:
+                    status: 400
+                    code: provider_quota_exceeded
+                    message: Your quota for Dify Hosted OpenAI has been exhausted. Please go to Settings
+                      -> Model Provider to complete your own provider credentials.
+                model_currently_not_support:
+                  summary: model_currently_not_support
+                  value:
+                    status: 400
+                    code: model_currently_not_support
+                    message: Dify Hosted OpenAI trial currently not support the GPT-4 model.
+                completion_request_error:
+                  summary: completion_request_error
+                  value:
+                    status: 400
+                    code: completion_request_error
+                    message: Completion request failed.
+        '500':
+          description: '`internal_server_error` : Internal server error.'
+          content:
+            application/json:
+              examples:
+                internal_server_error:
+                  summary: internal_server_error
+                  value:
+                    status: 500
+                    code: internal_server_error
+                    message: The server encountered an internal error and was unable to complete your
+                      request. Either the server is overloaded or there is an error in the application.
+      x-mint:
+        href: /en/api-reference/audio/convert-text-to-audio
+        metadata:
+          title: Convert Text to Audio
+          sidebarTitle: Convert Text to Audio
+components:
+  schemas:
+    AudioToTextRequest:
+      type: object
+      description: Request body for audio-to-text conversion.
+      required:
+      - file
+      properties:
+        file:
+          type: string
+          format: binary
+          description: 'Audio file to transcribe. Accepted MIME types: `audio/mp3`, `audio/m4a` (also
+            accepted as `audio/x-m4a`), `audio/wav`, `audio/amr`, `audio/mpga`. Other types, including
+            the common `audio/mpeg`, are rejected with `unsupported_audio_type`. Maximum size `30 MB`.'
+        user:
+          type: string
+          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
+    AudioToTextResponse:
+      type: object
+      properties:
+        text:
+          type: string
+          description: Output text from speech recognition.
+    TextToAudioRequest:
+      type: object
+      description: Request body for text-to-audio conversion. Provide either `message_id` or `text`.
+      properties:
+        message_id:
+          type: string
+          format: uuid
+          description: ID of the message whose answer to voice. Takes priority over `text` when both are
+            provided. Get message IDs from [List Conversation Messages](/en/api-reference/conversations/list-conversation-messages).
+        text:
+          type: string
+          description: Text to synthesize into speech.
+        user:
+          type: string
+          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
+        voice:
+          type: string
+          description: Voice to use for text-to-speech. Available voices depend on the TTS provider configured
+            for this app. Use the `voice` value from [Get App Parameters](/en/api-reference/applications/get-app-parameters)
+            → `text_to_speech.voice` for the default.
+        streaming:
+          type: boolean
+          description: Accepted for backward compatibility but has no effect. Whether the audio is streamed
+            is determined by the configured TTS provider's output, not by this field.
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API_KEY
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
+        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+
+
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
+        fail with HTTP `401` (`unauthorized`).'
+x-provenance:
+  generated: '2026-09-06'
+  method: derived
+  source: openapi/_original/dify-service-api-openapi.json
+  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
+    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
+    spec.

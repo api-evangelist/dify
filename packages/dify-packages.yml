@@ -1,0 +1,121 @@
+generated: '2026-09-06'
+method: searched
+source: >-
+  registry.npmjs.org, pypi.org, rubygems.org, proxy.golang.org, search.maven.org, and the
+  langgenius GitHub organization repository listing
+description: >-
+  First-party Dify client libraries and developer tooling. Dify's SDK estate is unusually
+  fragmented: the Node client is current, the published Python client is two years behind the
+  repository that produces it, and the Java, Ruby and documentation-MCP SDK repositories are all
+  archived. Version and published date are read from each registry's metadata endpoint.
+findings:
+  - >-
+    ABANDONMENT SIGNAL: pypi dify-client 0.1.10 was last published 2023-11-15 and describes an API
+    surface of a handful of endpoints, while the Service API Dify published in 2026 carries 82
+    operations. langgenius/dify-python-sdk carries version 0.1.12 in its pyproject.toml, so even the
+    repository is ahead of what is on PyPI.
+  - >-
+    langgenius/java-client declares ai.dify:java-client 1.0.0 in its pom.xml but nothing under the
+    ai.dify group is published to Maven Central; the repository is archived.
+  - >-
+    langgenius/ruby-sdk builds dify-client.gemspec, but the gem published to RubyGems is named
+    dify_client and its last release is 0.1.0 (2023-07-18). The repository is archived.
+  - >-
+    langgenius/dify-sdk-go has no tags, so the Go module proxy only offers a pseudo-version from the
+    2024-10-31 commit.
+packages:
+  - name: dify-client
+    registry: npm
+    url: https://www.npmjs.com/package/dify-client
+    language: JavaScript
+    official: true
+    version: 3.1.0
+    published: '2026-04-01'
+    source: https://github.com/langgenius/dify/tree/main/sdks/nodejs-client
+    note: Node.js client for the Dify Service API, published from the main langgenius/dify monorepo.
+  - name: dify-client
+    registry: pypi
+    url: https://pypi.org/project/dify-client/
+    language: Python
+    official: true
+    version: 0.1.10
+    published: '2023-11-15'
+    source: https://github.com/langgenius/dify-python-sdk
+    note: >-
+      Official Python client. Nearly three years without a release; the repository's pyproject.toml
+      already declares 0.1.12, which was never published.
+  - name: dify-plugin
+    registry: pypi
+    url: https://pypi.org/project/dify-plugin/
+    language: Python
+    official: true
+    version: 0.10.2
+    published: '2026-08-10'
+    source: https://github.com/langgenius/dify-plugin-sdks
+    note: Plugin SDK for building Dify Marketplace plugins. Actively maintained.
+  - name: dify_client
+    registry: rubygems
+    url: https://rubygems.org/gems/dify_client
+    language: Ruby
+    official: true
+    version: 0.1.0
+    published: '2023-07-18'
+    source: https://github.com/langgenius/ruby-sdk
+    note: >-
+      Published by a Dify maintainer from the langgenius/ruby-sdk repository, which is now archived.
+      Single release.
+  - name: github.com/langgenius/dify-sdk-go
+    registry: go
+    url: https://pkg.go.dev/github.com/langgenius/dify-sdk-go
+    language: Go
+    official: true
+    version: v0.0.0-20241031143354-972c4addddf6
+    published: '2024-10-31'
+    source: https://github.com/langgenius/dify-sdk-go
+    note: >-
+      No semantic-version tags exist, so consumers can only pin the pseudo-version derived from the
+      latest commit.
+  - name: ai.dify:java-client
+    registry: maven
+    url: https://github.com/langgenius/java-client
+    language: Java
+    official: true
+    version: null
+    published: null
+    note: >-
+      Checked, nothing to record — search.maven.org returns zero artifacts for group ai.dify and
+      repo1.maven.org/maven2/ai/dify/ returns 404. The pom declares 1.0.0 but the artifact is not
+      published; the repository is archived (last push 2024-07-15). Consumers must build from source.
+  - name: github.com/langgenius/dify-cloud-kit
+    registry: go
+    url: https://pkg.go.dev/github.com/langgenius/dify-cloud-kit
+    language: Go
+    official: true
+    version: v0.1.4
+    published: '2026-07-16'
+    source: https://github.com/langgenius/dify-cloud-kit
+    note: Shared Go library for open cloud development, used by Dify's own services. Not a Service API client.
+  - name: github.com/langgenius/dify-plugin-daemon
+    registry: go
+    url: https://pkg.go.dev/github.com/langgenius/dify-plugin-daemon
+    language: Go
+    official: true
+    version: v0.0.0-20260903062014-1ca102fb0a64
+    published: '2026-09-03'
+    source: https://github.com/langgenius/dify-plugin-daemon
+    note: >-
+      Plugin runtime and the source of the `dify` CLI (see cli/dify-cli.yml). Released as tagged
+      binaries (0.6.10, 2026-08-07) rather than tagged Go modules, so the module proxy only offers a
+      pseudo-version.
+not_first_party:
+  - name: dify-sdk
+    registry: pypi
+    owner: cruldra
+    note: Third-party Python SDK. Not published by Dify.
+  - name: dify
+    registry: rubygems
+    owner: Kervin
+    note: Third-party Ruby client. Not published by Dify.
+  - name: dify
+    registry: npm
+    note: Unrelated 2021 package; not a Dify client.

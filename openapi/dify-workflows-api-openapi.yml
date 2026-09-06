@@ -1,75 +1,1402 @@
-openapi: 3.1.0
+openapi: 3.0.1
 info:
-  title: Dify Chat Workflows API
-  description: Dify is an open-source platform for building AI applications and agentic workflows. This API provides access to chat messages, completion messages, workflow execution, conversations, knowledge bases (datasets) and file uploads.
-  version: '1.0'
+  title: Dify Workflow Runs API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
+    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  version: 1.0.0
 servers:
-- url: https://api.dify.ai/v1
-  description: Dify Cloud API
+- url: https://{api_base_url}
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
+    API base URL.
+  variables:
+    api_base_url:
+      default: api.dify.ai/v1
+      description: Host and path of the API base URL, without the `https://` prefix.
 security:
-- bearerAuth: []
+- ApiKeyAuth: []
 tags:
-- name: Workflows
+- name: Workflow Runs
+  description: Operations for executing and managing workflows.
 paths:
-  /workflows/run:
-    post:
+  /workflows/run/{workflow_run_id}:
+    get:
+      summary: Get Workflow Run Detail
+      description: '**Available for**: Chatflow, Workflow apps.
+
+
+        Get a single workflow run''s status, inputs, outputs, and execution metrics.'
+      operationId: getWorkflowRunDetail
       tags:
-      - Workflows
-      summary: Execute a workflow
-      operationId: runWorkflow
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-              required:
-              - inputs
-              - user
-              properties:
-                inputs:
-                  type: object
-                response_mode:
-                  type: string
-                  enum:
-                  - streaming
-                  - blocking
-                user:
-                  type: string
-      responses:
-        '200':
-          description: Workflow result
-  /workflows/{task_id}/stop:
-    post:
-      tags:
-      - Workflows
-      summary: Stop a running workflow
-      operationId: stopWorkflow
+      - Workflow Runs
       parameters:
-      - name: task_id
+      - name: workflow_run_id
         in: path
         required: true
+        description: Workflow run ID, from the response or streaming events of [Run Workflow](/en/api-reference/workflow-runs/run-workflow),
+          or from message metadata in Chatflow apps.
         schema:
           type: string
       responses:
         '200':
-          description: Stopped
-  /workflows/run/{workflow_run_id}:
+          description: Successfully retrieved workflow run details.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowRunDetailResponse'
+              examples:
+                workflowRunDetail:
+                  summary: Response Example
+                  value:
+                    id: fb47b2e6-5e43-4f90-be01-d5c5a088d156
+                    workflow_id: 7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345
+                    status: succeeded
+                    inputs: '{"query": "Translate this to French"}'
+                    outputs:
+                      result: Traduisez ceci en francais
+                    error: null
+                    total_steps: 3
+                    total_tokens: 150
+                    created_at: 1705407629
+                    finished_at: 1705407630
+                    elapsed_time: 1.23
+        '400':
+          description: '`not_workflow_app` : App mode does not match the API route.'
+          content:
+            application/json:
+              examples:
+                not_workflow_app:
+                  summary: not_workflow_app
+                  value:
+                    status: 400
+                    code: not_workflow_app
+                    message: Please check if your app mode matches the right API route.
+        '404':
+          description: '`not_found` : Workflow run not found.'
+          content:
+            application/json:
+              examples:
+                workflow_run_not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Workflow run not found.
+      x-mint:
+        href: /en/api-reference/workflow-runs/get-workflow-run-detail
+        metadata:
+          title: Get Workflow Run Detail
+          sidebarTitle: Get Workflow Run Detail
+  /workflows/logs:
+    get:
+      summary: List Workflow Logs
+      description: '**Available for**: Chatflow, Workflow apps.
+
+
+        List past workflow runs with optional filters. Each entry is a run-level summary (status, token
+        usage, step count, and timing), not a node-by-node execution log.
+
+
+        To follow a run''s node-level events, stream it instead:
+
+
+        - **A run you start**: use [Run Workflow](/en/api-reference/workflow-runs/run-workflow) in streaming
+        mode, which emits `node_started` and `node_finished` as the run executes.
+
+        - **A run already in progress**: call [Stream Workflow Events](/en/api-reference/workflow-runs/stream-workflow-events)
+        with `include_state_snapshot=true` to replay each executed node''s status, then stream the rest.
+
+
+        A finished run''s node-level logs aren''t available through the Service API.'
+      operationId: getWorkflowLogs
+      tags:
+      - Workflow Runs
+      parameters:
+      - name: keyword
+        in: query
+        description: Keyword to search in logs.
+        schema:
+          type: string
+      - name: status
+        in: query
+        description: Filter by execution status.
+        schema:
+          type: string
+          enum:
+          - succeeded
+          - failed
+          - stopped
+      - name: page
+        in: query
+        description: Page number.
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+          maximum: 99999
+      - name: limit
+        in: query
+        description: Number of items per page.
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 100
+      - name: created_at__before
+        in: query
+        description: Filter logs created before this ISO 8601 timestamp.
+        schema:
+          type: string
+          format: date-time
+      - name: created_at__after
+        in: query
+        description: Filter logs created after this ISO 8601 timestamp.
+        schema:
+          type: string
+          format: date-time
+      - name: created_by_end_user_session_id
+        in: query
+        description: Filter by end user session ID.
+        schema:
+          type: string
+      - name: created_by_account
+        in: query
+        description: Filter by the creator's account email (e.g., `name@example.com`).
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Successfully retrieved workflow logs.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowLogsResponse'
+              examples:
+                workflowLogs:
+                  summary: Response Example
+                  value:
+                    page: 1
+                    limit: 20
+                    total: 1
+                    has_more: false
+                    data:
+                    - id: b7e2f8a1-3c4d-5e6f-7890-abcdef123456
+                      workflow_run:
+                        id: fb47b2e6-5e43-4f90-be01-d5c5a088d156
+                        version: '2025-01-16 12:00:00.000000'
+                        status: succeeded
+                        error: null
+                        elapsed_time: 1.23
+                        total_tokens: 150
+                        total_steps: 3
+                        created_at: 1705407629
+                        finished_at: 1705407630
+                        exceptions_count: 0
+                        triggered_from: app-run
+                      created_from: service-api
+                      created_by_role: end_user
+                      created_by_account: null
+                      created_by_end_user:
+                        id: f1e2d3c4-b5a6-7890-abcd-ef1234567890
+                        type: service-api
+                        is_anonymous: false
+                        session_id: user_workflow_123
+                      created_at: 1705407629
+        '400':
+          description: '`invalid_param` : A query parameter is invalid, such as a `created_by_account`
+            value matching no account, a malformed `created_at__before` or `created_at__after` timestamp,
+            or an out-of-range `page`, `limit`, or `status` value.'
+          content:
+            application/json:
+              examples:
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: 'Account not found: name@example.com'
+      x-mint:
+        href: /en/api-reference/workflow-runs/list-workflow-logs
+        metadata:
+          title: List Workflow Logs
+          sidebarTitle: List Workflow Logs
+  /workflow/{workflow_run_id}/events:
     get:
       tags:
-      - Workflows
-      summary: Get a workflow run detail
-      operationId: getWorkflowRun
+      - Workflow Runs
+      summary: Stream Workflow Events
+      description: '**Available for**: Chatflow, Workflow apps.
+
+
+        Resume the [Server-Sent Events stream](/en/api-reference/guides/streaming) for a workflow run
+        after a pause or a dropped SSE connection. For runs that have already finished, the stream emits
+        a single `workflow_finished` event and closes.
+
+
+        To check an in-progress run''s node-level status and progress, call it with `include_state_snapshot=true`:
+        the stream replays each already-executed node''s status before streaming new events.'
+      operationId: streamWorkflowEvents
       parameters:
       - name: workflow_run_id
         in: path
         required: true
         schema:
           type: string
+          format: uuid
+        description: Workflow run ID whose event stream to resume, from the response or streaming events
+          of [Run Workflow](/en/api-reference/workflow-runs/run-workflow).
+      - name: user
+        in: query
+        required: true
+        schema:
+          type: string
+        description: End-user identifier, defined by your app and unique within it. Must match the `user`
+          that started the run. See [End User Identity](/en/api-reference/guides/end-user-identity).
+      - name: include_state_snapshot
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+        description: When `true`, replay from the persisted state snapshot to include a status summary
+          of already-executed nodes before streaming new events.
+      - name: continue_on_pause
+        in: query
+        required: false
+        schema:
+          type: boolean
+          default: false
+        description: Set to `true` to keep the stream open across multiple `workflow_paused` events (useful
+          when the workflow has more than one Human Input node in sequence). Default closes the stream
+          after the first pause.
       responses:
         '200':
-          description: Workflow run details
+          description: 'Server-Sent Events stream. It opens with a bare `event: ping` frame (keep-alive;
+            more arrive roughly every 10 seconds); every other event is delivered as `data: {JSON}\n\n`.
+            Event payloads follow the same schemas as the original streaming response.'
+          content:
+            text/event-stream:
+              schema:
+                type: string
+                description: 'SSE stream of events from a resumed workflow run, in the same format as
+                  [Run Workflow](/en/api-reference/workflow-runs/run-workflow) (Workflow apps) or [Send
+                  Chat Message](/en/api-reference/chat-messages/send-chat-message) (Chatflow apps). When
+                  the resumed portion runs an LLM node with `reasoning_format: separated`, this stream
+                  also carries `reasoning_chunk` events.'
+              examples:
+                resumedRun:
+                  summary: Response Example - Resumed run (Workflow)
+                  value: 'event: ping
+
+
+                    data: {"event": "human_input_form_filled", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"node_id": "approval_node",
+                    "node_title": "Approval", "rendered_content": "Please review the draft.", "action_id":
+                    "approve", "action_text": "Approve", "submitted_data": {"comment": "Looks good."}}}
+
+
+                    data: {"event": "node_started", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"id": "node_exec_2",
+                    "node_id": "node_1", "node_type": "llm", "title": "LLM Node", "index": 2, "created_at":
+                    1705407705}}
+
+
+                    data: {"event": "reasoning_chunk", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"reasoning": "Approved,
+                    now translating.", "node_id": "node_1", "is_final": false}}
+
+
+                    data: {"event": "reasoning_chunk", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"reasoning": "",
+                    "node_id": "node_1", "is_final": true}}
+
+
+                    data: {"event": "text_chunk", "task_id": "c3800678-a077-43df-a102-53f23ed20b88", "workflow_run_id":
+                    "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"text": "Bonjour", "from_variable_selector":
+                    ["node_1", "text"]}}
+
+
+                    data: {"event": "workflow_finished", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156",
+                    "workflow_id": "7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345", "status": "succeeded", "outputs":
+                    {"result": "Bonjour"}, "elapsed_time": 2.1, "total_tokens": 42, "total_steps": 2,
+                    "created_at": 1705407629, "finished_at": 1705407706}}'
+                resumedRunChatflow:
+                  summary: Response Example - Resumed run (Chatflow)
+                  value: 'event: ping
+
+
+                    data: {"event": "human_input_form_filled", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "message_id": "2e4f6a8b-1c3d-5e7f-9a0b-2c4d6e8f0a1b", "conversation_id": "9d3a2f1b-6c7d-4e8f-a0b1-c2d3e4f5a6b7",
+                    "created_at": 1705407705, "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156",
+                    "data": {"node_id": "approval_node", "node_title": "Approval", "rendered_content":
+                    "Please review the draft.", "action_id": "approve", "action_text": "Approve", "submitted_data":
+                    {"comment": "Looks good."}}}
+
+
+                    data: {"event": "node_started", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "message_id": "2e4f6a8b-1c3d-5e7f-9a0b-2c4d6e8f0a1b", "conversation_id": "9d3a2f1b-6c7d-4e8f-a0b1-c2d3e4f5a6b7",
+                    "created_at": 1705407705, "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156",
+                    "data": {"id": "ne_002", "node_id": "node_llm_1", "node_type": "llm", "title": "LLM",
+                    "index": 2, "created_at": 1705407705}}
+
+
+                    data: {"event": "reasoning_chunk", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "message_id": "2e4f6a8b-1c3d-5e7f-9a0b-2c4d6e8f0a1b", "conversation_id": "9d3a2f1b-6c7d-4e8f-a0b1-c2d3e4f5a6b7",
+                    "created_at": 1705407705, "data": {"message_id": "2e4f6a8b-1c3d-5e7f-9a0b-2c4d6e8f0a1b",
+                    "reasoning": "The reviewer approved the draft.", "node_id": "node_llm_1", "is_final":
+                    false}}
+
+
+                    data: {"event": "reasoning_chunk", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "message_id": "2e4f6a8b-1c3d-5e7f-9a0b-2c4d6e8f0a1b", "conversation_id": "9d3a2f1b-6c7d-4e8f-a0b1-c2d3e4f5a6b7",
+                    "created_at": 1705407705, "data": {"message_id": "2e4f6a8b-1c3d-5e7f-9a0b-2c4d6e8f0a1b",
+                    "reasoning": "", "node_id": "node_llm_1", "is_final": true}}
+
+
+                    data: {"event": "message", "task_id": "c3800678-a077-43df-a102-53f23ed20b88", "message_id":
+                    "2e4f6a8b-1c3d-5e7f-9a0b-2c4d6e8f0a1b", "conversation_id": "9d3a2f1b-6c7d-4e8f-a0b1-c2d3e4f5a6b7",
+                    "answer": "Approved", "created_at": 1705407706}
+
+
+                    data: {"event": "node_finished", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "message_id": "2e4f6a8b-1c3d-5e7f-9a0b-2c4d6e8f0a1b", "conversation_id": "9d3a2f1b-6c7d-4e8f-a0b1-c2d3e4f5a6b7",
+                    "created_at": 1705407706, "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156",
+                    "data": {"id": "ne_002", "node_id": "node_llm_1", "node_type": "llm", "title": "LLM",
+                    "index": 2, "status": "succeeded", "elapsed_time": 1.2, "created_at": 1705407705,
+                    "finished_at": 1705407706}}
+
+
+                    data: {"event": "message_end", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "message_id": "2e4f6a8b-1c3d-5e7f-9a0b-2c4d6e8f0a1b", "conversation_id": "9d3a2f1b-6c7d-4e8f-a0b1-c2d3e4f5a6b7",
+                    "created_at": 1705407706, "metadata": {"usage": {"total_tokens": 42, "latency": 1.3}}}
+
+
+                    data: {"event": "workflow_finished", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "message_id": "2e4f6a8b-1c3d-5e7f-9a0b-2c4d6e8f0a1b", "conversation_id": "9d3a2f1b-6c7d-4e8f-a0b1-c2d3e4f5a6b7",
+                    "created_at": 1705407706, "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156",
+                    "data": {"id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "workflow_id": "7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345",
+                    "status": "succeeded", "elapsed_time": 2.1, "total_tokens": 42, "total_steps": 2,
+                    "created_at": 1705407629, "finished_at": 1705407706}}'
+        '400':
+          description: '`not_workflow_app` : Please check if your app mode matches the right API route.'
+          content:
+            application/json:
+              examples:
+                not_workflow_app:
+                  summary: not_workflow_app
+                  value:
+                    status: 400
+                    code: not_workflow_app
+                    message: Please check if your app mode matches the right API route.
+        '404':
+          description: '`not_found` : Workflow run not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Workflow run not found
+      x-mint:
+        href: /en/api-reference/workflow-runs/stream-workflow-events
+        metadata:
+          title: Stream Workflow Events
+          sidebarTitle: Stream Workflow Events
+  /workflows/run:
+    post:
+      summary: Run Workflow
+      description: '**Available for**: Workflow apps.
+
+
+        Run the app''s published workflow and return its outputs, either in a single `blocking` response
+        or as a `streaming` Server-Sent Events feed. Requires a published workflow.'
+      operationId: executeWorkflow
+      tags:
+      - Workflow Runs
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowExecutionRequest'
+            examples:
+              streaming_example:
+                summary: Request Example - Streaming mode
+                value:
+                  inputs:
+                    query: 'Summarize this text: The quick brown fox jumps over the lazy dog.'
+                  response_mode: streaming
+                  user: user_workflow_123
+              blocking_example:
+                summary: Request Example - Blocking mode
+                value:
+                  inputs:
+                    query: 'Translate this to French: Hello world'
+                  response_mode: blocking
+                  user: user_workflow_456
+              with_file_array_variable:
+                summary: Request Example - File array input
+                value:
+                  inputs:
+                    my_documents:
+                    - type: document
+                      transfer_method: local_file
+                      upload_file_id: a1b2c3d4-5678-90ab-cdef-1234567890ab
+                    - type: image
+                      transfer_method: remote_url
+                      url: https://example.com/image.jpg
+                  response_mode: blocking
+                  user: user_workflow_789
+      responses:
+        '200':
+          description: 'Successful response. The content type and structure depend on the `response_mode`
+            parameter in the request.
+
+
+            - If `response_mode` is `blocking`, returns `application/json` with a `WorkflowBlockingResponse`
+            object.
+
+            - If `response_mode` is `streaming`, returns `text/event-stream` with a stream of `ChunkWorkflowEvent`
+            objects.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowBlockingResponse'
+              examples:
+                blockingResponse:
+                  summary: Response Example - Blocking mode
+                  value:
+                    task_id: c3800678-a077-43df-a102-53f23ed20b88
+                    workflow_run_id: fb47b2e6-5e43-4f90-be01-d5c5a088d156
+                    data:
+                      id: fb47b2e6-5e43-4f90-be01-d5c5a088d156
+                      workflow_id: 7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345
+                      status: succeeded
+                      outputs:
+                        result: Bonjour le monde
+                      error: null
+                      elapsed_time: 1.23
+                      total_tokens: 150
+                      total_steps: 3
+                      created_at: 1705407629
+                      finished_at: 1705407630
+            text/event-stream:
+              schema:
+                type: string
+                description: 'A stream of Server-Sent Events. Parse it per the [SSE Streaming guide](/en/api-reference/guides/streaming):
+                  read `data:` lines, dispatch on the `event` field, skip `ping` (keep-alive; the stream
+                  opens with one, then more arrive roughly every 10 seconds).
+
+
+                  **Stream lifecycle**: The stream closes when a `workflow_finished`, `workflow_paused`,
+                  or `error` event is received. Errors are delivered in-stream with HTTP status `200`;
+                  inspect the event payload for details rather than relying on the status code.
+
+
+                  **Reasoning events**:
+
+                  - `reasoning_chunk`: A chain-of-thought delta from an LLM node whose `reasoning_format`
+                  is `separated`. Concatenate consecutive `reasoning_chunk` events to rebuild the full
+                  reasoning; an event with `is_final: true` marks the node finished thinking (and may
+                  carry an empty `reasoning`). The payload sits under `data` and, unlike chat apps, carries
+                  `message_id: null` and no `conversation_id`. The parallel `text_chunk` stream stays
+                  free of `<think>` tags.
+
+
+                  **Human Input events**:
+
+                  - `human_input_required`: Fires together with `workflow_paused` when the workflow reaches
+                  a Human Input node. Use the `form_token` from the payload to drive the form-handling
+                  flow via the [Human Input API](/en/api-reference/human-input/get-human-input-form).
+
+                  - `human_input_form_filled`: A recipient submitted the form; workflow execution resumes.
+
+                  - `human_input_form_timeout`: The form expired without a response. Workflow follows
+                  the timeout fallback edge if defined.'
+              examples:
+                streamingResponse:
+                  summary: Response Example - Streaming mode
+                  value: 'event: ping
+
+
+                    data: {"event": "workflow_started", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156",
+                    "workflow_id": "7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345", "inputs": {"query": "Translate
+                    this"}, "created_at": 1705407629, "reason": "initial"}}
+
+
+                    data: {"event": "node_started", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"id": "node_exec_1",
+                    "node_id": "node_1", "node_type": "llm", "title": "LLM Node", "index": 1, "created_at":
+                    1705407629}}
+
+
+                    data: {"event": "reasoning_chunk", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"reasoning": "Let
+                    me translate that.", "node_id": "node_1", "is_final": false}}
+
+
+                    data: {"event": "reasoning_chunk", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"reasoning": "",
+                    "node_id": "node_1", "is_final": true}}
+
+
+                    data: {"event": "text_chunk", "task_id": "c3800678-a077-43df-a102-53f23ed20b88", "workflow_run_id":
+                    "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"text": "Bonjour", "from_variable_selector":
+                    ["node_1", "text"]}}
+
+
+                    data: {"event": "workflow_finished", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156",
+                    "workflow_id": "7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345", "status": "succeeded", "outputs":
+                    {"result": "Bonjour le monde"}, "elapsed_time": 1.23, "total_tokens": 150, "total_steps":
+                    3, "created_at": 1705407629, "finished_at": 1705407630}}'
+                humanInputPause:
+                  summary: Response Example - Human Input pause
+                  value: 'event: ping
+
+
+                    data: {"event": "workflow_started", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156",
+                    "workflow_id": "7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345", "inputs": {"draft": "Hello"},
+                    "created_at": 1705407629, "reason": "initial"}}
+
+
+                    data: {"event": "human_input_required", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"form_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                    "form_token": "tok_abc123", "node_id": "approval_node", "node_title": "Approval",
+                    "form_content": "Please review the draft.", "inputs": [{"type": "paragraph", "output_variable_name":
+                    "comment", "default": null}], "actions": [{"id": "approve", "title": "Approve", "button_style":
+                    "primary"}], "display_in_ui": false, "resolved_default_values": {"comment": ""}, "expiration_time":
+                    1705494029}}
+
+
+                    data: {"event": "workflow_paused", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"workflow_run_id":
+                    "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "status": "paused", "created_at": 1705407629,
+                    "elapsed_time": 0.5}}'
+        '400':
+          description: '- `not_workflow_app` : App mode does not match the API route.
+
+            - `provider_not_initialize` : No valid model provider credentials found.
+
+            - `provider_quota_exceeded` : Model provider quota exhausted.
+
+            - `model_currently_not_support` : Current model unavailable.
+
+            - `completion_request_error` : Workflow execution request failed.
+
+            - `invalid_param` : A request parameter is missing or invalid, such as a missing `user` or
+            an unpublished workflow.'
+          content:
+            application/json:
+              examples:
+                not_workflow_app:
+                  summary: not_workflow_app
+                  value:
+                    status: 400
+                    code: not_workflow_app
+                    message: Please check if your app mode matches the right API route.
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No valid model provider credentials found. Please go to Settings -> Model
+                      Provider to complete your provider credentials.
+                provider_quota_exceeded:
+                  summary: provider_quota_exceeded
+                  value:
+                    status: 400
+                    code: provider_quota_exceeded
+                    message: Your quota for Dify Hosted OpenAI has been exhausted. Please go to Settings
+                      -> Model Provider to complete your own provider credentials.
+                model_currently_not_support:
+                  summary: model_currently_not_support
+                  value:
+                    status: 400
+                    code: model_currently_not_support
+                    message: Dify Hosted OpenAI trial currently not support the GPT-4 model.
+                completion_request_error:
+                  summary: completion_request_error
+                  value:
+                    status: 400
+                    code: completion_request_error
+                    message: Completion request failed.
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Arg user must be provided.
+        '429':
+          description: '- `too_many_requests` : Too many concurrent requests for this app.
+
+            - `rate_limit_error` : The Dify Cloud workflow execution quota for this workspace has been
+            reached.'
+          content:
+            application/json:
+              examples:
+                too_many_requests:
+                  summary: too_many_requests
+                  value:
+                    status: 429
+                    code: too_many_requests
+                    message: Too many requests. Please try again later.
+                rate_limit_error:
+                  summary: rate_limit_error
+                  value:
+                    status: 429
+                    code: rate_limit_error
+                    message: Rate Limit Error
+        '500':
+          description: '`internal_server_error` : Internal server error.'
+          content:
+            application/json:
+              examples:
+                internal_server_error:
+                  summary: internal_server_error
+                  value:
+                    status: 500
+                    code: internal_server_error
+                    message: Internal Server Error.
+      x-mint:
+        href: /en/api-reference/workflow-runs/run-workflow
+        metadata:
+          title: Run Workflow
+          sidebarTitle: Run Workflow
+  /workflows/{workflow_id}/run:
+    post:
+      summary: Run Workflow by ID
+      description: '**Available for**: Workflow apps.
+
+
+        Run a specific published workflow version, identified by the `workflow_id` in the path. Request
+        body, response, and streaming behavior match [Run Workflow](/en/api-reference/workflow-runs/run-workflow);
+        only the executed version differs.'
+      operationId: runWorkflowById
+      tags:
+      - Workflow Runs
+      parameters:
+      - name: workflow_id
+        in: path
+        required: true
+        description: Published workflow version to run. Returned in the `workflow_id` field of [Run Workflow](/en/api-reference/workflow-runs/run-workflow)
+          responses and [Get Workflow Run Detail](/en/api-reference/workflow-runs/get-workflow-run-detail).
+          Must reference a published version; a draft version ID is rejected with `bad_request`.
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/WorkflowExecutionRequest'
+            examples:
+              example:
+                summary: Request Example
+                value:
+                  inputs:
+                    query: Summarize this article
+                  response_mode: blocking
+                  user: user_workflow_123
+      responses:
+        '200':
+          description: 'Successful response. The content type and structure depend on the `response_mode`
+            parameter in the request.
+
+
+            - If `response_mode` is `blocking`, returns `application/json` with a `WorkflowBlockingResponse`
+            object.
+
+            - If `response_mode` is `streaming`, returns `text/event-stream` with a stream of `ChunkWorkflowEvent`
+            objects.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/WorkflowBlockingResponse'
+              examples:
+                blockingResponse:
+                  summary: Response Example - Blocking mode
+                  value:
+                    task_id: c3800678-a077-43df-a102-53f23ed20b88
+                    workflow_run_id: fb47b2e6-5e43-4f90-be01-d5c5a088d156
+                    data:
+                      id: fb47b2e6-5e43-4f90-be01-d5c5a088d156
+                      workflow_id: 7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345
+                      status: succeeded
+                      outputs:
+                        result: Article summary here
+                      error: null
+                      elapsed_time: 2.45
+                      total_tokens: 280
+                      total_steps: 4
+                      created_at: 1705407629
+                      finished_at: 1705407631
+            text/event-stream:
+              schema:
+                type: string
+                description: 'A stream of Server-Sent Events. Parse it per the [SSE Streaming guide](/en/api-reference/guides/streaming):
+                  read `data:` lines, dispatch on the `event` field, skip `ping` (keep-alive; the stream
+                  opens with one, then more arrive roughly every 10 seconds).
+
+
+                  **Stream lifecycle**: The stream closes when a `workflow_finished`, `workflow_paused`,
+                  or `error` event is received. Errors are delivered in-stream with HTTP status `200`;
+                  inspect the event payload for details rather than relying on the status code.
+
+
+                  **Reasoning events**:
+
+                  - `reasoning_chunk`: A chain-of-thought delta from an LLM node whose `reasoning_format`
+                  is `separated`. Concatenate consecutive `reasoning_chunk` events to rebuild the full
+                  reasoning; an event with `is_final: true` marks the node finished thinking (and may
+                  carry an empty `reasoning`). The payload sits under `data` and, unlike chat apps, carries
+                  `message_id: null` and no `conversation_id`. The parallel `text_chunk` stream stays
+                  free of `<think>` tags.
+
+
+                  **Human Input events**:
+
+                  - `human_input_required`: Fires together with `workflow_paused` when the workflow reaches
+                  a Human Input node. Use the `form_token` from the payload to drive the form-handling
+                  flow via the [Human Input API](/en/api-reference/human-input/get-human-input-form).
+
+                  - `human_input_form_filled`: A recipient submitted the form; workflow execution resumes.
+
+                  - `human_input_form_timeout`: The form expired without a response. Workflow follows
+                  the timeout fallback edge if defined.'
+              examples:
+                streamingResponse:
+                  summary: Response Example - Streaming mode
+                  value: 'event: ping
+
+
+                    data: {"event": "workflow_started", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156",
+                    "workflow_id": "7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345", "inputs": {"query": "Translate
+                    this"}, "created_at": 1705407629, "reason": "initial"}}
+
+
+                    data: {"event": "node_started", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"id": "node_exec_1",
+                    "node_id": "node_1", "node_type": "llm", "title": "LLM Node", "index": 1, "created_at":
+                    1705407629}}
+
+
+                    data: {"event": "reasoning_chunk", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"reasoning": "Let
+                    me translate that.", "node_id": "node_1", "is_final": false}}
+
+
+                    data: {"event": "reasoning_chunk", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"reasoning": "",
+                    "node_id": "node_1", "is_final": true}}
+
+
+                    data: {"event": "text_chunk", "task_id": "c3800678-a077-43df-a102-53f23ed20b88", "workflow_run_id":
+                    "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"text": "Bonjour", "from_variable_selector":
+                    ["node_1", "text"]}}
+
+
+                    data: {"event": "workflow_finished", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156",
+                    "workflow_id": "7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345", "status": "succeeded", "outputs":
+                    {"result": "Bonjour le monde"}, "elapsed_time": 1.23, "total_tokens": 150, "total_steps":
+                    3, "created_at": 1705407629, "finished_at": 1705407630}}'
+                humanInputPause:
+                  summary: Response Example - Human Input pause
+                  value: 'event: ping
+
+
+                    data: {"event": "workflow_started", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156",
+                    "workflow_id": "7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345", "inputs": {"draft": "Hello"},
+                    "created_at": 1705407629, "reason": "initial"}}
+
+
+                    data: {"event": "human_input_required", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"form_id": "a1b2c3d4-e5f6-7890-abcd-ef1234567890",
+                    "form_token": "tok_abc123", "node_id": "approval_node", "node_title": "Approval",
+                    "form_content": "Please review the draft.", "inputs": [{"type": "paragraph", "output_variable_name":
+                    "comment", "default": null}], "actions": [{"id": "approve", "title": "Approve", "button_style":
+                    "primary"}], "display_in_ui": false, "resolved_default_values": {"comment": ""}, "expiration_time":
+                    1705494029}}
+
+
+                    data: {"event": "workflow_paused", "task_id": "c3800678-a077-43df-a102-53f23ed20b88",
+                    "workflow_run_id": "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "data": {"workflow_run_id":
+                    "fb47b2e6-5e43-4f90-be01-d5c5a088d156", "status": "paused", "created_at": 1705407629,
+                    "elapsed_time": 0.5}}'
+        '400':
+          description: '- `not_workflow_app` : App mode does not match the API route.
+
+            - `bad_request` : Workflow is a draft or has an invalid ID format.
+
+            - `provider_not_initialize` : No valid model provider credentials found.
+
+            - `provider_quota_exceeded` : Model provider quota exhausted.
+
+            - `model_currently_not_support` : Current model unavailable.
+
+            - `completion_request_error` : Workflow execution request failed.
+
+            - `invalid_param` : A request parameter is missing or invalid, such as a missing `user`.'
+          content:
+            application/json:
+              examples:
+                not_workflow_app:
+                  summary: not_workflow_app
+                  value:
+                    status: 400
+                    code: not_workflow_app
+                    message: Please check if your app mode matches the right API route.
+                bad_request:
+                  summary: bad_request
+                  value:
+                    status: 400
+                    code: bad_request
+                    message: 'Cannot use draft workflow version. Workflow ID: 7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345.
+                      Please use a published workflow version or leave workflow_id empty.'
+                provider_not_initialize:
+                  summary: provider_not_initialize
+                  value:
+                    status: 400
+                    code: provider_not_initialize
+                    message: No valid model provider credentials found. Please go to Settings -> Model
+                      Provider to complete your provider credentials.
+                provider_quota_exceeded:
+                  summary: provider_quota_exceeded
+                  value:
+                    status: 400
+                    code: provider_quota_exceeded
+                    message: Your quota for Dify Hosted OpenAI has been exhausted. Please go to Settings
+                      -> Model Provider to complete your own provider credentials.
+                model_currently_not_support:
+                  summary: model_currently_not_support
+                  value:
+                    status: 400
+                    code: model_currently_not_support
+                    message: Dify Hosted OpenAI trial currently not support the GPT-4 model.
+                completion_request_error:
+                  summary: completion_request_error
+                  value:
+                    status: 400
+                    code: completion_request_error
+                    message: Completion request failed.
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Arg user must be provided.
+        '403':
+          description: '`workflow_version_execution_not_allowed` : Executing a specific workflow version
+            is not available on the Dify Cloud Sandbox plan.'
+          content:
+            application/json:
+              examples:
+                workflow_version_execution_not_allowed:
+                  summary: workflow_version_execution_not_allowed
+                  value:
+                    status: 403
+                    code: workflow_version_execution_not_allowed
+                    message: Workflow version execution is not available on your current plan. Please
+                      upgrade to a paid plan.
+        '404':
+          description: '`not_found` : Workflow not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: 'Workflow not found with id: 7c3e33d4-2a8b-4e5f-9b1a-d3c6e8f12345'
+        '429':
+          description: '- `too_many_requests` : Too many concurrent requests for this app.
+
+            - `rate_limit_error` : The Dify Cloud workflow execution quota for this workspace has been
+            reached.'
+          content:
+            application/json:
+              examples:
+                too_many_requests:
+                  summary: too_many_requests
+                  value:
+                    status: 429
+                    code: too_many_requests
+                    message: Too many requests. Please try again later.
+                rate_limit_error:
+                  summary: rate_limit_error
+                  value:
+                    status: 429
+                    code: rate_limit_error
+                    message: Rate Limit Error
+        '500':
+          description: '`internal_server_error` : Internal server error.'
+          content:
+            application/json:
+              examples:
+                internal_server_error:
+                  summary: internal_server_error
+                  value:
+                    status: 500
+                    code: internal_server_error
+                    message: Internal Server Error.
+      x-mint:
+        href: /en/api-reference/workflow-runs/run-workflow-by-id
+        metadata:
+          title: Run Workflow by ID
+          sidebarTitle: Run Workflow by ID
+  /workflows/tasks/{task_id}/stop:
+    post:
+      summary: Stop Workflow Task
+      description: '**Available for**: Workflow apps.
+
+
+        Stop a running workflow task. Only supported in `streaming` mode.'
+      operationId: stopWorkflowTaskGeneration
+      tags:
+      - Workflow Runs
+      parameters:
+      - name: task_id
+        in: path
+        required: true
+        description: Task ID, from the streaming events of [Run Workflow](/en/api-reference/workflow-runs/run-workflow).
+        schema:
+          type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - user
+              properties:
+                user:
+                  type: string
+                  description: End-user identifier, defined by your app and unique within it. Need not
+                    match the `user` that started the run; the stop applies to the task regardless of
+                    `user`. See [End User Identity](/en/api-reference/guides/end-user-identity).
+            examples:
+              example:
+                summary: Request Example
+                value:
+                  user: user_workflow_123
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResult'
+        '400':
+          description: '- `not_workflow_app` : App mode does not match the API route.
+
+            - `invalid_param` : A request parameter is missing or invalid, such as a missing `user`.'
+          content:
+            application/json:
+              examples:
+                not_workflow_app:
+                  summary: not_workflow_app
+                  value:
+                    status: 400
+                    code: not_workflow_app
+                    message: Please check if your app mode matches the right API route.
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Arg user must be provided.
+      x-mint:
+        href: /en/api-reference/workflow-runs/stop-workflow-task
+        metadata:
+          title: Stop Workflow Task
+          sidebarTitle: Stop Workflow Task
 components:
+  responses:
+    SuccessResult:
+      description: Operation successful.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              result:
+                type: string
+                description: Operation result. Always `success`.
+          examples:
+            success:
+              summary: Response Example
+              value:
+                result: success
+  schemas:
+    EndUserSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: End user ID.
+        type:
+          type: string
+          description: End user type.
+        is_anonymous:
+          type: boolean
+          description: Whether the end user is anonymous.
+        session_id:
+          type: string
+          description: Session identifier.
+    InputFileObject:
+      type: object
+      required:
+      - type
+      - transfer_method
+      properties:
+        type:
+          type: string
+          enum:
+          - image
+          - document
+          - audio
+          - video
+          - custom
+          description: File type.
+        transfer_method:
+          type: string
+          enum:
+          - remote_url
+          - local_file
+          description: 'Transfer method: `remote_url` for file URL, `local_file` for uploaded file.'
+        url:
+          type: string
+          format: url
+          description: File URL (when `transfer_method` is `remote_url`).
+        upload_file_id:
+          type: string
+          description: Uploaded file ID, obtained by uploading through the [Upload File](/en/api-reference/files/upload-file)
+            API in advance (when `transfer_method` is `local_file`).
+      anyOf:
+      - properties:
+          transfer_method:
+            enum:
+            - remote_url
+          url:
+            type: string
+            format: url
+        required:
+        - url
+        not:
+          required:
+          - upload_file_id
+      - properties:
+          transfer_method:
+            enum:
+            - local_file
+          upload_file_id:
+            type: string
+        required:
+        - upload_file_id
+        not:
+          required:
+          - url
+    WorkflowBlockingResponse:
+      type: object
+      properties:
+        task_id:
+          type: string
+          format: uuid
+          description: Task ID for the in-progress execution. Use this with [Stop Workflow Task](/en/api-reference/workflow-runs/stop-workflow-task)
+            to cancel a running workflow. Only valid during execution.
+        workflow_run_id:
+          type: string
+          format: uuid
+          description: Persistent identifier for this workflow run record. Use this with [Get Workflow
+            Run Detail](/en/api-reference/workflow-runs/get-workflow-run-detail) to retrieve results after
+            execution.
+        data:
+          $ref: '#/components/schemas/WorkflowFinishedData'
+    WorkflowExecutionRequest:
+      type: object
+      required:
+      - inputs
+      - user
+      properties:
+        inputs:
+          type: object
+          description: 'Key-value pairs for workflow input variables. Discover the variable names and
+            types your app expects from the `user_input_form` field of [Get App Parameters](/en/api-reference/applications/get-app-parameters).
+
+
+            File-type variables take an array of file objects with `type`, `transfer_method`, and either
+            `url` or `upload_file_id`.'
+          additionalProperties:
+            oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: object
+            - type: array
+              items:
+                $ref: '#/components/schemas/InputFileObject'
+        response_mode:
+          type: string
+          enum:
+          - streaming
+          - blocking
+          description: Response mode. Use `blocking` for synchronous responses (Cloudflare timeout is
+            `100 s`), or `streaming` for Server-Sent Events. When omitted, defaults to blocking behavior.
+        user:
+          type: string
+          description: 'End-user identifier, defined by your app and unique within it. Scopes data access:
+            a workflow run and its files are only visible to later requests that carry the same `user`.
+            See [End User Identity](/en/api-reference/guides/end-user-identity).'
+        files:
+          type: array
+          items:
+            $ref: '#/components/schemas/InputFileObject'
+          nullable: true
+          description: 'File list. Suitable when files need to be combined with text for input, available
+            only when the model supports Vision capability. To attach a local file, first upload it via
+            [Upload File](/en/api-reference/files/upload-file) and use the returned `id` as `upload_file_id`
+            with `transfer_method: local_file`.'
+    WorkflowFinishedData:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Workflow run ID.
+        workflow_id:
+          type: string
+          format: uuid
+          description: Workflow ID.
+        status:
+          type: string
+          description: Workflow execution status. `running` for in-progress executions, `succeeded` when
+            completed successfully, `failed` when execution encountered an error, `stopped` when manually
+            halted, `partial-succeeded` when some nodes succeeded but others failed, `paused` when awaiting
+            human input.
+        outputs:
+          type: object
+          additionalProperties: true
+          nullable: true
+          description: Output data from the workflow.
+        error:
+          type: string
+          nullable: true
+          description: Error message if the workflow failed.
+        elapsed_time:
+          type: number
+          format: float
+          description: Total time elapsed in seconds.
+        total_tokens:
+          type: integer
+          description: Total tokens consumed across all nodes.
+        total_steps:
+          type: integer
+          description: Total number of workflow steps executed.
+        created_at:
+          type: integer
+          format: int64
+          description: Unix timestamp of when the workflow run was created.
+        finished_at:
+          type: integer
+          format: int64
+          nullable: true
+          description: Unix timestamp of when the workflow run finished.
+        created_by:
+          type: object
+          additionalProperties: true
+          description: Creator information. Only present in streaming `workflow_finished` events.
+        exceptions_count:
+          type: integer
+          nullable: true
+          description: Number of exceptions encountered during execution. Only present in streaming `workflow_finished`
+            events.
+        files:
+          type: array
+          items:
+            type: object
+            additionalProperties: true
+          nullable: true
+          description: Files generated during workflow execution. Only present in streaming `workflow_finished`
+            events.
+    WorkflowLogItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Log entry ID.
+        workflow_run:
+          $ref: '#/components/schemas/WorkflowRunSummary'
+        created_from:
+          type: string
+          description: Source of the workflow run (e.g., `service-api`).
+        created_by_role:
+          type: string
+          description: Role of the creator (e.g., `end_user`, `account`).
+        created_by_account:
+          type: object
+          nullable: true
+          description: Account details if created by an admin user.
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Account ID.
+            name:
+              type: string
+              description: Account display name.
+            email:
+              type: string
+              description: Account email address.
+        created_by_end_user:
+          $ref: '#/components/schemas/EndUserSummary'
+        created_at:
+          type: integer
+          format: int64
+          description: Unix timestamp of when the log entry was created.
+        details:
+          type: object
+          additionalProperties: true
+          nullable: true
+          description: Additional details for the log entry.
+    WorkflowLogsResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number.
+        limit:
+          type: integer
+          description: Number of items per page.
+        total:
+          type: integer
+          description: Total number of log entries.
+        has_more:
+          type: boolean
+          description: Whether more pages are available.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowLogItem'
+          description: List of workflow log entries.
+    WorkflowRunDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Workflow run ID.
+        workflow_id:
+          type: string
+          format: uuid
+          description: Workflow ID.
+        status:
+          type: string
+          description: Workflow execution status. `running` for in-progress executions, `succeeded` when
+            completed successfully, `failed` when execution encountered an error, `stopped` when manually
+            halted, `partial-succeeded` when some nodes succeeded but others failed, `paused` when awaiting
+            human input.
+        inputs:
+          type: string
+          nullable: true
+          description: 'Input variables of the workflow run, returned as a raw JSON string that clients
+            must parse (e.g., `{"query": "..."}`). May be `null`.'
+        outputs:
+          type: object
+          additionalProperties: true
+          description: Output data from the workflow. An empty object until outputs are available.
+        error:
+          type: string
+          nullable: true
+          description: Error message if the workflow failed.
+        total_steps:
+          type: integer
+          description: Total number of workflow steps executed.
+        total_tokens:
+          type: integer
+          description: Total tokens consumed.
+        created_at:
+          type: integer
+          format: int64
+          description: Unix timestamp of when the workflow run was created.
+        finished_at:
+          type: integer
+          format: int64
+          nullable: true
+          description: Unix timestamp of when the workflow run finished.
+        elapsed_time:
+          type: number
+          format: float
+          nullable: true
+          description: Total time elapsed in seconds.
+    WorkflowRunSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Workflow run ID.
+        version:
+          type: string
+          description: Workflow version identifier.
+        status:
+          type: string
+          description: Workflow execution status. `running` for in-progress executions, `succeeded` when
+            completed successfully, `failed` when execution encountered an error, `stopped` when manually
+            halted, `partial-succeeded` when some nodes succeeded but others failed, `paused` when awaiting
+            human input.
+        error:
+          type: string
+          nullable: true
+          description: Error message if the workflow failed.
+        elapsed_time:
+          type: number
+          format: float
+          description: Total time elapsed in seconds.
+        total_tokens:
+          type: integer
+          description: Total tokens consumed.
+        total_steps:
+          type: integer
+          description: Total number of workflow steps executed.
+        created_at:
+          type: integer
+          format: int64
+          description: Unix timestamp of when the workflow run was created.
+        finished_at:
+          type: integer
+          format: int64
+          nullable: true
+          description: Unix timestamp of when the workflow run finished.
+        exceptions_count:
+          type: integer
+          description: Number of exceptions that occurred during execution.
+        triggered_from:
+          type: string
+          description: Source that triggered the workflow run. `app-run` for runs started from the app
+            or API, `webhook` for runs started by a webhook trigger, `schedule` for runs started by a
+            schedule trigger, `plugin` for runs started by an integration trigger.
   securitySchemes:
-    bearerAuth:
+    ApiKeyAuth:
       type: http
       scheme: bearer
+      bearerFormat: API_KEY
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
+        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+
+
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
+        fail with HTTP `401` (`unauthorized`).'
+x-provenance:
+  generated: '2026-09-06'
+  method: derived
+  source: openapi/_original/dify-service-api-openapi.json
+  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
+    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
+    spec.

@@ -1,0 +1,434 @@
+openapi: 3.0.1
+info:
+  title: Dify Knowledge Tags API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
+    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  version: 1.0.0
+servers:
+- url: https://{api_base_url}
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
+    API base URL.
+  variables:
+    api_base_url:
+      default: api.dify.ai/v1
+      description: Host and path of the API base URL, without the `https://` prefix.
+security:
+- ApiKeyAuth: []
+tags:
+- name: Tags
+  description: Operations for managing knowledge base tags and tag bindings.
+paths:
+  /datasets/tags:
+    post:
+      tags:
+      - Tags
+      summary: Create Knowledge Tag
+      description: Create a tag for organizing knowledge bases.
+      operationId: createKnowledgeTag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - name
+              properties:
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  description: Tag name. Must be unique within the workspace.
+      responses:
+        '200':
+          description: Tag created successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Tag identifier.
+                  name:
+                    type: string
+                    description: Tag display name.
+                  type:
+                    type: string
+                    description: Tag type. Always `knowledge` for knowledge base tags.
+                  binding_count:
+                    type: string
+                    nullable: true
+                    description: Number of knowledge bases bound to this tag.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    id: f4b5c6d7-e8f9-0a1b-2c3d-4e5f6a7b8c9d
+                    name: Product Docs
+                    type: knowledge
+                    binding_count: '0'
+        '400':
+          description: '`invalid_param` : A knowledge tag with the same name already exists.'
+          content:
+            application/json:
+              examples:
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Tag name already exists
+      x-mint:
+        href: /en/api-reference/tags/create-knowledge-tag
+        metadata:
+          title: Create Knowledge Tag
+          sidebarTitle: Create Knowledge Tag
+    get:
+      tags:
+      - Tags
+      summary: List Knowledge Tags
+      description: Returns all knowledge base tags in the workspace.
+      operationId: getKnowledgeTags
+      responses:
+        '200':
+          description: List of tags.
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    id:
+                      type: string
+                      description: Tag identifier.
+                    name:
+                      type: string
+                      description: Tag display name.
+                    type:
+                      type: string
+                      description: Tag type. Always `knowledge` for knowledge base tags.
+                    binding_count:
+                      type: string
+                      nullable: true
+                      description: Number of knowledge bases bound to this tag.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                  - id: f4b5c6d7-e8f9-0a1b-2c3d-4e5f6a7b8c9d
+                    name: Product Docs
+                    type: knowledge
+                    binding_count: '0'
+      x-mint:
+        href: /en/api-reference/tags/list-knowledge-tags
+        metadata:
+          title: List Knowledge Tags
+          sidebarTitle: List Knowledge Tags
+    patch:
+      tags:
+      - Tags
+      summary: Update Knowledge Tag
+      description: Rename a knowledge base tag.
+      operationId: updateKnowledgeTag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - tag_id
+              - name
+              properties:
+                tag_id:
+                  type: string
+                  description: ID of the tag to rename. See [List Knowledge Type Tags](/en/api-reference/tags/list-knowledge-tags).
+                name:
+                  type: string
+                  minLength: 1
+                  maxLength: 50
+                  description: New name for the tag. Must be unique within the workspace.
+      responses:
+        '200':
+          description: Tag updated successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: string
+                    description: Tag identifier.
+                  name:
+                    type: string
+                    description: Tag display name.
+                  type:
+                    type: string
+                    description: Tag type. Always `knowledge` for knowledge base tags.
+                  binding_count:
+                    type: string
+                    nullable: true
+                    description: Number of knowledge bases bound to this tag.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    id: f4b5c6d7-e8f9-0a1b-2c3d-4e5f6a7b8c9d
+                    name: Product Docs
+                    type: knowledge
+                    binding_count: '0'
+        '400':
+          description: '`invalid_param` : A knowledge tag with the same name already exists.'
+          content:
+            application/json:
+              examples:
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Tag name already exists
+        '404':
+          description: '`not_found` : The specified tag does not exist.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Tag not found
+      x-mint:
+        href: /en/api-reference/tags/update-knowledge-tag
+        metadata:
+          title: Update Knowledge Tag
+          sidebarTitle: Update Knowledge Tag
+    delete:
+      tags:
+      - Tags
+      summary: Delete Knowledge Tag
+      description: Permanently delete a knowledge base tag. Does not delete the knowledge bases that were
+        tagged.
+      operationId: deleteKnowledgeTag
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - tag_id
+              properties:
+                tag_id:
+                  type: string
+                  description: ID of the tag to delete. See [List Knowledge Type Tags](/en/api-reference/tags/list-knowledge-tags).
+      responses:
+        '204':
+          description: Success.
+        '404':
+          description: '`not_found` : The specified tag does not exist.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Tag not found
+      x-mint:
+        href: /en/api-reference/tags/delete-knowledge-tag
+        metadata:
+          title: Delete Knowledge Tag
+          sidebarTitle: Delete Knowledge Tag
+  /datasets/tags/binding:
+    post:
+      tags:
+      - Tags
+      summary: Create Tag Binding
+      description: Bind one or more tags to a knowledge base. A knowledge base can have multiple tags.
+      operationId: bindTagsToDataset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - tag_ids
+              - target_id
+              properties:
+                tag_ids:
+                  type: array
+                  items:
+                    type: string
+                  minItems: 1
+                  description: IDs of the tags to bind. See [List Knowledge Type Tags](/en/api-reference/tags/list-knowledge-tags).
+                    Unknown tag IDs are silently ignored.
+                target_id:
+                  type: string
+                  description: Knowledge base to bind the tags to. See [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      responses:
+        '204':
+          description: Success.
+        '404':
+          description: '`not_found` : The target knowledge base does not exist.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found
+      x-mint:
+        href: /en/api-reference/tags/create-tag-binding
+        metadata:
+          title: Create Tag Binding
+          sidebarTitle: Create Tag Binding
+  /datasets/tags/unbinding:
+    post:
+      tags:
+      - Tags
+      summary: Delete Tag Binding
+      description: Remove one or more tags from a knowledge base.
+      operationId: unbindTagFromDataset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+              - target_id
+              properties:
+                tag_ids:
+                  type: array
+                  items:
+                    type: string
+                  minItems: 1
+                  description: Tag IDs to unbind. Required unless the legacy `tag_id` is provided. See
+                    [List Knowledge Type Tags](/en/api-reference/tags/list-knowledge-tags).
+                tag_id:
+                  type: string
+                  deprecated: true
+                  description: Legacy single-tag form. Normalized into `tag_ids` server-side. Use `tag_ids`
+                    for new integrations.
+                target_id:
+                  type: string
+                  description: Knowledge base to unbind the tags from. See [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      responses:
+        '204':
+          description: Success.
+        '404':
+          description: '`not_found` : The target knowledge base does not exist.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found
+      x-mint:
+        href: /en/api-reference/tags/delete-tag-binding
+        metadata:
+          title: Delete Tag Binding
+          sidebarTitle: Delete Tag Binding
+  /datasets/{dataset_id}/tags:
+    get:
+      tags:
+      - Tags
+      summary: Get Knowledge Base Tags
+      description: Returns the tags bound to a knowledge base.
+      operationId: queryDatasetTags
+      parameters:
+      - name: dataset_id
+        in: path
+        required: true
+        schema:
+          type: string
+          format: uuid
+        description: Knowledge base ID. See [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
+      responses:
+        '200':
+          description: Tags bound to the knowledge base.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  data:
+                    type: array
+                    description: List of tags bound to this knowledge base.
+                    items:
+                      type: object
+                      properties:
+                        id:
+                          type: string
+                          description: Tag identifier.
+                        name:
+                          type: string
+                          description: Tag display name.
+                  total:
+                    type: integer
+                    description: Total number of tags bound to this knowledge base.
+              examples:
+                success:
+                  summary: Response Example
+                  value:
+                    data:
+                    - id: f4b5c6d7-e8f9-0a1b-2c3d-4e5f6a7b8c9d
+                      name: Product Docs
+                    total: 1
+        '403':
+          description: '`forbidden` : Dataset api access is not enabled.'
+          content:
+            application/json:
+              examples:
+                forbidden:
+                  summary: forbidden (api access)
+                  value:
+                    status: 403
+                    code: forbidden
+                    message: Dataset api access is not enabled.
+        '404':
+          description: '`not_found` : Dataset not found.'
+          content:
+            application/json:
+              examples:
+                not_found:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Dataset not found.
+      x-mint:
+        href: /en/api-reference/tags/get-knowledge-base-tags
+        metadata:
+          title: Get Knowledge Base Tags
+          sidebarTitle: Get Knowledge Base Tags
+components:
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API_KEY
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
+        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+
+
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
+        fail with HTTP `401` (`unauthorized`).'
+x-provenance:
+  generated: '2026-09-06'
+  method: derived
+  source: openapi/_original/dify-service-api-openapi.json
+  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
+    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
+    spec.

@@ -1,0 +1,184 @@
+generated: '2026-09-06'
+method: searched
+source: >-
+  https://docs.dify.ai/en/api-reference/guides/streaming,
+  https://docs.dify.ai/en/api-reference/chat-messages/send-chat-message,
+  https://docs.dify.ai/en/cloud/use-dify/nodes/trigger/webhook-trigger
+description: >-
+  Dify's event surface, captured as a catalogue rather than an AsyncAPI document. NO AsyncAPI
+  specification is published — probes of the docs host and the langgenius GitHub organization found
+  none, and none was generated here. Two real event surfaces exist and they point in opposite
+  directions: an OUTBOUND Server-Sent Events stream that Dify pushes to an API caller during a
+  generation, and an INBOUND webhook receiver that Dify hosts so external systems can trigger a
+  workflow.
+asyncapi_published: false
+asyncapi_note: >-
+  Checked, nothing to record. No /asyncapi.yaml or /asyncapi.json on any Dify host, no AsyncAPI
+  entry in https://docs.dify.ai/llms.txt (which does list the OpenAPI files it publishes), and no
+  event-catalog repository in the langgenius GitHub organization.
+surfaces:
+  - id: sse-stream
+    name: Generation event stream
+    direction: outbound
+    transport: Server-Sent Events over the same HTTP response
+    media_type: text/event-stream
+    trigger: 'response_mode: streaming on a generation endpoint'
+    endpoints:
+      - sendChatMessage
+      - createCompletionMessage
+      - executeWorkflow
+      - runWorkflowById
+      - streamWorkflowEvents
+    wire_format: >-
+      Every event except `ping` arrives as a `data: ` line holding one JSON object terminated by a
+      blank line. `ping` arrives as a bare `event: ping` line with no data payload.
+    common_fields: >-
+      Apart from `ping`, every event carries `task_id`. Workflow and node events also carry
+      `workflow_run_id`; `agent_log` is the documented exception with no workflow_run_id.
+    docs: https://docs.dify.ai/en/api-reference/guides/streaming
+    events:
+      - name: message
+        group: reply
+        apps: [Chatbot, Chatflow, Agent]
+        fires_on: each answer chunk; for Agent apps one closing chunk repeats the complete answer
+        fields: [answer]
+      - name: agent_message
+        group: reply
+        apps: [Legacy Agent, Agent]
+        fires_on: each answer chunk
+        fields: [answer]
+      - name: agent_thought
+        group: reply
+        apps: [Legacy Agent, Agent]
+        fires_on: each reasoning or tool-call step
+        fields: [position, thought, tool, tool_input, observation, message_files]
+      - name: message_replace
+        group: reply
+        apps: [all]
+        fires_on: output moderation replaces the answer so far
+        fields: [answer, reason]
+      - name: reasoning_chunk
+        group: reply
+        apps: [Chatflow]
+        fires_on: each reasoning-content delta when an LLM node uses reasoning_format=separated
+        fields: [data.message_id, data.reasoning, data.node_id, data.is_final]
+      - name: message_file
+        group: reply
+        apps: [Chatbot, Legacy Agent]
+        fires_on: the assistant returns a file
+        fields: [type, belongs_to, url]
+      - name: message_end
+        group: reply
+        apps: [all]
+        fires_on: the answer is complete
+        fields: [metadata.usage, metadata.retriever_resources]
+        terminal: true
+      - name: tts_message
+        group: reply
+        apps: [Chatbot, Legacy Agent, Chatflow]
+        fires_on: an audio chunk when TTS auto-play is on
+        fields: [audio]
+      - name: tts_message_end
+        group: reply
+        apps: [Chatbot, Legacy Agent, Chatflow]
+        fires_on: audio stream ends; trails the closing event
+      - name: workflow_started
+        group: workflow
+        fires_on: the run begins
+        fields: [data.inputs]
+      - name: node_started
+        group: workflow
+        fires_on: a node begins
+        fields: [data.node_id, data.node_type, data.title]
+      - name: node_finished
+        group: workflow
+        fires_on: a node ends
+        fields: [data.status, data.outputs, data.execution_metadata]
+      - name: node_retry
+        group: workflow
+        fires_on: a node retries after a failure
+        fields: [data.retry_index]
+      - name: iteration_started
+        group: workflow
+        fires_on: Iteration node progress (informational)
+      - name: iteration_next
+        group: workflow
+        fires_on: Iteration node progress (informational)
+      - name: iteration_completed
+        group: workflow
+        fires_on: Iteration node progress (informational)
+      - name: loop_started
+        group: workflow
+        fires_on: Loop node progress (informational)
+      - name: loop_next
+        group: workflow
+        fires_on: Loop node progress (informational)
+      - name: loop_completed
+        group: workflow
+        fires_on: Loop node progress (informational)
+      - name: agent_log
+        group: workflow
+        fires_on: an Agent node step log (informational; carries no workflow_run_id)
+      - name: workflow_finished
+        group: workflow
+        fires_on: the run ends
+        fields: [data.status, data.outputs, data.total_tokens]
+        status_values: [succeeded, failed, partial-succeeded, stopped]
+        terminal: true
+      - name: workflow_paused
+        group: workflow
+        fires_on: the run pauses
+        fields: [data.paused_nodes, data.reasons]
+        terminal: true
+        note: The stream ends here after a pause; the resumed run streams from streamWorkflowEvents.
+      - name: human_input_required
+        group: workflow
+        fires_on: the run reaches a Human Input node
+        fields: [data.form_token, data.form_content, data.expiration_time]
+      - name: human_input_form_filled
+        group: workflow
+        fires_on: a paused Human Input form is submitted
+        note: Delivered on the resumed stream from streamWorkflowEvents.
+      - name: human_input_form_timeout
+        group: workflow
+        fires_on: a paused Human Input form expires
+        note: Delivered on the resumed stream from streamWorkflowEvents.
+      - name: error
+        group: transport
+        fires_on: a failure ends the stream; the HTTP status stays 200
+        fields: [status, code, message]
+        terminal: true
+      - name: ping
+        group: transport
+        fires_on: keep-alive; opens every Chatflow stream, then roughly every 10 seconds
+        fields: []
+  - id: webhook-trigger
+    name: Workflow webhook trigger
+    direction: inbound
+    transport: HTTP
+    description: >-
+      Dify mints a unique, publicly reachable webhook URL per Webhook Trigger node in a Workflow
+      app. An external system POSTs an event to that URL and the workflow runs, with request data
+      extracted into variables for downstream nodes.
+    configurable:
+      - expected HTTP method
+      - expected content-type
+      - which request data to extract into variables
+      - the response returned to the external system on a successful trigger
+    test_url: >-
+      A separate test webhook URL is provided alongside the production URL, and the docs instruct
+      users to always use it when testing so test data stays out of production data.
+    availability: Workflow applications only
+    docs: https://docs.dify.ai/en/cloud/use-dify/nodes/trigger/webhook-trigger
+    related_triggers:
+      - name: Schedule Trigger
+        docs: https://docs.dify.ai/en/cloud/use-dify/nodes/trigger/schedule-trigger
+      - name: Integration Trigger
+        docs: https://docs.dify.ai/en/cloud/use-dify/nodes/trigger/plugin-trigger
+        note: Ready-made trigger integrations for named external systems.
+outbound_webhooks:
+  present: false
+  note: >-
+    Dify does not deliver callbacks to a subscriber-supplied URL. A consumer that wants to know a
+    run finished either holds the SSE stream open, reconnects with streamWorkflowEvents using
+    workflow_run_id, or polls getWorkflowRunDetail.

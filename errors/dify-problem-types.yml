@@ -1,0 +1,152 @@
+generated: '2026-09-06'
+method: searched
+source: >-
+  https://docs.dify.ai/en/api-reference/guides/errors,
+  https://docs.dify.ai/en/api-reference/guides/streaming,
+  openapi/_original/dify-service-api-openapi.json
+description: >-
+  Dify's error catalogue. The API does not use RFC 9457 application/problem+json; every documented
+  error is the same three-field JSON envelope returned as application/json. Codes below are read
+  from the published error guide; status-code coverage is cross-checked against the 4xx/5xx
+  responses declared in the harvested OpenAPI.
+format: custom
+media_type: application/json
+envelope:
+  fields:
+    - name: code
+      type: string
+      description: Stable identifier to branch on.
+    - name: message
+      type: string
+      description: Human-readable detail.
+    - name: status
+      type: integer
+      description: Mirrors the HTTP status.
+  example:
+    code: invalid_param
+    message: user is required
+    status: 400
+rfc9457: false
+rfc9457_note: >-
+  No type/title/detail/instance members and no application/problem+json media type. Adopting RFC
+  9457 would be a mechanical win here — the envelope already carries the same three facts under
+  different names.
+status_classes:
+  - status: 400
+    meaning: The request or the app's configuration is invalid.
+    codes: [invalid_param, bad_request, app_unavailable, provider_not_initialize, provider_quota_exceeded, model_currently_not_support, completion_request_error]
+  - status: 401
+    meaning: Missing or invalid API key.
+    codes: [unauthorized]
+  - status: 403
+    meaning: The key cannot act here — access restriction or plan limit.
+    codes: [forbidden]
+  - status: 404
+    meaning: The resource does not exist or is not visible to this key or user.
+    codes: [not_found]
+  - status: 413
+    meaning: File too large.
+    codes: [file_too_large]
+  - status: 415
+    meaning: Unsupported file type.
+    codes: [unsupported_file_type]
+  - status: 429
+    meaning: Too many requests, or a quota is exhausted.
+    codes: [too_many_requests, rate_limit_error]
+  - status: 500
+    meaning: Failure on Dify's side.
+    codes: [internal_server_error]
+problem_types:
+  - code: invalid_param
+    status: 400
+    title: Invalid parameter
+    remediation: Fix the request before retrying.
+    retry: false
+  - code: bad_request
+    status: 400
+    title: Bad request
+    remediation: Fix the request before retrying.
+    retry: false
+  - code: app_unavailable
+    status: 400
+    title: App unavailable
+    remediation: The app is not in a callable state; check its publish status in Dify.
+    retry: false
+  - code: provider_not_initialize
+    status: 400
+    title: Model provider not initialised
+    remediation: The app has no valid model credentials. Fix the app's model configuration in Dify.
+    retry: false
+    class: configuration
+  - code: provider_quota_exceeded
+    status: 400
+    title: Model provider quota exceeded
+    remediation: The upstream model provider's own quota ran out. Retrying will not help.
+    retry: false
+    class: configuration
+  - code: model_currently_not_support
+    status: 400
+    title: Model not currently supported
+    remediation: Select a supported model in the app's configuration.
+    retry: false
+    class: configuration
+  - code: completion_request_error
+    status: 400
+    title: Completion request error
+    remediation: An error occurred while making a completion request. Fix the app's model configuration.
+    retry: false
+    class: configuration
+  - code: unauthorized
+    status: 401
+    title: Unauthorized
+    remediation: Supply a valid app or knowledge-base API key as a Bearer token.
+    retry: false
+  - code: forbidden
+    status: 403
+    title: Forbidden
+    remediation: >-
+      Either an access restriction or a Dify Cloud plan limit on a knowledge write endpoint. Read
+      the message — do not branch on code alone for 403.
+    retry: false
+  - code: not_found
+    status: 404
+    title: Not found
+    remediation: >-
+      The resource does not exist or is not visible to this key or `user`. A 404 from a resume call
+      usually means the wrong `user`. Correct the identifier rather than retrying.
+    retry: false
+  - code: file_too_large
+    status: 413
+    title: File too large
+    remediation: Reduce the file size below the app's upload limit.
+    retry: false
+  - code: unsupported_file_type
+    status: 415
+    title: Unsupported file type
+    remediation: Convert the file to a supported type.
+    retry: false
+  - code: too_many_requests
+    status: 429
+    title: Too many requests
+    remediation: Concurrency ceiling. Back off and retry.
+    retry: true
+  - code: rate_limit_error
+    status: 429
+    title: Plan quota exhausted
+    remediation: Wait for the quota period to reset or change plan. Retrying will not clear it.
+    retry: false
+  - code: internal_server_error
+    status: 500
+    title: Internal server error
+    remediation: Retry with backoff.
+    retry: true
+in_stream_errors:
+  note: >-
+    Once an SSE stream opens the HTTP status is already 200. Failures arrive as an `error` event
+    carrying the same `status`, `code` and `message`, or — for workflow node failures — as
+    `node_finished` and `workflow_finished` events with status "failed". Both are terminal.
+  docs: https://docs.dify.ai/en/api-reference/guides/streaming
+retry_policy:
+  retry_with_backoff: [too_many_requests, 500, network-failure]
+  do_not_retry: [invalid_param, bad_request, unauthorized, forbidden, rate_limit_error]
+  fix_dont_retry: [not_found, provider_not_initialize, provider_quota_exceeded, model_currently_not_support, completion_request_error]

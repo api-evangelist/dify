@@ -1,0 +1,61 @@
+generated: '2026-09-06'
+method: searched
+source: >-
+  https://docs.dify.ai/en/api-reference/guides/get-started,
+  https://docs.dify.ai/en/cloud/use-dify/nodes/trigger/webhook-trigger,
+  https://dify.ai/pricing
+description: >-
+  Dify publishes no test-mode credentials and no fixture data. There are no test/live key prefixes,
+  no magic identifiers, and no time simulation. What it does publish is an interactive API console
+  on every reference page, a separate test URL for workflow webhook triggers, and a free-forever
+  self-hosted edition that is the real test environment for most teams.
+test_mode:
+  present: false
+  key_prefixes: null
+  note: >-
+    Checked, nothing to record. App and knowledge-base API keys have no documented test/live
+    distinction and no published prefix convention; the same key hits the same production workspace.
+test_fixtures:
+  present: false
+  note: No test cards, magic identifiers, sample accounts or seeded objects are published.
+time_simulation:
+  present: false
+console:
+  present: true
+  type: interactive API playground
+  location: every operation page under https://docs.dify.ai/en/api-reference/
+  description: >-
+    Each reference page carries a "Try it" panel. The published quickstart walks a first call through
+    it — open Get App Info, click Try it, paste the key into the Authorization field, press Send —
+    and states it works for every app type.
+  auth_required: true
+  docs: https://docs.dify.ai/en/api-reference/applications/get-app-info
+webhook_testing:
+  present: true
+  description: >-
+    A workflow's Webhook Trigger exposes a separate test webhook URL alongside its production URL.
+    The docs instruct users to always use the test URL when testing, to keep test data out of
+    production data. An unpublished trigger must first be put into a listening state with "Run this
+    step" or a test run before it will capture a request.
+  docs: https://docs.dify.ai/en/cloud/use-dify/nodes/trigger/webhook-trigger
+single_node_testing:
+  present: true
+  description: >-
+    Workflows can be debugged one node at a time ("Single Node" / Run this step) with a variable
+    inspector and run history, without executing the whole graph.
+  docs: https://docs.dify.ai/en/cloud/use-dify/debug/step-run.md
+free_tier_as_sandbox:
+  plan: Sandbox
+  price: free
+  quotas: 200 message credits, 5 apps, 50 knowledge documents, 5,000 API requests per month
+  note: >-
+    Dify's free tier is literally named "Sandbox", but it is a production workspace with small
+    quotas — not an isolated test environment. Do not read the plan name as a test mode.
+  docs: https://dify.ai/pricing
+self_host_as_sandbox:
+  present: true
+  edition: Community Edition
+  description: >-
+    The open-source distribution deploys with Docker and runs the same Service API against a local
+    base URL, which is the closest thing Dify offers to a disposable test environment.
+  docs: https://docs.dify.ai/en/self-host

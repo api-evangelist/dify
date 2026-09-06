@@ -1,0 +1,66 @@
+generated: '2026-09-06'
+method: searched
+source: https://docs.dify.ai/en/cloud/use-dify/publish/webapp/embedding-in-websites
+description: >-
+  Client-side surfaces Dify publishes for embedding a built app into someone else's website. These
+  are distinct from the SDKs in packages/: an SDK calls the API from a server, these render the
+  published web app in a browser. All of them are projections of the same published web app —
+  changing the app's configuration changes every embed.
+families:
+  - name: Chat Bubble Widget
+    type: script-embed
+    description: >-
+      A floating button that opens the published web app in an overlay, keeping the visitor on the
+      host page.
+    loader: >-
+      A script tag configured by a global `window.difyChatbotConfig` object set before the loader
+      runs.
+    config_object: difyChatbotConfig
+    config_options:
+      - name: token
+        required: true
+        description: The app's token from Dify.
+      - name: isDev
+        required: false
+        description: Environment switch; drives the default baseUrl.
+      - name: baseUrl
+        required: false
+        default: https://udify.app
+        description: Auto-set from isDev; override for self-hosted deployments.
+      - name: containerProps
+        required: false
+        description: style and className applied to the launcher button container.
+      - name: draggable
+        required: false
+        description: Whether the visitor can drag the button.
+      - name: dragAxis
+        required: false
+        description: "'x', 'y' or 'both'."
+      - name: inputs
+        required: false
+        description: Pre-fills the Dify app's own input variables.
+      - name: systemVariables
+        required: false
+        description: Tracking context such as user_id and conversation_id.
+      - name: userVariables
+        required: false
+        description: User profile information passed into the app.
+  - name: Iframe Integration
+    type: iframe
+    description: >-
+      The published web app embedded inline in page content, always visible rather than behind a
+      launcher.
+  - name: JavaScript Control
+    type: script-embed
+    description: Advanced embedding with custom styling and behaviour control over the same web app.
+  - name: Web App (hosted)
+    type: hosted-page
+    description: >-
+      The standalone published web app itself — a Dify-hosted URL for a Chatflow, Chat or Workflow
+      app, with its own branding and access-control settings.
+    docs: https://docs.dify.ai/en/cloud/use-dify/publish/webapp/web-app-settings
+responsive: true
+note: >-
+  Dify publishes no npm-distributed component library for these embeds. The chat bubble is loaded as
+  a script from the Dify (or self-hosted) origin, so there is no registry version to record —
+  packages/dify-packages.yml carries the SDKs, and none of them is a UI component library.

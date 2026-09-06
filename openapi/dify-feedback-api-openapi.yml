@@ -1,0 +1,265 @@
+openapi: 3.0.1
+info:
+  title: Dify Feedback API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
+    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  version: 1.0.0
+servers:
+- url: https://{api_base_url}
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
+    API base URL.
+  variables:
+    api_base_url:
+      default: api.dify.ai/v1
+      description: Host and path of the API base URL, without the `https://` prefix.
+security:
+- ApiKeyAuth: []
+tags:
+- name: Feedback
+  description: User feedback operations.
+paths:
+  /messages/{message_id}/feedbacks:
+    post:
+      summary: Submit Message Feedback
+      description: '**Available for**: Chatflow, Chatbot, Legacy Agent, Text Generator apps.
+
+
+        Records a `like` or `dislike` rating, plus an optional comment, on a message. Submitting `null`
+        for `rating` revokes the message''s existing feedback.'
+      operationId: postChatMessageFeedback
+      tags:
+      - Feedback
+      parameters:
+      - name: message_id
+        in: path
+        required: true
+        description: ID of the message to give feedback on. Get message IDs from [List Conversation Messages](/en/api-reference/conversations/list-conversation-messages).
+        schema:
+          type: string
+          format: uuid
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/MessageFeedbackRequest'
+            examples:
+              likeFeedback:
+                summary: Request Example
+                value:
+                  rating: like
+                  user: abc-123
+                  content: This answer was very helpful!
+      responses:
+        '200':
+          $ref: '#/components/responses/SuccessResult'
+        '400':
+          description: '`invalid_param` : The required `user` field is omitted, or `rating` is `null`
+            but there is no existing feedback to revoke.'
+          content:
+            application/json:
+              examples:
+                invalid_param:
+                  summary: invalid_param
+                  value:
+                    status: 400
+                    code: invalid_param
+                    message: Arg user must be provided.
+        '404':
+          description: '`not_found` : Message does not exist.'
+          content:
+            application/json:
+              examples:
+                message_not_exists:
+                  summary: not_found
+                  value:
+                    status: 404
+                    code: not_found
+                    message: Message Not Exists.
+      x-mint:
+        href: /en/api-reference/feedback/submit-message-feedback
+        metadata:
+          title: Submit Message Feedback
+          sidebarTitle: Submit Message Feedback
+  /app/feedbacks:
+    get:
+      summary: List App Feedbacks
+      description: '**Available for**: Chatflow, Chatbot, Legacy Agent, Text Generator apps.
+
+
+        Returns a paginated list of all feedback on the app''s messages, including both end-user and admin
+        submissions.'
+      operationId: getChatAppFeedbacks
+      tags:
+      - Feedback
+      parameters:
+      - name: page
+        in: query
+        description: Page number.
+        required: false
+        schema:
+          type: integer
+          default: 1
+          minimum: 1
+      - name: limit
+        in: query
+        description: Feedback items per page.
+        required: false
+        schema:
+          type: integer
+          default: 20
+          minimum: 1
+          maximum: 101
+      responses:
+        '200':
+          description: A list of application feedbacks.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/AppFeedbacksResponse'
+              examples:
+                feedbacksList:
+                  summary: Response Example
+                  value:
+                    data:
+                    - id: b7e2f8a1-3c4d-5e6f-7890-abcdef123456
+                      app_id: a1b2c3d4-5678-90ab-cdef-1234567890ab
+                      conversation_id: 45701982-8118-4bc5-8e9b-64562b4555f2
+                      message_id: 9da23599-e713-473b-982c-4328d4f5c78a
+                      rating: like
+                      content: The response accurately answered my question about product specifications.
+                      from_source: user
+                      from_end_user_id: f1e2d3c4-b5a6-7890-abcd-ef1234567890
+                      from_account_id: null
+                      created_at: '2025-01-16T14:30:29Z'
+                      updated_at: '2025-01-16T14:30:29Z'
+                    - id: c8f3a9b2-4d5e-6f70-8901-bcdef2345678
+                      app_id: a1b2c3d4-5678-90ab-cdef-1234567890ab
+                      conversation_id: 56812a93-9229-5cd6-9f0c-75673b666603
+                      message_id: ae24b5c0-f814-584d-a493-5439e5d6b7b1
+                      rating: dislike
+                      content: The answer was too vague and did not address the specific pricing question.
+                      from_source: user
+                      from_end_user_id: d2c1b0a9-8765-4321-fedc-ba9876543210
+                      from_account_id: null
+                      created_at: '2025-01-15T09:12:45Z'
+                      updated_at: '2025-01-15T09:12:45Z'
+      x-mint:
+        href: /en/api-reference/feedback/list-app-feedbacks
+        metadata:
+          title: List App Feedbacks
+          sidebarTitle: List App Feedbacks
+components:
+  responses:
+    SuccessResult:
+      description: Operation successful.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              result:
+                type: string
+                description: Operation result. Always `success`.
+          examples:
+            success:
+              summary: Response Example
+              value:
+                result: success
+  schemas:
+    AppFeedbacksResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          description: List of feedback items.
+          items:
+            $ref: '#/components/schemas/FeedbackItem'
+    FeedbackItem:
+      type: object
+      description: A single feedback item.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Feedback ID.
+        app_id:
+          type: string
+          format: uuid
+          description: Application ID.
+        conversation_id:
+          type: string
+          format: uuid
+          description: Conversation ID.
+        message_id:
+          type: string
+          format: uuid
+          description: Message ID.
+        rating:
+          type: string
+          description: Feedback rating. `like` for positive, `dislike` for negative.
+        content:
+          type: string
+          nullable: true
+          description: Optional text feedback.
+        from_source:
+          type: string
+          description: Feedback source. `user` for end-user feedback submitted via API, `admin` for feedback
+            submitted from the console.
+        from_end_user_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: End user ID who submitted the feedback. Present when `from_source` is `user`.
+        from_account_id:
+          type: string
+          format: uuid
+          nullable: true
+          description: Account ID who submitted the feedback. Present when `from_source` is `admin`.
+        created_at:
+          type: string
+          format: date-time
+          description: Creation timestamp.
+        updated_at:
+          type: string
+          format: date-time
+          description: Last update timestamp.
+    MessageFeedbackRequest:
+      type: object
+      description: Request body for submitting message feedback.
+      required:
+      - user
+      properties:
+        rating:
+          type: string
+          enum:
+          - like
+          - dislike
+          - null
+          nullable: true
+          description: Feedback rating. Set to `null` to revoke previously submitted feedback.
+        user:
+          type: string
+          description: End-user identifier, defined by your app and unique within it. Must match the `user`
+            that received the message, since feedback is scoped to that end user. See [End User Identity](/en/api-reference/guides/end-user-identity).
+        content:
+          type: string
+          description: Optional text feedback providing additional detail.
+  securitySchemes:
+    ApiKeyAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: API_KEY
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
+        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+
+
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
+        fail with HTTP `401` (`unauthorized`).'
+x-provenance:
+  generated: '2026-09-06'
+  method: derived
+  source: openapi/_original/dify-service-api-openapi.json
+  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
+    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
+    spec.
