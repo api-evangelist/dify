@@ -1,72 +1,82 @@
 generated: '2026-09-06'
 method: probed
 source: https://docs.dify.ai/mcp
-description: >-
-  Dify's MCP posture has two distinct surfaces. (1) A live, anonymous, remote documentation MCP
-  server at https://docs.dify.ai/mcp, confirmed by an unauthenticated tools/list call that returned
-  three real tools with input schemas — saved verbatim to dify-mcp-tools.json. (2) A per-application
-  MCP server feature: any Dify app owner can toggle "MCP Server" on the app's Access Point tab and
-  Dify mints a unique, credential-bearing MCP URL for that one app. There is no single vendor-wide
-  MCP endpoint for the Dify Service API.
+description: 'Dify''s MCP posture has two distinct surfaces. (1) A live, anonymous, remote documentation
+  MCP server at https://docs.dify.ai/mcp, confirmed by an unauthenticated tools/list call that returned
+  three real tools with input schemas — saved verbatim to dify-mcp-tools.json. (2) A per-application MCP
+  server feature: any Dify app owner can toggle "MCP Server" on the app''s Access Point tab and Dify mints
+  a unique, credential-bearing MCP URL for that one app. There is no single vendor-wide MCP endpoint for
+  the Dify Service API.'
 deployment:
   mode: remote
   endpoint: https://docs.dify.ai/mcp
   auth: none
   verified: probed
-  note: >-
-    Endpoint verified 2026-09-06 by POSTing {"jsonrpc":"2.0","id":1,"method":"tools/list"} with
-    Accept: application/json, text/event-stream — HTTP 200, content-type text/event-stream, three
-    tools returned with no credential supplied. api.dify.ai/mcp returns 404; mcp.dify.ai does not
-    resolve.
+  note: 'Endpoint verified 2026-09-06 by POSTing {"jsonrpc":"2.0","id":1,"method":"tools/list"} with Accept:
+    application/json, text/event-stream — HTTP 200, content-type text/event-stream, three tools returned
+    with no credential supplied. api.dify.ai/mcp returns 404; mcp.dify.ai does not resolve.'
+  probe_prior: (never probed)
+  probe: live
+  probe_why: live
+  checked: '2026-09-11'
+  source: claimed-backlog re-probe 2026-09-11
 x-evidence:
-  - url: https://docs.dify.ai/mcp
-    method: POST
-    http_status: 200
-    content_type: text/event-stream
-    tools_returned: 3
-  - url: https://api.dify.ai/mcp
-    method: POST
-    http_status: 404
-  - url: https://docs.dify.ai/en/cloud/use-dify/publish/publish-mcp
-    http_status: 200
-    note: Documents the per-application MCP server feature.
+- url: https://docs.dify.ai/mcp
+  method: POST
+  http_status: 200
+  content_type: text/event-stream
+  tools_returned: 3
+- url: https://api.dify.ai/mcp
+  method: POST
+  http_status: 404
+- url: https://docs.dify.ai/en/cloud/use-dify/publish/publish-mcp
+  http_status: 200
+  note: Documents the per-application MCP server feature.
 server:
   name: Dify Docs MCP
   transport: streamable-http
   authentication: none
   scope: documentation
   tools:
-    - name: search_dify_docs
-      title: Search documentation
-      description: >-
-        Search across the Dify Docs knowledge base to find relevant information, code examples,
-        API references, and guides.
-      input_schema:
-        query: {type: string, required: true, description: Search query}
-        language: {type: string, required: false, description: "Filter to a language code (e.g. 'zh', 'es'); defaults to 'en'"}
-    - name: query_docs_filesystem_dify_docs
-      description: >-
-        Run a read-only shell-like query against a virtualized in-memory filesystem containing only
-        the Dify docs pages and OpenAPI specs.
-      input_schema:
-        command: {type: string, required: true, description: "A read-only shell command against the virtual docs filesystem"}
-    - name: submit_feedback
-      title: Submit documentation feedback
-      description: Report a problem with a documentation page so the docs team can fix it.
-      input_schema:
-        path: {type: string, required: true}
-        feedback: {type: string, required: true}
+  - name: search_dify_docs
+    title: Search documentation
+    description: Search across the Dify Docs knowledge base to find relevant information, code examples,
+      API references, and guides.
+    input_schema:
+      query:
+        type: string
+        required: true
+        description: Search query
+      language:
+        type: string
+        required: false
+        description: Filter to a language code (e.g. 'zh', 'es'); defaults to 'en'
+  - name: query_docs_filesystem_dify_docs
+    description: Run a read-only shell-like query against a virtualized in-memory filesystem containing
+      only the Dify docs pages and OpenAPI specs.
+    input_schema:
+      command:
+        type: string
+        required: true
+        description: A read-only shell command against the virtual docs filesystem
+  - name: submit_feedback
+    title: Submit documentation feedback
+    description: Report a problem with a documentation page so the docs team can fix it.
+    input_schema:
+      path:
+        type: string
+        required: true
+      feedback:
+        type: string
+        required: true
 tenant_servers:
   available: true
   shape: per-application
   docs: https://docs.dify.ai/en/cloud/use-dify/publish/publish-mcp
-  note: >-
-    Enabled per app on the Access Point tab. The generated URL embeds the credential, so it is
-    tenant-specific and cannot be catalogued as a public endpoint. Clients tested by Dify's docs are
-    Claude Desktop (Integrations) and Cursor (.cursor/mcp.json).
+  note: Enabled per app on the Access Point tab. The generated URL embeds the credential, so it is tenant-specific
+    and cannot be catalogued as a public endpoint. Clients tested by Dify's docs are Claude Desktop (Integrations)
+    and Cursor (.cursor/mcp.json).
   regenerable: true
 mcp_client_side:
-  note: >-
-    Dify is also an MCP CLIENT — workflows and agents can consume external MCP tools. See
-    https://docs.dify.ai/en/cloud/use-dify/workspace/tools#mcp. That is a consumption surface, not a
-    server Dify publishes.
+  note: Dify is also an MCP CLIENT — workflows and agents can consume external MCP tools. See https://docs.dify.ai/en/cloud/use-dify/workspace/tools#mcp.
+    That is a consumption surface, not a server Dify publishes.
