@@ -80,3 +80,16 @@ tenant_servers:
 mcp_client_side:
   note: Dify is also an MCP CLIENT — workflows and agents can consume external MCP tools. See https://docs.dify.ai/en/cloud/use-dify/workspace/tools#mcp.
     That is a consumption surface, not a server Dify publishes.
+tools_count: 3
+tools:
+- name: search_dify_docs
+  description: ''
+- name: query_docs_filesystem_dify_docs
+  description: ''
+- name: submit_feedback
+  description: ''
+tools_source: live tools/list via initialize handshake, 2026-09-11 (signals/audit_mcp_authorship.py --probe)
+authorship: platform
+authorship_note: 'PLATFORM-AUTHORED: this tool shape is shared with at least one other provider in the
+  catalog, so it is a platform default appearing under this provider''s domain rather than an interface
+  this provider designed. Shared shape: (''query_docs_filesystem_*'', ''search_*'', ''submit_feedback'')'
