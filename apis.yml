@@ -56,6 +56,9 @@ apis:
   humanURL: https://docs.dify.ai/en/api-reference/annotations/list-annotations
   baseURL: https://api.dify.ai/v1
   tags:
+  - Annotation
+  - Quality
+  tags_raw:
   - Annotations
   - Quality
   properties:
