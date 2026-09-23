@@ -7,32 +7,50 @@
     "dify-annotations-api-openapi.yml",
     "dify-applications-api-openapi.yml",
     "dify-audio-api-openapi.yml",
-    "dify-chat-api-openapi.yml",
+    "dify-chat-messages-api-openapi.yml",
     "dify-chunks-api-openapi.yml",
-    "dify-completion-api-openapi.yml",
+    "dify-completion-messages-api-openapi.yml",
     "dify-conversations-api-openapi.yml",
-    "dify-datasets-api-openapi.yml",
     "dify-documents-api-openapi.yml",
     "dify-end-users-api-openapi.yml",
     "dify-feedback-api-openapi.yml",
     "dify-files-api-openapi.yml",
     "dify-human-input-api-openapi.yml",
+    "dify-knowledge-bases-api-openapi.yml",
     "dify-knowledge-pipeline-api-openapi.yml",
     "dify-metadata-api-openapi.yml",
     "dify-models-api-openapi.yml",
     "dify-tags-api-openapi.yml",
-    "dify-workflows-api-openapi.yml"
+    "dify-workflow-runs-api-openapi.yml"
   ],
-  "archived": [
-    "_archive/dify-openapi-scaffold.yml"
-  ],
+  "archived": [],
   "errors": [],
   "warnings": [],
   "notes": [
-    "2026-09-06 enrichment pass: superseded by the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json (82 operations, 64 paths, 128 schemas).",
-    "The previous six split files were derived from a 13-operation scaffold; that scaffold is now at _archive/dify-openapi-scaffold.yml and the splits were regenerated from the harvested spec.",
-    "Splits are OpenAPI 3.0.1, matching the harvested source. A future refine pass may upgrade them.",
-    "apis.yml register: 18 per-tag API entries wired."
+    "1 archived document(s) dropped as subsets of other archived documents",
+    "sourced from openapi/_original/ (1 archived document(s)); previously refined output at the top level was skipped rather than re-split",
+    "dify-service-api-openapi.json: upgraded openapi 3.0.1 -> OpenAPI 3.2.0",
+    "apis.yml register: already-registered"
   ],
-  "skipped": []
+  "skipped": [
+    "_original/dify-knowledge-api-openapi.json: archived document superseded by a larger archived document",
+    "dify-annotations-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-applications-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-audio-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-chat-messages-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-chunks-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-completion-messages-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-conversations-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-documents-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-end-users-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-feedback-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-files-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-human-input-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-knowledge-bases-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-knowledge-pipeline-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-metadata-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-models-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-tags-api-openapi.yml: previously refined output, superseded by openapi/_original/",
+    "dify-workflow-runs-api-openapi.yml: previously refined output, superseded by openapi/_original/"
+  ]
 }

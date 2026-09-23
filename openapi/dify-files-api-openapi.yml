@@ -1,13 +1,11 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Dify Files API
-  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
-    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  title: Dify Service Files API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate with an app API key; knowledge endpoints authenticate with a dataset API key.
   version: 1.0.0
 servers:
 - url: https://{api_base_url}
-  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
-    API base URL.
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own API base URL.
   variables:
     api_base_url:
       default: api.dify.ai/v1
@@ -21,16 +19,13 @@ paths:
   /files/upload:
     post:
       summary: Upload File
-      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator
-        apps.
+      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator apps.
 
 
-        Uploads a file and returns its `id` for later requests to reference. The file belongs to the uploading
-        end user: only requests carrying the same `user` can reference it.
+        Uploads a file and returns its `id` for later requests to reference. The file belongs to the uploading end user: only requests carrying the same `user` can reference it.
 
 
-        Which file types an app actually consumes depends on its file-upload settings; read them from
-        [Get App Parameters](/en/api-reference/applications/get-app-parameters).'
+        Which file types an app actually consumes depends on its file-upload settings; read them from Get App Parameters.'
       operationId: uploadChatFile
       tags:
       - Files
@@ -47,22 +42,16 @@ paths:
                 file:
                   type: string
                   format: binary
-                  description: 'The file to upload, as one `multipart/form-data` part. The filename must
-                    not contain `/` or `\`.
+                  description: 'The file to upload, as one `multipart/form-data` part. The filename must not contain `/` or `\`.
 
 
-                    Any extension is accepted unless it is on the deployment''s security blacklist (`UPLOAD_FILE_EXTENSION_BLACKLIST`,
-                    empty by default).
+                    Any extension is accepted unless it is on the deployment''s security blacklist (`UPLOAD_FILE_EXTENSION_BLACKLIST`, empty by default).
 
 
-                    Size limits per category: images 10 MB, audio 50 MB, video 100 MB, other files 15
-                    MB by default (Dify Cloud uses the defaults). Self-hosted deployments adjust them
-                    with the `UPLOAD_*_FILE_SIZE_LIMIT` [environment variables](/en/self-host/deploy/configuration/environments).'
+                    Size limits per category: images 10 MB, audio 50 MB, video 100 MB, other files 15 MB by default (Dify Cloud uses the defaults). Self-hosted deployments adjust them with the `UPLOAD_*_FILE_SIZE_LIMIT` [environment variables](/en/self-host/deploy/configuration/environments).'
                 user:
                   type: string
-                  description: End-user identifier this upload belongs to, defined by your app and unique
-                    within it. Omit it to attribute the upload to the shared `DEFAULT-USER`. Only later
-                    requests with the same `user` can reference the file. See [End User Identity](/en/api-reference/guides/end-user-identity).
+                  description: End-user identifier this upload belongs to, defined by your app and unique within it. Omit it to attribute the upload to the shared `DEFAULT-USER`. Only later requests with the same `user` can reference the file. See [End User Identity](/en/api-reference/guides/end-user-identity).
       responses:
         '201':
           description: File uploaded successfully.
@@ -96,8 +85,7 @@ paths:
 
             - `filename_not_exists_error` : The uploaded file has no filename.
 
-            - `invalid_param` : The filename contains `/` or `\`, or the file''s extension is on the deployment''s
-            blacklist.'
+            - `invalid_param` : The filename contains `/` or `\`, or the file''s extension is on the deployment''s blacklist.'
           content:
             application/json:
               examples:
@@ -126,9 +114,7 @@ paths:
                     code: invalid_param
                     message: File extension '.exe' is not allowed for security reasons
         '413':
-          description: '`file_too_large` : The file exceeds its category''s size limit (see the `file`
-            field). The runtime `message` is currently returned as an empty string (a known backend quirk);
-            rely on the `code` and status.'
+          description: '`file_too_large` : The file exceeds its category''s size limit (see the `file` field). The runtime `message` is currently returned as an empty string (a known backend quirk); rely on the `code` and status.'
           content:
             application/json:
               examples:
@@ -160,8 +146,7 @@ paths:
       description: '**Available for**: Chatflow, Chatbot, Legacy Agent, Text Generator apps.
 
 
-        Returns the raw bytes of a file previously returned by [Upload File](/en/api-reference/files/upload-file).
-        A file is reachable only through the app whose messages reference it.'
+        Returns the raw bytes of a file previously returned by Upload File. A file is reachable only through the app whose messages reference it.'
       operationId: previewChatFile
       tags:
       - Files
@@ -176,23 +161,19 @@ paths:
       - name: as_attachment
         in: query
         required: false
-        description: When `true`, the file downloads as an attachment instead of rendering inline in the
-          browser.
+        description: When `true`, the file downloads as an attachment instead of rendering inline in the browser.
         schema:
           type: boolean
           default: false
       - name: user
         in: query
         required: false
-        description: End-user identifier, defined by your app and unique within it. It has no effect on
-          file access here, which is scoped by app and message rather than by `user`. See [End User Identity](/en/api-reference/guides/end-user-identity).
+        description: End-user identifier, defined by your app and unique within it. It has no effect on file access here, which is scoped by app and message rather than by `user`. See [End User Identity](/en/api-reference/guides/end-user-identity).
         schema:
           type: string
       responses:
         '200':
-          description: 'Returns the raw file content. The `Content-Type` header is set to the file''s
-            MIME type. If `as_attachment` is `true`, the file is returned as a download with `Content-Disposition:
-            attachment`.'
+          description: 'Returns the raw file content. The `Content-Type` header is set to the file''s MIME type. If `as_attachment` is `true`, the file is returned as a download with `Content-Disposition: attachment`.'
           content:
             application/octet-stream:
               schema:
@@ -235,10 +216,10 @@ components:
           format: uuid
           description: Unique file ID.
         reference:
-          type: string
-          nullable: true
-          description: Opaque file reference used internally when attaching files in agent and tool contexts.
-            Always `null` for files uploaded through this endpoint.
+          type:
+          - string
+          - 'null'
+          description: Opaque file reference used internally when attaching files in agent and tool contexts. Always `null` for files uploaded through this endpoint.
         name:
           type: string
           description: File name.
@@ -246,67 +227,67 @@ components:
           type: integer
           description: File size in bytes.
         extension:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: File extension.
         mime_type:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: MIME type of the file.
         created_by:
-          type: string
+          type:
+          - string
+          - 'null'
           format: uuid
-          nullable: true
           description: End-user ID of the uploader. Look up details with [Get End User Info](/en/api-reference/end-users/get-end-user-info).
         created_at:
           type: integer
           format: int64
           description: Upload timestamp (Unix epoch seconds).
         preview_url:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Preview URL for the file.
         source_url:
           type: string
           description: Signed URL for downloading the file.
         original_url:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Original URL of the file.
         user_id:
-          type: string
+          type:
+          - string
+          - 'null'
           format: uuid
-          nullable: true
           description: Unused; always `null`.
         tenant_id:
-          type: string
+          type:
+          - string
+          - 'null'
           format: uuid
-          nullable: true
           description: ID of the associated tenant.
         conversation_id:
-          type: string
+          type:
+          - string
+          - 'null'
           format: uuid
-          nullable: true
           description: ID of the associated conversation.
         file_key:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Unused; always `null`.
   securitySchemes:
     ApiKeyAuth:
       type: http
       scheme: bearer
       bearerFormat: API_KEY
-      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
-        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
 
 
-        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
-        fail with HTTP `401` (`unauthorized`).'
-x-provenance:
-  generated: '2026-09-06'
-  method: derived
-  source: openapi/_original/dify-service-api-openapi.json
-  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
-    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
-    spec.
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail with HTTP `401` (`unauthorized`).'

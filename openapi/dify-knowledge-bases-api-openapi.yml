@@ -1,13 +1,11 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Dify Knowledge Bases API
-  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
-    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  title: Dify Service Knowledge Bases API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate with an app API key; knowledge endpoints authenticate with a dataset API key.
   version: 1.0.0
 servers:
 - url: https://{api_base_url}
-  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
-    API base URL.
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own API base URL.
   variables:
     api_base_url:
       default: api.dify.ai/v1
@@ -23,8 +21,7 @@ paths:
       tags:
       - Knowledge Bases
       summary: Create an Empty Knowledge Base
-      description: Creates an empty knowledge base. Add documents to it with [Create Document by Text](/en/api-reference/documents/create-document-by-text)
-        or [Create Document by File](/en/api-reference/documents/create-document-by-file).
+      description: Creates an empty knowledge base. Add documents to it with Create Document by Text or Create Document by File.
       operationId: createDataset
       requestBody:
         required: true
@@ -46,13 +43,13 @@ paths:
                   default: ''
                   description: Description of the knowledge base.
                 indexing_technique:
-                  type: string
+                  type:
+                  - string
+                  - 'null'
                   enum:
                   - high_quality
                   - economy
-                  nullable: true
-                  description: '`high_quality` uses embedding models for precise search; `economy` uses
-                    keyword-based indexing.'
+                  description: '`high_quality` uses embedding models for precise search; `economy` uses keyword-based indexing.'
                 permission:
                   type: string
                   enum:
@@ -60,34 +57,26 @@ paths:
                   - all_team_members
                   - partial_members
                   default: only_me
-                  description: Controls who can access this knowledge base. `only_me` restricts to the
-                    creator, `all_team_members` grants access to the entire workspace, `partial_members`
-                    grants access to specified members.
+                  description: Controls who can access this knowledge base. `only_me` restricts to the creator, `all_team_members` grants access to the entire workspace, `partial_members` grants access to specified members.
                 provider:
                   type: string
                   enum:
                   - vendor
                   - external
                   default: vendor
-                  description: '`vendor` for internal knowledge base, `external` for external knowledge
-                    base.'
+                  description: '`vendor` for internal knowledge base, `external` for external knowledge base.'
                 embedding_model:
                   type: string
-                  description: Embedding model name. Use the `model` field from [Get Available Models](/en/api-reference/models/get-available-models)
-                    with `model_type=text-embedding`.
+                  description: Embedding model name. Use the `model` field from [Get Available Models](/en/api-reference/models/get-available-models) with `model_type=text-embedding`.
                 embedding_model_provider:
                   type: string
-                  description: 'Embedding model provider identifier, formatted as `organization/plugin_name/provider_name`
-                    (e.g. `langgenius/openai/openai`). A bare name like `openai` expands to `langgenius/<name>/<name>`
-                    and works only for langgenius-published plugins.
+                  description: 'Embedding model provider identifier, formatted as `organization/plugin_name/provider_name` (e.g. `langgenius/openai/openai`). A bare name like `openai` expands to `langgenius/<name>/<name>` and works only for langgenius-published plugins.
 
 
-                    Get valid values from the `provider` field of [Get Available Models](/en/api-reference/models/get-available-models)
-                    with `model_type=text-embedding`.'
+                    Get valid values from the `provider` field of [Get Available Models](/en/api-reference/models/get-available-models) with `model_type=text-embedding`.'
                 retrieval_model:
                   $ref: '#/components/schemas/RetrievalModel'
-                  description: Retrieval model configuration. Controls how chunks are searched and ranked
-                    when querying this knowledge base.
+                  description: Retrieval model configuration. Controls how chunks are searched and ranked when querying this knowledge base.
                 external_knowledge_api_id:
                   type: string
                   description: ID of the external knowledge API connection.
@@ -95,8 +84,9 @@ paths:
                   type: string
                   description: ID of the external knowledge base.
                 summary_index_setting:
-                  type: object
-                  nullable: true
+                  type:
+                  - object
+                  - 'null'
                   description: Summary index configuration.
                   properties:
                     enable:
@@ -169,8 +159,7 @@ paths:
                     is_multimodal: false
                     maintainer: admin
         '400':
-          description: '`invalid_param` : The embedding or reranking model you specified is not configured
-            or available.'
+          description: '`invalid_param` : The embedding or reranking model you specified is not configured or available.'
           content:
             application/json:
               examples:
@@ -179,11 +168,9 @@ paths:
                   value:
                     status: 400
                     code: invalid_param
-                    message: No Embedding Model available. Please configure a valid provider in the Settings
-                      -> Model Provider.
+                    message: No Embedding Model available. Please configure a valid provider in the Settings -> Model Provider.
         '403':
-          description: '`forbidden` : Your subscription''s knowledge base request rate limit has been
-            reached.'
+          description: '`forbidden` : Your subscription''s knowledge base request rate limit has been reached.'
           content:
             application/json:
               examples:
@@ -338,8 +325,7 @@ paths:
       tags:
       - Knowledge Bases
       summary: Get Knowledge Base
-      description: Returns detailed information about a knowledge base, including its embedding model,
-        retrieval configuration, and document statistics.
+      description: Returns detailed information about a knowledge base, including its embedding model, retrieval configuration, and document statistics.
       operationId: getDatasetDetail
       parameters:
       - name: dataset_id
@@ -464,39 +450,32 @@ paths:
                   maxLength: 400
                   description: Description of the knowledge base.
                 indexing_technique:
-                  type: string
+                  type:
+                  - string
+                  - 'null'
                   enum:
                   - high_quality
                   - economy
-                  nullable: true
-                  description: '`high_quality` uses embedding models for precise search; `economy` uses
-                    keyword-based indexing.'
+                  description: '`high_quality` uses embedding models for precise search; `economy` uses keyword-based indexing.'
                 permission:
                   type: string
                   enum:
                   - only_me
                   - all_team_members
                   - partial_members
-                  description: Controls who can access this knowledge base. `only_me` restricts to the
-                    creator, `all_team_members` grants access to the entire workspace, `partial_members`
-                    grants access to specified members.
+                  description: Controls who can access this knowledge base. `only_me` restricts to the creator, `all_team_members` grants access to the entire workspace, `partial_members` grants access to specified members.
                 embedding_model:
                   type: string
-                  description: Embedding model name. Use the `model` field from [Get Available Models](/en/api-reference/models/get-available-models)
-                    with `model_type=text-embedding`.
+                  description: Embedding model name. Use the `model` field from [Get Available Models](/en/api-reference/models/get-available-models) with `model_type=text-embedding`.
                 embedding_model_provider:
                   type: string
-                  description: 'Embedding model provider identifier, formatted as `organization/plugin_name/provider_name`
-                    (e.g. `langgenius/openai/openai`). A bare name like `openai` expands to `langgenius/<name>/<name>`
-                    and works only for langgenius-published plugins.
+                  description: 'Embedding model provider identifier, formatted as `organization/plugin_name/provider_name` (e.g. `langgenius/openai/openai`). A bare name like `openai` expands to `langgenius/<name>/<name>` and works only for langgenius-published plugins.
 
 
-                    Get valid values from the `provider` field of [Get Available Models](/en/api-reference/models/get-available-models)
-                    with `model_type=text-embedding`.'
+                    Get valid values from the `provider` field of [Get Available Models](/en/api-reference/models/get-available-models) with `model_type=text-embedding`.'
                 retrieval_model:
                   $ref: '#/components/schemas/RetrievalModel'
-                  description: Retrieval model configuration. Controls how chunks are searched and ranked
-                    when querying this knowledge base.
+                  description: Retrieval model configuration. Controls how chunks are searched and ranked when querying this knowledge base.
                 partial_member_list:
                   type: array
                   description: List of team members with access when `permission` is `partial_members`.
@@ -584,8 +563,7 @@ paths:
                     maintainer: admin
                     partial_member_list: []
         '400':
-          description: '`invalid_param` : The embedding or reranking model you specified is not configured
-            or available.'
+          description: '`invalid_param` : The embedding or reranking model you specified is not configured or available.'
           content:
             application/json:
               examples:
@@ -594,8 +572,7 @@ paths:
                   value:
                     status: 400
                     code: invalid_param
-                    message: No Embedding Model available. Please configure a valid provider in the Settings
-                      -> Model Provider.
+                    message: No Embedding Model available. Please configure a valid provider in the Settings -> Model Provider.
         '403':
           description: '- `forbidden` : API access is not enabled for this knowledge base.
 
@@ -688,8 +665,7 @@ paths:
       tags:
       - Knowledge Bases
       summary: Retrieve Chunks from a Knowledge Base / Test Retrieval
-      description: Searches a knowledge base and returns the chunks most relevant to the query, for both
-        production retrieval and test retrieval.
+      description: Searches a knowledge base and returns the chunks most relevant to the query, for both production retrieval and test retrieval.
       operationId: retrieveSegments
       parameters:
       - name: dataset_id
@@ -714,13 +690,13 @@ paths:
                   description: Search query text.
                 retrieval_model:
                   $ref: '#/components/schemas/RetrievalModel'
-                  description: Retrieval model configuration. Controls how chunks are searched and ranked
-                    when querying this knowledge base.
+                  description: Retrieval model configuration. Controls how chunks are searched and ranked when querying this knowledge base.
                 attachment_ids:
-                  type: array
+                  type:
+                  - array
+                  - 'null'
                   items:
                     type: string
-                  nullable: true
                   description: List of attachment IDs to include in the retrieval context.
                 external_retrieval_model:
                   type: object
@@ -802,12 +778,14 @@ paths:
                               type: boolean
                               description: Whether the chunk is enabled for retrieval.
                             disabled_at:
-                              type: number
-                              nullable: true
+                              type:
+                              - number
+                              - 'null'
                               description: Timestamp when the chunk was disabled. `null` if enabled.
                             disabled_by:
-                              type: string
-                              nullable: true
+                              type:
+                              - string
+                              - 'null'
                               description: ID of the user who disabled the chunk. `null` if enabled.
                             status:
                               type: string
@@ -819,20 +797,24 @@ paths:
                               type: number
                               description: Creation timestamp (Unix epoch in seconds).
                             indexing_at:
-                              type: number
-                              nullable: true
+                              type:
+                              - number
+                              - 'null'
                               description: Timestamp when indexing started. `null` if not yet started.
                             completed_at:
-                              type: number
-                              nullable: true
+                              type:
+                              - number
+                              - 'null'
                               description: Timestamp when indexing completed. `null` if not yet completed.
                             error:
-                              type: string
-                              nullable: true
+                              type:
+                              - string
+                              - 'null'
                               description: Error message if indexing failed. `null` when no error.
                             stopped_at:
-                              type: number
-                              nullable: true
+                              type:
+                              - number
+                              - 'null'
                               description: Timestamp when indexing was stopped. `null` if not stopped.
                             document:
                               type: object
@@ -848,14 +830,15 @@ paths:
                                   type: string
                                   description: Document name.
                                 doc_type:
-                                  type: string
-                                  nullable: true
+                                  type:
+                                  - string
+                                  - 'null'
                                   description: Document type classification. `null` if not set.
                                 doc_metadata:
-                                  type: object
-                                  nullable: true
-                                  description: Metadata values for the document. `null` if no metadata
-                                    is configured.
+                                  type:
+                                  - object
+                                  - 'null'
+                                  description: Metadata values for the document. `null` if no metadata is configured.
                         child_chunks:
                           type: array
                           description: Matched child chunks within the chunk, if using hierarchical indexing.
@@ -878,8 +861,9 @@ paths:
                           type: number
                           description: Similarity score.
                         tsne_position:
-                          type: object
-                          nullable: true
+                          type:
+                          - object
+                          - 'null'
                           description: t-SNE visualization position.
                         files:
                           type: array
@@ -906,8 +890,9 @@ paths:
                                 type: string
                                 description: URL to access the attachment.
                         summary:
-                          type: string
-                          nullable: true
+                          type:
+                          - string
+                          - 'null'
                           description: Summary content if retrieved via summary index.
               examples:
                 success:
@@ -979,15 +964,13 @@ paths:
                   value:
                     status: 400
                     code: provider_not_initialize
-                    message: No valid model provider credentials found. Please go to Settings -> Model
-                      Provider to complete your provider credentials.
+                    message: No valid model provider credentials found. Please go to Settings -> Model Provider to complete your provider credentials.
                 provider_quota_exceeded:
                   summary: provider_quota_exceeded
                   value:
                     status: 400
                     code: provider_quota_exceeded
-                    message: Your quota for Dify Hosted Model Provider has been exhausted. Please go to
-                      Settings -> Model Provider to complete your own provider credentials.
+                    message: Your quota for Dify Hosted Model Provider has been exhausted. Please go to Settings -> Model Provider to complete your own provider credentials.
                 model_currently_not_support:
                   summary: model_currently_not_support
                   value:
@@ -1068,19 +1051,16 @@ components:
           description: Optional text describing the purpose or contents of the knowledge base.
         provider:
           type: string
-          description: Provider type. `vendor` for internally managed, `external` for external knowledge
-            base connections.
+          description: Provider type. `vendor` for internally managed, `external` for external knowledge base connections.
         permission:
           type: string
-          description: 'Controls who can access this knowledge base. Possible values: `only_me`, `all_team_members`,
-            `partial_members`.'
+          description: 'Controls who can access this knowledge base. Possible values: `only_me`, `all_team_members`, `partial_members`.'
         data_source_type:
           type: string
           description: Data source type of the documents, `null` if not yet configured.
         indexing_technique:
           type: string
-          description: '`high_quality` uses embedding models for precise search; `economy` uses keyword-based
-            indexing.'
+          description: '`high_quality` uses embedding models for precise search; `economy` uses keyword-based indexing.'
         app_count:
           type: integer
           description: Number of applications currently using this knowledge base.
@@ -1110,9 +1090,7 @@ components:
           description: Name of the embedding model used for indexing.
         embedding_model_provider:
           type: string
-          description: Embedding model provider identifier, formatted as `organization/plugin_name/provider_name`
-            (e.g. `langgenius/openai/openai`). Legacy knowledge bases may return the bare short form (e.g.
-            `openai`).
+          description: Embedding model provider identifier, formatted as `organization/plugin_name/provider_name` (e.g. `langgenius/openai/openai`). Legacy knowledge bases may return the bare short form (e.g. `openai`).
         embedding_available:
           type: boolean
           description: Whether the configured embedding model is currently available.
@@ -1122,32 +1100,29 @@ components:
           properties:
             search_method:
               type: string
-              description: Search method used for retrieval. `keyword_search` for keyword matching, `semantic_search`
-                for embedding-based similarity, `full_text_search` for full-text indexing, `hybrid_search`
-                for a combination of semantic and keyword approaches.
+              description: Search method used for retrieval. `keyword_search` for keyword matching, `semantic_search` for embedding-based similarity, `full_text_search` for full-text indexing, `hybrid_search` for a combination of semantic and keyword approaches.
             reranking_enable:
               type: boolean
               description: Whether reranking is enabled.
             reranking_mode:
-              type: string
-              nullable: true
-              description: Reranking mode. `reranking_model` for model-based reranking, `weighted_score`
-                for score-based weighting. `null` if reranking is disabled.
+              type:
+              - string
+              - 'null'
+              description: Reranking mode. `reranking_model` for model-based reranking, `weighted_score` for score-based weighting. `null` if reranking is disabled.
             reranking_model:
               type: object
               description: Reranking model configuration.
               properties:
                 reranking_provider_name:
                   type: string
-                  description: Reranking model provider identifier, formatted as `organization/plugin_name/provider_name`
-                    (e.g. `langgenius/cohere/cohere`). Legacy knowledge bases may return the bare short
-                    form (e.g. `cohere`).
+                  description: Reranking model provider identifier, formatted as `organization/plugin_name/provider_name` (e.g. `langgenius/cohere/cohere`). Legacy knowledge bases may return the bare short form (e.g. `cohere`).
                 reranking_model_name:
                   type: string
                   description: Name of the reranking model.
             weights:
-              type: object
-              nullable: true
+              type:
+              - object
+              - 'null'
               description: Weight configuration for hybrid search.
               properties:
                 weight_type:
@@ -1181,11 +1156,11 @@ components:
               description: Whether score threshold filtering is enabled.
             score_threshold:
               type: number
-              description: Minimum similarity score for results. Only effective when `score_threshold_enabled`
-                is `true`.
+              description: Minimum similarity score for results. Only effective when `score_threshold_enabled` is `true`.
         summary_index_setting:
-          type: object
-          nullable: true
+          type:
+          - object
+          - 'null'
           description: Summary index configuration.
           properties:
             enable:
@@ -1217,11 +1192,11 @@ components:
                 description: Tag type. Always `knowledge` for knowledge base tags.
         doc_form:
           type: string
-          description: Document chunking mode. `text_model` for standard text chunking, `hierarchical_model`
-            for parent-child structure, `qa_model` for QA pair extraction.
+          description: Document chunking mode. `text_model` for standard text chunking, `hierarchical_model` for parent-child structure, `qa_model` for QA pair extraction.
         external_knowledge_info:
-          type: object
-          nullable: true
+          type:
+          - object
+          - 'null'
           description: Connection details for external knowledge bases. Present when `provider` is `external`.
           properties:
             external_knowledge_id:
@@ -1237,10 +1212,10 @@ components:
               type: string
               description: Endpoint URL of the external knowledge API.
         external_retrieval_model:
-          type: object
-          nullable: true
-          description: Retrieval settings for external knowledge bases. `null` for internal knowledge
-            bases.
+          type:
+          - object
+          - 'null'
+          description: Retrieval settings for external knowledge bases. `null` for internal knowledge bases.
           properties:
             top_k:
               type: integer
@@ -1270,20 +1245,24 @@ components:
           type: boolean
           description: Whether built-in metadata fields (e.g., `document_name`, `uploader`) are enabled.
         pipeline_id:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Pipeline ID, if a custom processing pipeline is configured.
         runtime_mode:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Runtime processing mode.
         chunk_structure:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Chunk structure configuration.
         icon_info:
-          type: object
-          nullable: true
+          type:
+          - object
+          - 'null'
           description: Icon display configuration for the knowledge base.
           properties:
             icon_type:
@@ -1314,17 +1293,17 @@ components:
           type: boolean
           description: Whether multimodal content processing is enabled.
         maintainer:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Display name of the knowledge base maintainer. `null` if not set.
         partial_member_list:
-          type: array
-          nullable: true
+          type:
+          - array
+          - 'null'
           items:
             type: string
-          description: Account IDs of members granted access when `permission` is `partial_members`. Always
-            present on the update response; on the detail response, present only when `permission` is
-            `partial_members`.
+          description: Account IDs of members granted access when `permission` is `partial_members`. Always present on the update response; on the detail response, present only when `permission` is `partial_members`.
     RetrievalModel:
       type: object
       required:
@@ -1350,22 +1329,20 @@ components:
           properties:
             reranking_provider_name:
               type: string
-              description: 'Reranking model provider identifier, formatted as `organization/plugin_name/provider_name`
-                (e.g. `langgenius/cohere/cohere`). A bare name like `cohere` expands to `langgenius/<name>/<name>`
-                and works only for langgenius-published plugins.
+              description: 'Reranking model provider identifier, formatted as `organization/plugin_name/provider_name` (e.g. `langgenius/cohere/cohere`). A bare name like `cohere` expands to `langgenius/<name>/<name>` and works only for langgenius-published plugins.
 
 
-                Get valid values from the `provider` field of [Get Available Models](/en/api-reference/models/get-available-models)
-                with `model_type=rerank`.'
+                Get valid values from the `provider` field of [Get Available Models](/en/api-reference/models/get-available-models) with `model_type=rerank`.'
             reranking_model_name:
               type: string
               description: Name of the reranking model.
         reranking_mode:
-          type: string
+          type:
+          - string
+          - 'null'
           enum:
           - reranking_model
           - weighted_score
-          nullable: true
           description: Reranking mode. Required when `reranking_enable` is `true`.
         top_k:
           type: integer
@@ -1374,13 +1351,14 @@ components:
           type: boolean
           description: Whether score threshold filtering is enabled.
         score_threshold:
-          type: number
-          nullable: true
-          description: Minimum similarity score for results. Only effective when `score_threshold_enabled`
-            is `true`.
+          type:
+          - number
+          - 'null'
+          description: Minimum similarity score for results. Only effective when `score_threshold_enabled` is `true`.
         weights:
-          type: object
-          nullable: true
+          type:
+          - object
+          - 'null'
           description: Weight configuration for hybrid search.
           properties:
             weight_type:
@@ -1411,22 +1389,24 @@ components:
                   type: number
                   description: Weight assigned to keyword search results.
         metadata_filtering_conditions:
-          type: object
-          nullable: true
-          description: Restrict retrieval to chunks whose document metadata matches the given conditions.
-            Conditions are evaluated server-side against document metadata fields.
+          type:
+          - object
+          - 'null'
+          description: Restrict retrieval to chunks whose document metadata matches the given conditions. Conditions are evaluated server-side against document metadata fields.
           properties:
             logical_operator:
-              type: string
+              type:
+              - string
+              - 'null'
               enum:
               - and
               - or
               default: and
-              nullable: true
               description: How to combine multiple conditions.
             conditions:
-              type: array
-              nullable: true
+              type:
+              - array
+              - 'null'
               description: List of metadata conditions to evaluate.
               items:
                 type: object
@@ -1442,8 +1422,7 @@ components:
                     description: 'Comparison to apply, by metadata type:
 
 
-                      - String or array metadata: `contains`, `not contains`, `start with`, `end with`,
-                      `is`, `is not`, `empty`, `not empty`, `in`, `not in`
+                      - String or array metadata: `contains`, `not contains`, `start with`, `end with`, `is`, `is not`, `empty`, `not empty`, `in`, `not in`
 
                       - Numeric metadata: `=`, `≠`, `>`, `<`, `≥`, `≤`
 
@@ -1468,10 +1447,7 @@ components:
                     - before
                     - after
                   value:
-                    nullable: true
-                    description: 'Value to compare against. Type depends on `comparison_operator`: string
-                      for most string operators, array of strings for `in` and `not in`, number for numeric
-                      operators, and omitted for `empty` and `not empty`.'
+                    description: 'Value to compare against. Type depends on `comparison_operator`: string for most string operators, array of strings for `in` and `not in`, number for numeric operators, and omitted for `empty` and `not empty`.'
                     oneOf:
                     - type: string
                     - type: array
@@ -1483,16 +1459,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: API_KEY
-      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
-        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
 
 
-        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
-        fail with HTTP `401` (`unauthorized`).'
-x-provenance:
-  generated: '2026-09-06'
-  method: derived
-  source: openapi/_original/dify-service-api-openapi.json
-  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
-    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
-    spec.
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail with HTTP `401` (`unauthorized`).'

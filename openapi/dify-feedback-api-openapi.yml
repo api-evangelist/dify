@@ -1,13 +1,11 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Dify Feedback API
-  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
-    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  title: Dify Service Feedback API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate with an app API key; knowledge endpoints authenticate with a dataset API key.
   version: 1.0.0
 servers:
 - url: https://{api_base_url}
-  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
-    API base URL.
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own API base URL.
   variables:
     api_base_url:
       default: api.dify.ai/v1
@@ -24,8 +22,7 @@ paths:
       description: '**Available for**: Chatflow, Chatbot, Legacy Agent, Text Generator apps.
 
 
-        Records a `like` or `dislike` rating, plus an optional comment, on a message. Submitting `null`
-        for `rating` revokes the message''s existing feedback.'
+        Records a `like` or `dislike` rating, plus an optional comment, on a message. Submitting `null` for `rating` revokes the message''s existing feedback.'
       operationId: postChatMessageFeedback
       tags:
       - Feedback
@@ -54,8 +51,7 @@ paths:
         '200':
           $ref: '#/components/responses/SuccessResult'
         '400':
-          description: '`invalid_param` : The required `user` field is omitted, or `rating` is `null`
-            but there is no existing feedback to revoke.'
+          description: '`invalid_param` : The required `user` field is omitted, or `rating` is `null` but there is no existing feedback to revoke.'
           content:
             application/json:
               examples:
@@ -87,8 +83,7 @@ paths:
       description: '**Available for**: Chatflow, Chatbot, Legacy Agent, Text Generator apps.
 
 
-        Returns a paginated list of all feedback on the app''s messages, including both end-user and admin
-        submissions.'
+        Returns a paginated list of all feedback on the app''s messages, including both end-user and admin submissions.'
       operationId: getChatAppFeedbacks
       tags:
       - Feedback
@@ -150,31 +145,7 @@ paths:
           title: List App Feedbacks
           sidebarTitle: List App Feedbacks
 components:
-  responses:
-    SuccessResult:
-      description: Operation successful.
-      content:
-        application/json:
-          schema:
-            type: object
-            properties:
-              result:
-                type: string
-                description: Operation result. Always `success`.
-          examples:
-            success:
-              summary: Response Example
-              value:
-                result: success
   schemas:
-    AppFeedbacksResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          description: List of feedback items.
-          items:
-            $ref: '#/components/schemas/FeedbackItem'
     FeedbackItem:
       type: object
       description: A single feedback item.
@@ -199,22 +170,24 @@ components:
           type: string
           description: Feedback rating. `like` for positive, `dislike` for negative.
         content:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Optional text feedback.
         from_source:
           type: string
-          description: Feedback source. `user` for end-user feedback submitted via API, `admin` for feedback
-            submitted from the console.
+          description: Feedback source. `user` for end-user feedback submitted via API, `admin` for feedback submitted from the console.
         from_end_user_id:
-          type: string
+          type:
+          - string
+          - 'null'
           format: uuid
-          nullable: true
           description: End user ID who submitted the feedback. Present when `from_source` is `user`.
         from_account_id:
-          type: string
+          type:
+          - string
+          - 'null'
           format: uuid
-          nullable: true
           description: Account ID who submitted the feedback. Present when `from_source` is `admin`.
         created_at:
           type: string
@@ -224,6 +197,14 @@ components:
           type: string
           format: date-time
           description: Last update timestamp.
+    AppFeedbacksResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          description: List of feedback items.
+          items:
+            $ref: '#/components/schemas/FeedbackItem'
     MessageFeedbackRequest:
       type: object
       description: Request body for submitting message feedback.
@@ -231,35 +212,42 @@ components:
       - user
       properties:
         rating:
-          type: string
+          type:
+          - string
+          - 'null'
           enum:
           - like
           - dislike
           - null
-          nullable: true
           description: Feedback rating. Set to `null` to revoke previously submitted feedback.
         user:
           type: string
-          description: End-user identifier, defined by your app and unique within it. Must match the `user`
-            that received the message, since feedback is scoped to that end user. See [End User Identity](/en/api-reference/guides/end-user-identity).
+          description: End-user identifier, defined by your app and unique within it. Must match the `user` that received the message, since feedback is scoped to that end user. See [End User Identity](/en/api-reference/guides/end-user-identity).
         content:
           type: string
           description: Optional text feedback providing additional detail.
+  responses:
+    SuccessResult:
+      description: Operation successful.
+      content:
+        application/json:
+          schema:
+            type: object
+            properties:
+              result:
+                type: string
+                description: Operation result. Always `success`.
+          examples:
+            success:
+              summary: Response Example
+              value:
+                result: success
   securitySchemes:
     ApiKeyAuth:
       type: http
       scheme: bearer
       bearerFormat: API_KEY
-      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
-        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
 
 
-        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
-        fail with HTTP `401` (`unauthorized`).'
-x-provenance:
-  generated: '2026-09-06'
-  method: derived
-  source: openapi/_original/dify-service-api-openapi.json
-  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
-    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
-    spec.
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail with HTTP `401` (`unauthorized`).'

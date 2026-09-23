@@ -1,13 +1,11 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Dify Annotations API
-  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
-    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  title: Dify Service Annotations API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate with an app API key; knowledge endpoints authenticate with a dataset API key.
   version: 1.0.0
 servers:
 - url: https://{api_base_url}
-  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
-    API base URL.
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own API base URL.
   variables:
     api_base_url:
       default: api.dify.ai/v1
@@ -24,8 +22,7 @@ paths:
       description: '**Available for**: Chatflow, Chatbot, Legacy Agent apps.
 
 
-        Creates an annotation. Annotations are predefined question-answer pairs the app returns directly
-        on a match, instead of generating a fresh response.'
+        Creates an annotation. Annotations are predefined question-answer pairs the app returns directly on a match, instead of generating a fresh response.'
       operationId: createAnnotation
       tags:
       - Annotations
@@ -149,8 +146,7 @@ paths:
                 summary: Request Example
                 value:
                   question: What is Dify?
-                  answer: Dify is an open-source LLM application development platform for building AI-powered
-                    apps.
+                  answer: Dify is an open-source LLM application development platform for building AI-powered apps.
       responses:
         '200':
           description: Annotation updated successfully.
@@ -164,8 +160,7 @@ paths:
                   value:
                     id: a1b2c3d4-5678-90ab-cdef-1234567890ab
                     question: What is Dify?
-                    answer: Dify is an open-source LLM application development platform for building AI-powered
-                      apps.
+                    answer: Dify is an open-source LLM application development platform for building AI-powered apps.
                     hit_count: 5
                     created_at: 1705407629
         '404':
@@ -226,12 +221,10 @@ paths:
       description: '**Available for**: Chatflow, Chatbot, Legacy Agent apps.
 
 
-        Enables or disables annotation reply for the app. Runs asynchronously; track progress with [Get
-        Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status).
+        Enables or disables annotation reply for the app. Runs asynchronously; track progress with Get Annotation Reply Job Status.
 
 
-        The body is validated before the action runs, so `score_threshold`, `embedding_provider_name`,
-        and `embedding_model_name` are required even for `disable`.'
+        The body is validated before the action runs, so `score_threshold`, `embedding_provider_name`, and `embedding_model_name` are required even for `disable`.'
       operationId: initialAnnotationReplySettings
       tags:
       - Annotations
@@ -282,7 +275,7 @@ paths:
       description: '**Available for**: Chatflow, Chatbot, Legacy Agent apps.
 
 
-        Returns the status of an annotation reply configuration job started by [Configure Annotation Reply](/en/api-reference/annotations/configure-annotation-reply).'
+        Returns the status of an annotation reply configuration job started by Configure Annotation Reply.'
       operationId: getInitialAnnotationReplySettingsStatus
       tags:
       - Annotations
@@ -290,8 +283,7 @@ paths:
       - name: action
         in: path
         required: true
-        description: Action type, must match the [Configure Annotation Reply](/en/api-reference/annotations/configure-annotation-reply)
-          call.
+        description: Action type, must match the [Configure Annotation Reply](/en/api-reference/annotations/configure-annotation-reply) call.
         schema:
           type: string
           enum:
@@ -336,30 +328,73 @@ paths:
           sidebarTitle: Get Annotation Reply Job Status
 components:
   schemas:
-    AnnotationItem:
+    InitialAnnotationReplySettingsRequest:
       type: object
+      description: Request body for configuring annotation reply settings.
+      required:
+      - score_threshold
+      - embedding_provider_name
+      - embedding_model_name
       properties:
-        id:
+        embedding_provider_name:
           type: string
-          format: uuid
-          description: Unique annotation identifier.
+          description: Embedding model provider (for example, `openai`). Get available providers from [Get Available Models](/en/api-reference/models/get-available-models).
+        embedding_model_name:
+          type: string
+          description: Embedding model used to vectorize annotations for matching (for example, `text-embedding-3-small`).
+        score_threshold:
+          type: number
+          format: float
+          description: Minimum similarity score for an annotation to be considered a match. Higher values require closer matches.
+    UpdateAnnotationRequest:
+      type: object
+      description: Request body for updating an annotation.
+      required:
+      - question
+      - answer
+      properties:
         question:
           type: string
-          nullable: true
-          description: Question text that triggers this annotation.
+          description: New question text for the annotation.
         answer:
           type: string
-          nullable: true
-          description: Predefined answer returned when the annotation is matched.
-        hit_count:
-          type: integer
-          nullable: true
-          description: Number of times this annotation has been matched and returned as a reply.
-        created_at:
-          type: integer
-          format: int64
-          nullable: true
-          description: Creation timestamp (Unix epoch seconds).
+          description: New answer text for the annotation.
+    InitialAnnotationReplySettingsStatusResponse:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+          description: Job ID from the [Configure Annotation Reply](/en/api-reference/annotations/configure-annotation-reply) call.
+        job_status:
+          type: string
+          description: Current job status. `waiting` for queued, `processing` for in progress, `completed` when finished, `error` if failed.
+        error_msg:
+          type: string
+          description: Error message describing why the job failed. Empty string when `job_status` is not `error`.
+    CreateAnnotationRequest:
+      type: object
+      description: Request body for creating a new annotation.
+      required:
+      - question
+      - answer
+      properties:
+        question:
+          type: string
+          description: Question text the app matches incoming user input against.
+        answer:
+          type: string
+          description: Answer returned when this annotation is matched.
+    InitialAnnotationReplySettingsResponse:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+          description: Asynchronous job ID. Use with [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status) to track progress.
+        job_status:
+          type: string
+          description: 'Current job status: `waiting` (queued) or `processing` (in progress). `completed` and `error` are returned only by [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status).'
     AnnotationListResponse:
       type: object
       properties:
@@ -380,95 +415,40 @@ components:
         page:
           type: integer
           description: Current page number.
-    CreateAnnotationRequest:
-      type: object
-      description: Request body for creating a new annotation.
-      required:
-      - question
-      - answer
-      properties:
-        question:
-          type: string
-          description: Question text the app matches incoming user input against.
-        answer:
-          type: string
-          description: Answer returned when this annotation is matched.
-    InitialAnnotationReplySettingsRequest:
-      type: object
-      description: Request body for configuring annotation reply settings.
-      required:
-      - score_threshold
-      - embedding_provider_name
-      - embedding_model_name
-      properties:
-        embedding_provider_name:
-          type: string
-          description: Embedding model provider (for example, `openai`). Get available providers from
-            [Get Available Models](/en/api-reference/models/get-available-models).
-        embedding_model_name:
-          type: string
-          description: Embedding model used to vectorize annotations for matching (for example, `text-embedding-3-small`).
-        score_threshold:
-          type: number
-          format: float
-          description: Minimum similarity score for an annotation to be considered a match. Higher values
-            require closer matches.
-    InitialAnnotationReplySettingsResponse:
+    AnnotationItem:
       type: object
       properties:
-        job_id:
+        id:
           type: string
           format: uuid
-          description: Asynchronous job ID. Use with [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status)
-            to track progress.
-        job_status:
-          type: string
-          description: 'Current job status: `waiting` (queued) or `processing` (in progress). `completed`
-            and `error` are returned only by [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status).'
-    InitialAnnotationReplySettingsStatusResponse:
-      type: object
-      properties:
-        job_id:
-          type: string
-          format: uuid
-          description: Job ID from the [Configure Annotation Reply](/en/api-reference/annotations/configure-annotation-reply)
-            call.
-        job_status:
-          type: string
-          description: Current job status. `waiting` for queued, `processing` for in progress, `completed`
-            when finished, `error` if failed.
-        error_msg:
-          type: string
-          description: Error message describing why the job failed. Empty string when `job_status` is
-            not `error`.
-    UpdateAnnotationRequest:
-      type: object
-      description: Request body for updating an annotation.
-      required:
-      - question
-      - answer
-      properties:
+          description: Unique annotation identifier.
         question:
-          type: string
-          description: New question text for the annotation.
+          type:
+          - string
+          - 'null'
+          description: Question text that triggers this annotation.
         answer:
-          type: string
-          description: New answer text for the annotation.
+          type:
+          - string
+          - 'null'
+          description: Predefined answer returned when the annotation is matched.
+        hit_count:
+          type:
+          - integer
+          - 'null'
+          description: Number of times this annotation has been matched and returned as a reply.
+        created_at:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          description: Creation timestamp (Unix epoch seconds).
   securitySchemes:
     ApiKeyAuth:
       type: http
       scheme: bearer
       bearerFormat: API_KEY
-      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
-        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
 
 
-        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
-        fail with HTTP `401` (`unauthorized`).'
-x-provenance:
-  generated: '2026-09-06'
-  method: derived
-  source: openapi/_original/dify-service-api-openapi.json
-  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
-    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
-    spec.
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail with HTTP `401` (`unauthorized`).'

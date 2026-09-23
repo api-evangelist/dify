@@ -1,13 +1,11 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Dify Documents API
-  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
-    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  title: Dify Service Documents API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate with an app API key; knowledge endpoints authenticate with a dataset API key.
   version: 1.0.0
 servers:
 - url: https://{api_base_url}
-  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
-    API base URL.
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own API base URL.
   variables:
     api_base_url:
       default: api.dify.ai/v1
@@ -23,8 +21,7 @@ paths:
       tags:
       - Documents
       summary: Create Document by Text
-      description: Creates a document in a knowledge base from raw text. Indexing runs asynchronously;
-        track it with the returned `batch` ID via [Get Document Indexing Status](/en/api-reference/documents/get-document-indexing-status).
+      description: Creates a document in a knowledge base from raw text. Indexing runs asynchronously; track it with the returned `batch` ID via Get Document Indexing Status.
       operationId: createDocumentFromText
       parameters:
       - name: dataset_id
@@ -55,9 +52,7 @@ paths:
                   enum:
                   - high_quality
                   - economy
-                  description: Required when adding the first document to a knowledge base. Subsequent
-                    documents inherit the knowledge base's indexing technique if omitted. `high_quality`
-                    uses embedding models for precise search; `economy` uses keyword-based indexing.
+                  description: Required when adding the first document to a knowledge base. Subsequent documents inherit the knowledge base's indexing technique if omitted. `high_quality` uses embedding models for precise search; `economy` uses keyword-based indexing.
                 doc_form:
                   type: string
                   enum:
@@ -65,8 +60,7 @@ paths:
                   - hierarchical_model
                   - qa_model
                   default: text_model
-                  description: '`text_model` for standard text chunking, `hierarchical_model` for parent-child
-                    chunk structure, `qa_model` for question-answer pair extraction.'
+                  description: '`text_model` for standard text chunking, `hierarchical_model` for parent-child chunk structure, `qa_model` for question-answer pair extraction.'
                 doc_language:
                   type: string
                   default: English
@@ -83,8 +77,7 @@ paths:
                       - automatic
                       - custom
                       - hierarchical
-                      description: '`automatic` uses built-in rules, `custom` allows manual configuration,
-                        `hierarchical` enables parent-child chunk structure (use with `doc_form: hierarchical_model`).'
+                      description: '`automatic` uses built-in rules, `custom` allows manual configuration, `hierarchical` enables parent-child chunk structure (use with `doc_form: hierarchical_model`).'
                     rules:
                       type: object
                       properties:
@@ -121,16 +114,13 @@ paths:
                               description: Token overlap between chunks.
                 retrieval_model:
                   $ref: '#/components/schemas/RetrievalModel'
-                  description: Controls how chunks are searched and ranked when querying this knowledge
-                    base.
+                  description: Controls how chunks are searched and ranked when querying this knowledge base.
                 embedding_model:
                   type: string
-                  description: Embedding model name. Use the `model` field from [Get Available Models](/en/api-reference/models/get-available-models)
-                    with `model_type=text-embedding`.
+                  description: Embedding model name. Use the `model` field from [Get Available Models](/en/api-reference/models/get-available-models) with `model_type=text-embedding`.
                 embedding_model_provider:
                   type: string
-                  description: Embedding model provider. Use the `provider` field from [Get Available
-                    Models](/en/api-reference/models/get-available-models) with `model_type=text-embedding`.
+                  description: Embedding model provider. Use the `provider` field from [Get Available Models](/en/api-reference/models/get-available-models) with `model_type=text-embedding`.
                 original_document_id:
                   type: string
                   description: Original document ID for versioning. Get it from [List Documents](/en/api-reference/documents/list-documents).
@@ -187,11 +177,9 @@ paths:
                       need_summary: false
                     batch: '20250306150245647595'
         '400':
-          description: '- `provider_not_initialize` : No model provider credentials are configured for
-            the workspace.
+          description: '- `provider_not_initialize` : No model provider credentials are configured for the workspace.
 
-            - `invalid_param` : `indexing_technique` is required when adding the first document, or `doc_form`
-            is invalid.'
+            - `invalid_param` : `indexing_technique` is required when adding the first document, or `doc_form` is invalid.'
           content:
             application/json:
               examples:
@@ -200,8 +188,7 @@ paths:
                   value:
                     status: 400
                     code: provider_not_initialize
-                    message: No valid model provider credentials found. Please go to Settings -> Model
-                      Provider to complete your provider credentials.
+                    message: No valid model provider credentials found. Please go to Settings -> Model Provider to complete your provider credentials.
                 invalid_param_indexing:
                   summary: invalid_param (indexing_technique)
                   value:
@@ -255,8 +242,7 @@ paths:
                     code: not_found
                     message: Dataset not found.
         '503':
-          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
-            the Dify Cloud Sandbox plan only; retry the request later.'
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on the Dify Cloud Sandbox plan only; retry the request later.'
           content:
             application/json:
               examples:
@@ -276,9 +262,7 @@ paths:
       tags:
       - Documents
       summary: Create Document by File
-      description: Creates a document in a knowledge base from an uploaded file. Common formats such as
-        PDF, TXT, and DOCX are supported. Indexing runs asynchronously; track it with the returned `batch`
-        ID via [Get Document Indexing Status](/en/api-reference/documents/get-document-indexing-status).
+      description: Creates a document in a knowledge base from an uploaded file. Common formats such as PDF, TXT, and DOCX are supported. Indexing runs asynchronously; track it with the returned `batch` ID via Get Document Indexing Status.
       operationId: createDocumentFromFile
       parameters:
       - name: dataset_id
@@ -303,15 +287,10 @@ paths:
                   description: 'File to upload, capped at 15 MB by default.
 
 
-                    Self-hosted deployments adjust the limit with the `UPLOAD_FILE_SIZE_LIMIT` [environment
-                    variable](/en/self-host/deploy/configuration/environments). On Dify Cloud, Professional
-                    and Team plans raise the cap to 50 MB.'
+                    Self-hosted deployments adjust the limit with the `UPLOAD_FILE_SIZE_LIMIT` [environment variable](/en/self-host/deploy/configuration/environments). On Dify Cloud, Professional and Team plans raise the cap to 50 MB.'
                 data:
                   type: string
-                  description: JSON string containing configuration. Accepts the same fields as [Create
-                    Document by Text](/en/api-reference/documents/create-document-by-text) (`indexing_technique`,
-                    `doc_form`, `doc_language`, `process_rule`, `retrieval_model`, `embedding_model`,
-                    `embedding_model_provider`) except `name` and `text`.
+                  description: JSON string containing configuration. Accepts the same fields as [Create Document by Text](/en/api-reference/documents/create-document-by-text) (`indexing_technique`, `doc_form`, `doc_language`, `process_rule`, `retrieval_model`, `embedding_model`, `embedding_model_provider`) except `name` and `text`.
                   example: '{"indexing_technique":"high_quality","doc_form":"text_model","doc_language":"English","process_rule":{"mode":"automatic"}}'
       responses:
         '200':
@@ -374,8 +353,7 @@ paths:
 
             - `provider_not_initialize` : No model provider credentials are configured for the workspace.
 
-            - `invalid_param` : The knowledge base is external, `indexing_technique` is required, or `process_rule`
-            is missing.'
+            - `invalid_param` : The knowledge base is external, `indexing_technique` is required, or `process_rule` is missing.'
           content:
             application/json:
               examples:
@@ -402,8 +380,7 @@ paths:
                   value:
                     status: 400
                     code: provider_not_initialize
-                    message: No valid model provider credentials found. Please go to Settings -> Model
-                      Provider to complete your provider credentials.
+                    message: No valid model provider credentials found. Please go to Settings -> Model Provider to complete your provider credentials.
                 invalid_param_external:
                   summary: invalid_param (external)
                   value:
@@ -468,8 +445,7 @@ paths:
                     code: file_too_large
                     message: File size exceeded.
         '503':
-          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
-            the Dify Cloud Sandbox plan only; retry the request later.'
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on the Dify Cloud Sandbox plan only; retry the request later.'
           content:
             application/json:
               examples:
@@ -654,8 +630,7 @@ paths:
           - only
           - without
           default: all
-        description: '`all` returns all fields including metadata. `only` returns only `id`, `doc_type`,
-          and `doc_metadata`. `without` returns all fields except `doc_metadata`.'
+        description: '`all` returns all fields including metadata. `only` returns only `id`, `doc_type`, and `doc_metadata`. `without` returns all fields except `doc_metadata`.'
       responses:
         '200':
           description: Document details. The returned fields depend on the `metadata` query parameter.
@@ -672,12 +647,10 @@ paths:
                     description: Position index within the knowledge base.
                   data_source_type:
                     type: string
-                    description: How the document was uploaded. `upload_file` for file uploads, `notion_import`
-                      for Notion imports.
+                    description: How the document was uploaded. `upload_file` for file uploads, `notion_import` for Notion imports.
                   data_source_info:
                     type: object
-                    description: Data source details. For file uploads, this detail endpoint returns the
-                      full file object under `upload_file` (the list endpoint returns only `upload_file_id`).
+                    description: Data source details. For file uploads, this detail endpoint returns the full file object under `upload_file` (the list endpoint returns only `upload_file_id`).
                     properties:
                       upload_file:
                         type: object
@@ -730,22 +703,24 @@ paths:
                     description: Number of tokens in the document.
                   indexing_status:
                     type: string
-                    description: Current indexing status, e.g. `waiting`, `parsing`, `cleaning`, `splitting`,
-                      `indexing`, `completed`, `error`, `paused`.
+                    description: Current indexing status, e.g. `waiting`, `parsing`, `cleaning`, `splitting`, `indexing`, `completed`, `error`, `paused`.
                   error:
-                    type: string
-                    nullable: true
+                    type:
+                    - string
+                    - 'null'
                     description: Error message if indexing failed, `null` otherwise.
                   enabled:
                     type: boolean
                     description: Whether the document is enabled for retrieval.
                   disabled_at:
-                    type: number
-                    nullable: true
+                    type:
+                    - number
+                    - 'null'
                     description: Unix timestamp when the document was disabled, `null` if enabled.
                   disabled_by:
-                    type: string
-                    nullable: true
+                    type:
+                    - string
+                    - 'null'
                     description: ID of the user who disabled the document, `null` if enabled.
                   archived:
                     type: boolean
@@ -758,14 +733,14 @@ paths:
                     description: Number of times this document has been retrieved.
                   doc_form:
                     type: string
-                    description: Document chunking mode. `text_model` for standard text, `hierarchical_model`
-                      for parent-child, `qa_model` for QA pairs.
+                    description: Document chunking mode. `text_model` for standard text, `hierarchical_model` for parent-child, `qa_model` for QA pairs.
                   doc_language:
                     type: string
                     description: Language of the document content.
                   doc_type:
-                    type: string
-                    nullable: true
+                    type:
+                    - string
+                    - 'null'
                     description: Document type classification, `null` if not set.
                   doc_metadata:
                     type: array
@@ -786,16 +761,19 @@ paths:
                           type: string
                           description: Metadata field value for this document.
                   completed_at:
-                    type: number
-                    nullable: true
+                    type:
+                    - number
+                    - 'null'
                     description: Unix timestamp when processing completed, `null` if not yet completed.
                   updated_at:
-                    type: number
-                    nullable: true
+                    type:
+                    - number
+                    - 'null'
                     description: Unix timestamp of last update, `null` if never updated.
                   indexing_latency:
-                    type: number
-                    nullable: true
+                    type:
+                    - number
+                    - 'null'
                     description: Time taken for indexing in seconds, `null` if not completed.
                   segment_count:
                     type: integer
@@ -804,8 +782,9 @@ paths:
                     type: number
                     description: Average character length of chunks.
                   summary_index_status:
-                    type: string
-                    nullable: true
+                    type:
+                    - string
+                    - 'null'
                     description: Status of summary indexing, `null` if summary index is not enabled.
                   need_summary:
                     type: boolean
@@ -863,8 +842,7 @@ paths:
                     summary_index_status: null
                     need_summary: false
         '400':
-          description: '`invalid_metadata` : The `metadata` query parameter value is invalid (must be
-            `all`, `only`, or `without`).'
+          description: '`invalid_metadata` : The `metadata` query parameter value is invalid (must be `all`, `only`, or `without`).'
           content:
             application/json:
               examples:
@@ -961,8 +939,7 @@ paths:
                     code: forbidden
                     message: Sorry, you have reached the knowledge base request rate limit of your subscription.
         '404':
-          description: '`not_found` : The document does not exist. Also returned as "Dataset not found."
-            when the knowledge base itself does not exist.'
+          description: '`not_found` : The document does not exist. Also returned as "Dataset not found." when the knowledge base itself does not exist.'
           content:
             application/json:
               examples:
@@ -987,9 +964,7 @@ paths:
       tags:
       - Documents
       summary: Update Document
-      description: Updates a document by uploading a new file, then re-indexes it. This is the canonical
-        endpoint for file-based document updates. Track progress with the returned `batch` ID via [Get
-        Document Indexing Status](/en/api-reference/documents/get-document-indexing-status).
+      description: Updates a document by uploading a new file, then re-indexes it. This is the canonical endpoint for file-based document updates. Track progress with the returned `batch` ID via Get Document Indexing Status.
       operationId: updateDocument
       parameters:
       - name: dataset_id
@@ -1019,15 +994,10 @@ paths:
                   description: 'File to upload, capped at 15 MB by default.
 
 
-                    Self-hosted deployments adjust the limit with the `UPLOAD_FILE_SIZE_LIMIT` [environment
-                    variable](/en/self-host/deploy/configuration/environments). On Dify Cloud, Professional
-                    and Team plans raise the cap to 50 MB.'
+                    Self-hosted deployments adjust the limit with the `UPLOAD_FILE_SIZE_LIMIT` [environment variable](/en/self-host/deploy/configuration/environments). On Dify Cloud, Professional and Team plans raise the cap to 50 MB.'
                 data:
                   type: string
-                  description: JSON string containing configuration. Accepts the same fields as [Create
-                    Document by Text](/en/api-reference/documents/create-document-by-text) (`doc_form`,
-                    `doc_language`, `process_rule`, `retrieval_model`, `embedding_model`, `embedding_model_provider`)
-                    except `name` and `text`.
+                  description: JSON string containing configuration. Accepts the same fields as [Create Document by Text](/en/api-reference/documents/create-document-by-text) (`doc_form`, `doc_language`, `process_rule`, `retrieval_model`, `embedding_model`, `embedding_model_provider`) except `name` and `text`.
                   example: '{"doc_form":"text_model","doc_language":"English","process_rule":{"mode":"automatic"}}'
       responses:
         '200':
@@ -1088,8 +1058,7 @@ paths:
 
             - `provider_not_initialize` : No model provider credentials are configured for the workspace.
 
-            - `invalid_param` : The document is not available for update (only available documents can
-            be updated).'
+            - `invalid_param` : The document is not available for update (only available documents can be updated).'
           content:
             application/json:
               examples:
@@ -1110,8 +1079,7 @@ paths:
                   value:
                     status: 400
                     code: provider_not_initialize
-                    message: No valid model provider credentials found. Please go to Settings -> Model
-                      Provider to complete your provider credentials.
+                    message: No valid model provider credentials found. Please go to Settings -> Model Provider to complete your provider credentials.
                 invalid_param_not_available:
                   summary: invalid_param (not available)
                   value:
@@ -1187,8 +1155,7 @@ paths:
                     code: unsupported_file_type
                     message: File type not allowed.
         '503':
-          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
-            the Dify Cloud Sandbox plan only; retry the request later.'
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on the Dify Cloud Sandbox plan only; retry the request later.'
           content:
             application/json:
               examples:
@@ -1269,9 +1236,7 @@ paths:
                     code: forbidden
                     message: Sorry, you have reached the knowledge base request rate limit of your subscription.
         '404':
-          description: '`not_found` : Document not found. Also returned as "Uploaded file not found."
-            when the stored file is missing, and "Document does not have an uploaded file to download."
-            for non-file documents.'
+          description: '`not_found` : Document not found. Also returned as "Uploaded file not found." when the stored file is missing, and "Document does not have an uploaded file to download." for non-file documents.'
           content:
             application/json:
               examples:
@@ -1303,9 +1268,7 @@ paths:
       tags:
       - Documents
       summary: Get Document Indexing Status
-      description: 'Returns indexing progress for every document in a batch: the current stage and chunk
-        completion counts. Poll until each `indexing_status` reaches `completed` or `error`. Status advances
-        through `waiting` → `parsing` → `cleaning` → `splitting` → `indexing` → `completed`.'
+      description: 'Returns indexing progress for every document in a batch: the current stage and chunk completion counts. Poll until each `indexing_status` reaches `completed` or `error`. Status advances through `waiting` → `parsing` → `cleaning` → `splitting` → `indexing` → `completed`.'
       operationId: getDocumentIndexingStatus
       parameters:
       - name: dataset_id
@@ -1340,39 +1303,46 @@ paths:
                           description: Document identifier.
                         indexing_status:
                           type: string
-                          description: 'Current indexing status: `waiting`, `parsing`, `cleaning`, `splitting`,
-                            `indexing`, `completed`, or `error`.'
+                          description: 'Current indexing status: `waiting`, `parsing`, `cleaning`, `splitting`, `indexing`, `completed`, or `error`.'
                         processing_started_at:
-                          type: number
-                          nullable: true
+                          type:
+                          - number
+                          - 'null'
                           description: Unix timestamp when processing started.
                         parsing_completed_at:
-                          type: number
-                          nullable: true
+                          type:
+                          - number
+                          - 'null'
                           description: Unix timestamp when parsing completed.
                         cleaning_completed_at:
-                          type: number
-                          nullable: true
+                          type:
+                          - number
+                          - 'null'
                           description: Unix timestamp when cleaning completed.
                         splitting_completed_at:
-                          type: number
-                          nullable: true
+                          type:
+                          - number
+                          - 'null'
                           description: Unix timestamp when splitting completed.
                         completed_at:
-                          type: number
-                          nullable: true
+                          type:
+                          - number
+                          - 'null'
                           description: Unix timestamp when indexing completed.
                         paused_at:
-                          type: number
-                          nullable: true
+                          type:
+                          - number
+                          - 'null'
                           description: Timestamp when indexing was paused. `null` if not paused.
                         error:
-                          type: string
-                          nullable: true
+                          type:
+                          - string
+                          - 'null'
                           description: Error message if indexing failed. `null` if no error.
                         stopped_at:
-                          type: number
-                          nullable: true
+                          type:
+                          - number
+                          - 'null'
                           description: Timestamp when indexing was stopped. `null` if not stopped.
                         completed_segments:
                           type: integer
@@ -1437,8 +1407,7 @@ paths:
       tags:
       - Documents
       summary: Update Document by Text
-      description: Updates a document's text content, name, or processing configuration. Re-indexes the
-        document when its text changes.
+      description: Updates a document's text content, name, or processing configuration. Re-indexes the document when its text changes.
       operationId: updateDocumentByText
       parameters:
       - name: dataset_id
@@ -1480,8 +1449,7 @@ paths:
                       - automatic
                       - custom
                       - hierarchical
-                      description: '`automatic` uses built-in rules, `custom` allows manual configuration,
-                        `hierarchical` enables parent-child chunk structure (use with `doc_form: hierarchical_model`).'
+                      description: '`automatic` uses built-in rules, `custom` allows manual configuration, `hierarchical` enables parent-child chunk structure (use with `doc_form: hierarchical_model`).'
                     rules:
                       type: object
                       properties:
@@ -1523,16 +1491,14 @@ paths:
                   - hierarchical_model
                   - qa_model
                   default: text_model
-                  description: '`text_model` for standard text chunking, `hierarchical_model` for parent-child
-                    chunk structure, `qa_model` for question-answer pair extraction.'
+                  description: '`text_model` for standard text chunking, `hierarchical_model` for parent-child chunk structure, `qa_model` for question-answer pair extraction.'
                 doc_language:
                   type: string
                   default: English
                   description: Language of the document for processing optimization.
                 retrieval_model:
                   $ref: '#/components/schemas/RetrievalModel'
-                  description: Controls how chunks are searched and ranked when querying this knowledge
-                    base.
+                  description: Controls how chunks are searched and ranked when querying this knowledge base.
       responses:
         '200':
           description: Document updated successfully.
@@ -1586,13 +1552,11 @@ paths:
                       need_summary: false
                     batch: '20250306150245647595'
         '400':
-          description: '- `provider_not_initialize` : No model provider credentials are configured for
-            the workspace.
+          description: '- `provider_not_initialize` : No model provider credentials are configured for the workspace.
 
             - `invalid_param` : `name` is required when `text` is provided, or `doc_form` is invalid.
 
-            - `invalid_param` : The document is not available for update (only available documents can
-            be updated).'
+            - `invalid_param` : The document is not available for update (only available documents can be updated).'
           content:
             application/json:
               examples:
@@ -1601,8 +1565,7 @@ paths:
                   value:
                     status: 400
                     code: provider_not_initialize
-                    message: No valid model provider credentials found. Please go to Settings -> Model
-                      Provider to complete your provider credentials.
+                    message: No valid model provider credentials found. Please go to Settings -> Model Provider to complete your provider credentials.
                 invalid_param_name:
                   summary: invalid_param (name required)
                   value:
@@ -1662,8 +1625,7 @@ paths:
                     code: not_found
                     message: Document not found.
         '503':
-          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
-            the Dify Cloud Sandbox plan only; retry the request later.'
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on the Dify Cloud Sandbox plan only; retry the request later.'
           content:
             application/json:
               examples:
@@ -1683,8 +1645,7 @@ paths:
       tags:
       - Documents
       summary: Update Document by File
-      description: Deprecated. Use [Update Document](/en/api-reference/documents/update-document) instead.
-        Updates a document by uploading a new file, then re-indexes it.
+      description: Deprecated. Use Update Document instead. Updates a document by uploading a new file, then re-indexes it.
       operationId: updateDocumentByFile
       parameters:
       - name: dataset_id
@@ -1714,15 +1675,10 @@ paths:
                   description: 'File to upload, capped at 15 MB by default.
 
 
-                    Self-hosted deployments adjust the limit with the `UPLOAD_FILE_SIZE_LIMIT` [environment
-                    variable](/en/self-host/deploy/configuration/environments). On Dify Cloud, Professional
-                    and Team plans raise the cap to 50 MB.'
+                    Self-hosted deployments adjust the limit with the `UPLOAD_FILE_SIZE_LIMIT` [environment variable](/en/self-host/deploy/configuration/environments). On Dify Cloud, Professional and Team plans raise the cap to 50 MB.'
                 data:
                   type: string
-                  description: JSON string containing configuration. Accepts the same fields as [Create
-                    Document by Text](/en/api-reference/documents/create-document-by-text) (`doc_form`,
-                    `doc_language`, `process_rule`, `retrieval_model`, `embedding_model`, `embedding_model_provider`)
-                    except `name` and `text`.
+                  description: JSON string containing configuration. Accepts the same fields as [Create Document by Text](/en/api-reference/documents/create-document-by-text) (`doc_form`, `doc_language`, `process_rule`, `retrieval_model`, `embedding_model`, `embedding_model_provider`) except `name` and `text`.
                   example: '{"doc_form":"text_model","doc_language":"English","process_rule":{"mode":"automatic"}}'
       responses:
         '200':
@@ -1783,8 +1739,7 @@ paths:
 
             - `provider_not_initialize` : No model provider credentials are configured for the workspace.
 
-            - `invalid_param` : The document is not available for update (only available documents can
-            be updated).'
+            - `invalid_param` : The document is not available for update (only available documents can be updated).'
           content:
             application/json:
               examples:
@@ -1805,8 +1760,7 @@ paths:
                   value:
                     status: 400
                     code: provider_not_initialize
-                    message: No valid model provider credentials found. Please go to Settings -> Model
-                      Provider to complete your provider credentials.
+                    message: No valid model provider credentials found. Please go to Settings -> Model Provider to complete your provider credentials.
                 invalid_param_not_available:
                   summary: invalid_param (not available)
                   value:
@@ -1882,8 +1836,7 @@ paths:
                     code: unsupported_file_type
                     message: File type not allowed.
         '503':
-          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
-            the Dify Cloud Sandbox plan only; retry the request later.'
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on the Dify Cloud Sandbox plan only; retry the request later.'
           content:
             application/json:
               examples:
@@ -1904,8 +1857,7 @@ paths:
       tags:
       - Documents
       summary: Download Documents as ZIP
-      description: Downloads one or more documents as a single ZIP archive. Only documents that were uploaded
-        as files can be included.
+      description: Downloads one or more documents as a single ZIP archive. Only documents that were uploaded as files can be included.
       operationId: downloadDocumentsZip
       parameters:
       - name: dataset_id
@@ -1979,8 +1931,7 @@ paths:
         '404':
           description: '- `not_found` : Document not found.
 
-            - `not_found` : Knowledge base not found. Also returned as "Only uploaded-file documents can
-            be downloaded as ZIP." when a requested document has no uploaded file.'
+            - `not_found` : Knowledge base not found. Also returned as "Only uploaded-file documents can be downloaded as ZIP." when a requested document has no uploaded file.'
           content:
             application/json:
               examples:
@@ -2032,8 +1983,7 @@ paths:
           - disable
           - archive
           - un_archive
-        description: '`enable` activates documents for retrieval, `disable` deactivates them, `archive`
-          moves them to the archive, `un_archive` restores them from the archive.'
+        description: '`enable` activates documents for retrieval, `disable` deactivates them, `archive` moves them to the archive, `un_archive` restores them from the archive.'
       requestBody:
         required: true
         content:
@@ -2065,8 +2015,7 @@ paths:
                   value:
                     result: success
         '400':
-          description: '`invalid_action` : Invalid action, or a document is in a state that does not allow
-            the action (e.g. still indexing, or not completed).'
+          description: '`invalid_action` : Invalid action, or a document is in a state that does not allow the action (e.g. still indexing, or not completed).'
           content:
             application/json:
               examples:
@@ -2116,8 +2065,7 @@ components:
           description: Display position of the document in the list.
         data_source_type:
           type: string
-          description: How the document was created. `upload_file` for file uploads, `notion_import` for
-            Notion imports.
+          description: How the document was created. `upload_file` for file uploads, `notion_import` for Notion imports.
         data_source_info:
           type: object
           description: Raw data source information, varies by `data_source_type`.
@@ -2144,23 +2092,24 @@ components:
           description: Total number of tokens in the document.
         indexing_status:
           type: string
-          description: Current indexing status. `waiting` for queued, `parsing` while extracting content,
-            `cleaning` while removing noise, `splitting` while chunking, `indexing` while building vectors,
-            `completed` when ready, `error` if failed, `paused` if manually paused.
+          description: Current indexing status. `waiting` for queued, `parsing` while extracting content, `cleaning` while removing noise, `splitting` while chunking, `indexing` while building vectors, `completed` when ready, `error` if failed, `paused` if manually paused.
         error:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Error message if indexing failed. `null` when no error.
         enabled:
           type: boolean
           description: Whether the document is enabled for retrieval.
         disabled_at:
-          type: number
-          nullable: true
+          type:
+          - number
+          - 'null'
           description: Timestamp when the document was disabled. `null` if enabled.
         disabled_by:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: ID of the user who disabled the document. `null` if enabled.
         archived:
           type: boolean
@@ -2176,8 +2125,7 @@ components:
           description: Number of times the document has been matched in retrieval queries.
         doc_form:
           type: string
-          description: Document chunking mode. `text_model` for standard text chunking, `hierarchical_model`
-            for parent-child structure, `qa_model` for QA pair extraction.
+          description: Document chunking mode. `text_model` for standard text chunking, `hierarchical_model` for parent-child structure, `qa_model` for QA pair extraction.
         doc_metadata:
           type: array
           description: Metadata values assigned to this document.
@@ -2197,10 +2145,10 @@ components:
                 type: string
                 description: Metadata value for this document.
         summary_index_status:
-          type: string
-          nullable: true
-          description: Status of the summary index for this document. `null` if summary indexing is not
-            configured.
+          type:
+          - string
+          - 'null'
+          description: Status of the summary index for this document. `null` if summary indexing is not configured.
         need_summary:
           type: boolean
           description: Whether a summary needs to be generated for this document.
@@ -2229,22 +2177,20 @@ components:
           properties:
             reranking_provider_name:
               type: string
-              description: 'Reranking model provider identifier, formatted as `organization/plugin_name/provider_name`
-                (e.g. `langgenius/cohere/cohere`). A bare name like `cohere` expands to `langgenius/<name>/<name>`
-                and works only for langgenius-published plugins.
+              description: 'Reranking model provider identifier, formatted as `organization/plugin_name/provider_name` (e.g. `langgenius/cohere/cohere`). A bare name like `cohere` expands to `langgenius/<name>/<name>` and works only for langgenius-published plugins.
 
 
-                Get valid values from the `provider` field of [Get Available Models](/en/api-reference/models/get-available-models)
-                with `model_type=rerank`.'
+                Get valid values from the `provider` field of [Get Available Models](/en/api-reference/models/get-available-models) with `model_type=rerank`.'
             reranking_model_name:
               type: string
               description: Name of the reranking model.
         reranking_mode:
-          type: string
+          type:
+          - string
+          - 'null'
           enum:
           - reranking_model
           - weighted_score
-          nullable: true
           description: Reranking mode. Required when `reranking_enable` is `true`.
         top_k:
           type: integer
@@ -2253,13 +2199,14 @@ components:
           type: boolean
           description: Whether score threshold filtering is enabled.
         score_threshold:
-          type: number
-          nullable: true
-          description: Minimum similarity score for results. Only effective when `score_threshold_enabled`
-            is `true`.
+          type:
+          - number
+          - 'null'
+          description: Minimum similarity score for results. Only effective when `score_threshold_enabled` is `true`.
         weights:
-          type: object
-          nullable: true
+          type:
+          - object
+          - 'null'
           description: Weight configuration for hybrid search.
           properties:
             weight_type:
@@ -2290,22 +2237,24 @@ components:
                   type: number
                   description: Weight assigned to keyword search results.
         metadata_filtering_conditions:
-          type: object
-          nullable: true
-          description: Restrict retrieval to chunks whose document metadata matches the given conditions.
-            Conditions are evaluated server-side against document metadata fields.
+          type:
+          - object
+          - 'null'
+          description: Restrict retrieval to chunks whose document metadata matches the given conditions. Conditions are evaluated server-side against document metadata fields.
           properties:
             logical_operator:
-              type: string
+              type:
+              - string
+              - 'null'
               enum:
               - and
               - or
               default: and
-              nullable: true
               description: How to combine multiple conditions.
             conditions:
-              type: array
-              nullable: true
+              type:
+              - array
+              - 'null'
               description: List of metadata conditions to evaluate.
               items:
                 type: object
@@ -2321,8 +2270,7 @@ components:
                     description: 'Comparison to apply, by metadata type:
 
 
-                      - String or array metadata: `contains`, `not contains`, `start with`, `end with`,
-                      `is`, `is not`, `empty`, `not empty`, `in`, `not in`
+                      - String or array metadata: `contains`, `not contains`, `start with`, `end with`, `is`, `is not`, `empty`, `not empty`, `in`, `not in`
 
                       - Numeric metadata: `=`, `≠`, `>`, `<`, `≥`, `≤`
 
@@ -2347,10 +2295,7 @@ components:
                     - before
                     - after
                   value:
-                    nullable: true
-                    description: 'Value to compare against. Type depends on `comparison_operator`: string
-                      for most string operators, array of strings for `in` and `not in`, number for numeric
-                      operators, and omitted for `empty` and `not empty`.'
+                    description: 'Value to compare against. Type depends on `comparison_operator`: string for most string operators, array of strings for `in` and `not in`, number for numeric operators, and omitted for `empty` and `not empty`.'
                     oneOf:
                     - type: string
                     - type: array
@@ -2362,16 +2307,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: API_KEY
-      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
-        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
 
 
-        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
-        fail with HTTP `401` (`unauthorized`).'
-x-provenance:
-  generated: '2026-09-06'
-  method: derived
-  source: openapi/_original/dify-service-api-openapi.json
-  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
-    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
-    spec.
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail with HTTP `401` (`unauthorized`).'

@@ -1,13 +1,11 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Dify Metadata API
-  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
-    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  title: Dify Service Metadata API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate with an app API key; knowledge endpoints authenticate with a dataset API key.
   version: 1.0.0
 servers:
 - url: https://{api_base_url}
-  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
-    API base URL.
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own API base URL.
   variables:
     api_base_url:
       default: api.dify.ai/v1
@@ -23,8 +21,7 @@ paths:
       tags:
       - Metadata
       summary: Create Metadata Field
-      description: Create a custom metadata field for annotating documents in the knowledge base with
-        structured information.
+      description: Create a custom metadata field for annotating documents in the knowledge base with structured information.
       operationId: createMetadataField
       parameters:
       - name: dataset_id
@@ -50,12 +47,10 @@ paths:
                   - string
                   - number
                   - time
-                  description: '`string` for text values, `number` for numeric values, `time` for date/time
-                    values.'
+                  description: '`string` for text values, `number` for numeric values, `time` for date/time values.'
                 name:
                   type: string
-                  description: Name for the metadata field. Must be unique among the knowledge base's
-                    fields and at most 255 characters.
+                  description: Name for the metadata field. Must be unique among the knowledge base's fields and at most 255 characters.
       responses:
         '201':
           description: Metadata field created successfully.
@@ -81,8 +76,7 @@ paths:
                     name: author
                     type: string
         '400':
-          description: '`invalid_param` : The metadata name already exists, exceeds 255 characters, or
-            conflicts with a built-in field.'
+          description: '`invalid_param` : The metadata name already exists, exceeds 255 characters, or conflicts with a built-in field.'
           content:
             application/json:
               examples:
@@ -131,8 +125,7 @@ paths:
       tags:
       - Metadata
       summary: List Metadata Fields
-      description: Returns all metadata fields for the knowledge base, both custom and built-in, with
-        the count of documents using each field.
+      description: Returns all metadata fields for the knowledge base, both custom and built-in, with the count of documents using each field.
       operationId: listMetadataFields
       parameters:
       - name: dataset_id
@@ -241,8 +234,7 @@ paths:
               properties:
                 name:
                   type: string
-                  description: New name for the field. Must be unique among the knowledge base's fields
-                    and at most 255 characters.
+                  description: New name for the field. Must be unique among the knowledge base's fields and at most 255 characters.
       responses:
         '200':
           description: Metadata field updated successfully.
@@ -268,8 +260,7 @@ paths:
                     name: author
                     type: string
         '400':
-          description: '`invalid_param` : The metadata name already exists, exceeds 255 characters, or
-            conflicts with a built-in field.'
+          description: '`invalid_param` : The metadata name already exists, exceeds 255 characters, or conflicts with a built-in field.'
           content:
             application/json:
               examples:
@@ -318,8 +309,7 @@ paths:
       tags:
       - Metadata
       summary: Delete Metadata Field
-      description: Permanently delete a custom metadata field. Documents that used the field lose their
-        values for it.
+      description: Permanently delete a custom metadata field. Documents that used the field lose their values for it.
       operationId: deleteMetadataField
       parameters:
       - name: dataset_id
@@ -405,13 +395,10 @@ paths:
                       properties:
                         name:
                           type: string
-                          description: Built-in field identifier. `document_name` for the document title,
-                            `uploader` for the creator, `upload_date` for creation time, `last_update_date`
-                            for last modification time, `source` for the document origin.
+                          description: Built-in field identifier. `document_name` for the document title, `uploader` for the creator, `upload_date` for creation time, `last_update_date` for last modification time, `source` for the document origin.
                         type:
                           type: string
-                          description: Field data type. `string` for text values, `time` for date/time
-                            values.
+                          description: Field data type. `string` for text values, `time` for date/time values.
               examples:
                 success:
                   summary: Response Example
@@ -584,8 +571,7 @@ paths:
                       partial_update:
                         type: boolean
                         default: false
-                        description: Whether to partially update metadata, keeping existing values for
-                          unspecified fields.
+                        description: Whether to partially update metadata, keeping existing values for unspecified fields.
                   description: Document metadata update operations, one entry per document.
       responses:
         '200':
@@ -604,8 +590,7 @@ paths:
                   value:
                     result: success
         '400':
-          description: '`invalid_param` : Another metadata operation is already running for a document
-            in this request.'
+          description: '`invalid_param` : Another metadata operation is already running for a document in this request.'
           content:
             application/json:
               examples:
@@ -637,11 +622,9 @@ paths:
         '404':
           description: '- `not_found` : Knowledge base not found.
 
-            - `not_found` : A document referenced in `operation_data` does not exist in this knowledge
-            base.
+            - `not_found` : A document referenced in `operation_data` does not exist in this knowledge base.
 
-            - `not_found` : A metadata field referenced in `metadata_list` does not exist in this knowledge
-            base.'
+            - `not_found` : A metadata field referenced in `metadata_list` does not exist in this knowledge base.'
           content:
             application/json:
               examples:
@@ -674,16 +657,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: API_KEY
-      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
-        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
 
 
-        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
-        fail with HTTP `401` (`unauthorized`).'
-x-provenance:
-  generated: '2026-09-06'
-  method: derived
-  source: openapi/_original/dify-service-api-openapi.json
-  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
-    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
-    spec.
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail with HTTP `401` (`unauthorized`).'

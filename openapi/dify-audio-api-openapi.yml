@@ -1,13 +1,11 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Dify Audio API
-  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
-    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  title: Dify Service Audio API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate with an app API key; knowledge endpoints authenticate with a dataset API key.
   version: 1.0.0
 servers:
 - url: https://{api_base_url}
-  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
-    API base URL.
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own API base URL.
   variables:
     api_base_url:
       default: api.dify.ai/v1
@@ -21,8 +19,7 @@ paths:
   /audio-to-text:
     post:
       summary: Convert Audio to Text
-      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator
-        apps.
+      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator apps.
 
 
         Transcribes an uploaded audio file to text using the workspace''s default speech-to-text model.'
@@ -83,8 +80,7 @@ paths:
                   value:
                     status: 400
                     code: provider_not_initialize
-                    message: No valid model provider credentials found. Please go to Settings -> Model
-                      Provider to complete your provider credentials.
+                    message: No valid model provider credentials found. Please go to Settings -> Model Provider to complete your provider credentials.
                 completion_request_error:
                   summary: completion_request_error
                   value:
@@ -103,8 +99,7 @@ paths:
                     code: audio_too_large
                     message: Audio size larger than 30 mb
         '415':
-          description: '`unsupported_audio_type` : The file''s MIME type is not one of the accepted audio
-            types (see the `file` field).'
+          description: '`unsupported_audio_type` : The file''s MIME type is not one of the accepted audio types (see the `file` field).'
           content:
             application/json:
               examples:
@@ -124,8 +119,7 @@ paths:
                   value:
                     status: 500
                     code: internal_server_error
-                    message: The server encountered an internal error and was unable to complete your
-                      request. Either the server is overloaded or there is an error in the application.
+                    message: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
       x-mint:
         href: /en/api-reference/audio/convert-audio-to-text
         metadata:
@@ -134,12 +128,10 @@ paths:
   /text-to-audio:
     post:
       summary: Convert Text to Audio
-      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator
-        apps.
+      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator apps.
 
 
-        Converts text to speech audio. Pass `text` to synthesize arbitrary text, or `message_id` to voice
-        an existing message''s answer.'
+        Converts text to speech audio. Pass `text` to synthesize arbitrary text, or `message_id` to voice an existing message''s answer.'
       operationId: textToAudioChat
       tags:
       - Audio
@@ -159,16 +151,13 @@ paths:
                   streaming: false
       responses:
         '200':
-          description: 'Returns the generated audio. The `Content-Type` header reflects the provider''s
-            audio container, verified from the response bytes when recognizable.
+          description: 'Returns the generated audio. The `Content-Type` header reflects the provider''s audio container, verified from the response bytes when recognizable.
 
 
-            The body can be AAC, FLAC, MP4, MP3, Ogg, WAV, or WebM. Output that cannot be recognized is
-            labeled with the provider''s declared type, or `audio/mpeg` when none is declared.
+            The body can be AAC, FLAC, MP4, MP3, Ogg, WAV, or WebM. Output that cannot be recognized is labeled with the provider''s declared type, or `audio/mpeg` when none is declared.
 
 
-            Streamed provider output is delivered with chunked transfer encoding; the request `streaming`
-            field does not control this.'
+            Streamed provider output is delivered with chunked transfer encoding; the request `streaming` field does not control this.'
           content:
             audio/aac:
               schema:
@@ -230,15 +219,13 @@ paths:
                   value:
                     status: 400
                     code: provider_not_initialize
-                    message: No valid model provider credentials found. Please go to Settings -> Model
-                      Provider to complete your provider credentials.
+                    message: No valid model provider credentials found. Please go to Settings -> Model Provider to complete your provider credentials.
                 provider_quota_exceeded:
                   summary: provider_quota_exceeded
                   value:
                     status: 400
                     code: provider_quota_exceeded
-                    message: Your quota for Dify Hosted OpenAI has been exhausted. Please go to Settings
-                      -> Model Provider to complete your own provider credentials.
+                    message: Your quota for Dify Hosted OpenAI has been exhausted. Please go to Settings -> Model Provider to complete your own provider credentials.
                 model_currently_not_support:
                   summary: model_currently_not_support
                   value:
@@ -261,8 +248,7 @@ paths:
                   value:
                     status: 500
                     code: internal_server_error
-                    message: The server encountered an internal error and was unable to complete your
-                      request. Either the server is overloaded or there is an error in the application.
+                    message: The server encountered an internal error and was unable to complete your request. Either the server is overloaded or there is an error in the application.
       x-mint:
         href: /en/api-reference/audio/convert-text-to-audio
         metadata:
@@ -270,21 +256,6 @@ paths:
           sidebarTitle: Convert Text to Audio
 components:
   schemas:
-    AudioToTextRequest:
-      type: object
-      description: Request body for audio-to-text conversion.
-      required:
-      - file
-      properties:
-        file:
-          type: string
-          format: binary
-          description: 'Audio file to transcribe. Accepted MIME types: `audio/mp3`, `audio/m4a` (also
-            accepted as `audio/x-m4a`), `audio/wav`, `audio/amr`, `audio/mpga`. Other types, including
-            the common `audio/mpeg`, are rejected with `unsupported_audio_type`. Maximum size `30 MB`.'
-        user:
-          type: string
-          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
     AudioToTextResponse:
       type: object
       properties:
@@ -298,8 +269,7 @@ components:
         message_id:
           type: string
           format: uuid
-          description: ID of the message whose answer to voice. Takes priority over `text` when both are
-            provided. Get message IDs from [List Conversation Messages](/en/api-reference/conversations/list-conversation-messages).
+          description: ID of the message whose answer to voice. Takes priority over `text` when both are provided. Get message IDs from [List Conversation Messages](/en/api-reference/conversations/list-conversation-messages).
         text:
           type: string
           description: Text to synthesize into speech.
@@ -308,28 +278,29 @@ components:
           description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
         voice:
           type: string
-          description: Voice to use for text-to-speech. Available voices depend on the TTS provider configured
-            for this app. Use the `voice` value from [Get App Parameters](/en/api-reference/applications/get-app-parameters)
-            → `text_to_speech.voice` for the default.
+          description: Voice to use for text-to-speech. Available voices depend on the TTS provider configured for this app. Use the `voice` value from [Get App Parameters](/en/api-reference/applications/get-app-parameters) → `text_to_speech.voice` for the default.
         streaming:
           type: boolean
-          description: Accepted for backward compatibility but has no effect. Whether the audio is streamed
-            is determined by the configured TTS provider's output, not by this field.
+          description: Accepted for backward compatibility but has no effect. Whether the audio is streamed is determined by the configured TTS provider's output, not by this field.
+    AudioToTextRequest:
+      type: object
+      description: Request body for audio-to-text conversion.
+      required:
+      - file
+      properties:
+        file:
+          type: string
+          format: binary
+          description: 'Audio file to transcribe. Accepted MIME types: `audio/mp3`, `audio/m4a` (also accepted as `audio/x-m4a`), `audio/wav`, `audio/amr`, `audio/mpga`. Other types, including the common `audio/mpeg`, are rejected with `unsupported_audio_type`. Maximum size `30 MB`.'
+        user:
+          type: string
+          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
   securitySchemes:
     ApiKeyAuth:
       type: http
       scheme: bearer
       bearerFormat: API_KEY
-      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
-        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
 
 
-        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
-        fail with HTTP `401` (`unauthorized`).'
-x-provenance:
-  generated: '2026-09-06'
-  method: derived
-  source: openapi/_original/dify-service-api-openapi.json
-  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
-    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
-    spec.
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail with HTTP `401` (`unauthorized`).'

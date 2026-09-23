@@ -1,13 +1,11 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Dify Applications API
-  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
-    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  title: Dify Service Applications API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate with an app API key; knowledge endpoints authenticate with a dataset API key.
   version: 1.0.0
 servers:
 - url: https://{api_base_url}
-  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
-    API base URL.
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own API base URL.
   variables:
     api_base_url:
       default: api.dify.ai/v1
@@ -21,8 +19,7 @@ paths:
   /info:
     get:
       summary: Get App Info
-      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator
-        apps.
+      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator apps.
 
 
         Returns basic information about the app: name, description, tags, mode, and author.'
@@ -55,13 +52,10 @@ paths:
   /parameters:
     get:
       summary: Get App Parameters
-      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator
-        apps.
+      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator apps.
 
 
-        Returns the app''s front-end configuration: the opening statement and suggested questions, feature
-        toggles, the user input form, and file-upload limits. Use it to render the app''s inputs and apply
-        the correct upload limits.'
+        Returns the app''s front-end configuration: the opening statement and suggested questions, feature toggles, the user input form, and file-upload limits. Use it to render the app''s inputs and apply the correct upload limits.'
       operationId: getChatAppParameters
       tags:
       - Applications
@@ -144,8 +138,7 @@ paths:
   /meta:
     get:
       summary: Get App Meta
-      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator
-        apps.
+      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator apps.
 
 
         Returns the display icons for the tools this app uses, keyed by tool name.'
@@ -176,12 +169,10 @@ paths:
   /site:
     get:
       summary: Get App WebApp Settings
-      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator
-        apps.
+      description: '**Available for**: Chatflow, Workflow, Agent, Chatbot, Legacy Agent, Text Generator apps.
 
 
-        Returns the branding and display settings for the app''s hosted web app, such as its title, icon,
-        theme colors, and default language.'
+        Returns the branding and display settings for the app''s hosted web app, such as its title, icon, theme colors, and default language.'
       operationId: getChatWebAppSettings
       tags:
       - Applications
@@ -221,8 +212,7 @@ paths:
                   value:
                     status: 403
                     code: forbidden
-                    message: You don't have the permission to access the requested resource. It is either
-                      read-protected or not readable by the server.
+                    message: You don't have the permission to access the requested resource. It is either read-protected or not readable by the server.
       x-mint:
         href: /en/api-reference/applications/get-app-webapp-settings
         metadata:
@@ -230,28 +220,70 @@ paths:
           sidebarTitle: Get App WebApp Settings
 components:
   schemas:
-    AppInfoResponse:
+    WebAppSettingsResponse:
       type: object
       properties:
-        name:
+        title:
           type: string
-          description: Application name.
+          description: Web app title.
+        chat_color_theme:
+          type: string
+          description: Chat color theme.
+        chat_color_theme_inverted:
+          type: boolean
+          description: Whether the chat color theme is inverted.
+        icon_type:
+          type: string
+          description: Type of icon used. `emoji` for emoji icons, `image` for uploaded image icons.
+        icon:
+          type: string
+          description: Icon content (emoji or image ID).
+        icon_background:
+          type: string
+          description: Icon background color.
+        icon_url:
+          type:
+          - string
+          - 'null'
+          format: url
+          description: URL of the icon image.
         description:
           type: string
-          description: Application description.
-        tags:
-          type: array
-          items:
-            type: string
-          description: Application tags.
-        mode:
+          description: Web app description.
+        copyright:
           type: string
-          description: Application mode. `completion` for Text Generator apps, `chat` for Chatbot apps,
-            `agent-chat` for Legacy Agent apps, `advanced-chat` for Chatflow apps, `workflow` for Workflow
-            apps, `agent` for Agent apps.
-        author_name:
+          description: Copyright text.
+        privacy_policy:
           type: string
-          description: Name of the application author.
+          description: Privacy policy URL.
+        input_placeholder:
+          type:
+          - string
+          - 'null'
+          description: Placeholder text shown in the web app message input box. `null` when not configured.
+        custom_disclaimer:
+          type: string
+          description: Custom disclaimer text.
+        default_language:
+          type: string
+          description: Default language code.
+        show_workflow_steps:
+          type: boolean
+          description: Whether to show workflow steps.
+        use_icon_as_answer_icon:
+          type: boolean
+          description: Whether to use the app icon as the answer icon.
+    ToolIconDetail:
+      title: Emoji Icon
+      type: object
+      description: Detail of a tool icon using emoji.
+      properties:
+        background:
+          type: string
+          description: Background color in hex format.
+        content:
+          type: string
+          description: Emoji content.
     AppMetaResponse:
       type: object
       properties:
@@ -269,8 +301,9 @@ components:
       type: object
       properties:
         opening_statement:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Opening statement text.
         suggested_questions:
           type: array
@@ -306,8 +339,7 @@ components:
               description: Language for TTS.
             autoPlay:
               type: string
-              description: Auto-play setting. `enabled` to auto-play audio, `disabled` to require manual
-                play.
+              description: Auto-play setting. `enabled` to auto-play audio, `disabled` to require manual play.
         retriever_resource:
           type: object
           description: Knowledge retrieval citation resource configuration.
@@ -421,8 +453,7 @@ components:
                   type: array
                   items:
                     type: string
-                  description: Allowed transfer methods for image upload. `remote_url` for file URL, `local_file`
-                    for uploaded file.
+                  description: Allowed transfer methods for image upload. `remote_url` for file URL, `local_file` for uploaded file.
         system_parameters:
           type: object
           description: System-level parameter limits.
@@ -442,83 +473,32 @@ components:
             workflow_file_upload_limit:
               type: integer
               description: Maximum number of files per workflow execution.
-    ToolIconDetail:
-      title: Emoji Icon
-      type: object
-      description: Detail of a tool icon using emoji.
-      properties:
-        background:
-          type: string
-          description: Background color in hex format.
-        content:
-          type: string
-          description: Emoji content.
-    WebAppSettingsResponse:
+    AppInfoResponse:
       type: object
       properties:
-        title:
+        name:
           type: string
-          description: Web app title.
-        chat_color_theme:
-          type: string
-          description: Chat color theme.
-        chat_color_theme_inverted:
-          type: boolean
-          description: Whether the chat color theme is inverted.
-        icon_type:
-          type: string
-          description: Type of icon used. `emoji` for emoji icons, `image` for uploaded image icons.
-        icon:
-          type: string
-          description: Icon content (emoji or image ID).
-        icon_background:
-          type: string
-          description: Icon background color.
-        icon_url:
-          type: string
-          format: url
-          nullable: true
-          description: URL of the icon image.
+          description: Application name.
         description:
           type: string
-          description: Web app description.
-        copyright:
+          description: Application description.
+        tags:
+          type: array
+          items:
+            type: string
+          description: Application tags.
+        mode:
           type: string
-          description: Copyright text.
-        privacy_policy:
+          description: Application mode. `completion` for Text Generator apps, `chat` for Chatbot apps, `agent-chat` for Legacy Agent apps, `advanced-chat` for Chatflow apps, `workflow` for Workflow apps, `agent` for Agent apps.
+        author_name:
           type: string
-          description: Privacy policy URL.
-        input_placeholder:
-          type: string
-          nullable: true
-          description: Placeholder text shown in the web app message input box. `null` when not configured.
-        custom_disclaimer:
-          type: string
-          description: Custom disclaimer text.
-        default_language:
-          type: string
-          description: Default language code.
-        show_workflow_steps:
-          type: boolean
-          description: Whether to show workflow steps.
-        use_icon_as_answer_icon:
-          type: boolean
-          description: Whether to use the app icon as the answer icon.
+          description: Name of the application author.
   securitySchemes:
     ApiKeyAuth:
       type: http
       scheme: bearer
       bearerFormat: API_KEY
-      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
-        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
 
 
-        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
-        fail with HTTP `401` (`unauthorized`).'
-x-provenance:
-  generated: '2026-09-06'
-  method: derived
-  source: openapi/_original/dify-service-api-openapi.json
-  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
-    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
-    spec.
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail with HTTP `401` (`unauthorized`).'

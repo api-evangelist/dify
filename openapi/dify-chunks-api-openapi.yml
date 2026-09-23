@@ -1,13 +1,11 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Dify Chunks API
-  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
-    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  title: Dify Service Chunks API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate with an app API key; knowledge endpoints authenticate with a dataset API key.
   version: 1.0.0
 servers:
 - url: https://{api_base_url}
-  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
-    API base URL.
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own API base URL.
   variables:
     api_base_url:
       default: api.dify.ai/v1
@@ -128,14 +126,11 @@ paths:
                       summary: null
                     doc_form: text_model
         '400':
-          description: '- `provider_not_initialize` : The knowledge base uses high-quality indexing but
-            its embedding model is missing or misconfigured.
+          description: '- `provider_not_initialize` : The knowledge base uses high-quality indexing but its embedding model is missing or misconfigured.
 
-            - `invalid_param` : A chunk field is invalid (for example, `answer` is required for Q&A-mode
-            documents) or the number of chunks exceeds the per-request limit.
+            - `invalid_param` : A chunk field is invalid (for example, `answer` is required for Q&A-mode documents) or the number of chunks exceeds the per-request limit.
 
-            - Request-body schema validation (such as empty `content`) returns a non-standard body `{"error":
-            "<validation details>"}` with no `code` or `status` field.'
+            - Request-body schema validation (such as empty `content`) returns a non-standard body `{"error": "<validation details>"}` with no `code` or `status` field.'
           content:
             application/json:
               examples:
@@ -144,8 +139,7 @@ paths:
                   value:
                     status: 400
                     code: provider_not_initialize
-                    message: No Embedding Model available. Please configure a valid provider in the Settings
-                      -> Model Provider.
+                    message: No Embedding Model available. Please configure a valid provider in the Settings -> Model Provider.
                 invalid_param_limit:
                   summary: invalid_param (segments limit)
                   value:
@@ -155,8 +149,7 @@ paths:
                 validation_error:
                   summary: schema validation (non-standard body)
                   value:
-                    error: "1 validation error for SegmentCreatePayload\nsegments.0.content\n  String\
-                      \ should have at least 1 character [type=string_too_short, input_value='', input_type=str]"
+                    error: "1 validation error for SegmentCreatePayload\nsegments.0.content\n  String should have at least 1 character [type=string_too_short, input_value='', input_type=str]"
         '403':
           description: '- `forbidden` : Dataset api access is not enabled.
 
@@ -164,8 +157,7 @@ paths:
 
             - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.
 
-            - `forbidden` : To unlock this feature and elevate your Dify experience, please upgrade to
-            a paid plan.'
+            - `forbidden` : To unlock this feature and elevate your Dify experience, please upgrade to a paid plan.'
           content:
             application/json:
               examples:
@@ -192,8 +184,7 @@ paths:
                   value:
                     status: 403
                     code: forbidden
-                    message: To unlock this feature and elevate your Dify experience, please upgrade to
-                      a paid plan.
+                    message: To unlock this feature and elevate your Dify experience, please upgrade to a paid plan.
         '404':
           description: '- `not_found` : Dataset not found.
 
@@ -230,8 +221,7 @@ paths:
                     code: not_found
                     message: Document is disabled.
         '503':
-          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
-            the Dify Cloud Sandbox plan only; retry the request later.'
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on the Dify Cloud Sandbox plan only; retry the request later.'
           content:
             application/json:
               examples:
@@ -250,8 +240,7 @@ paths:
       tags:
       - Chunks
       summary: List Chunks
-      description: Returns a paginated list of chunks within a document, optionally filtered by keyword
-        or indexing status.
+      description: Returns a paginated list of chunks within a document, optionally filtered by keyword or indexing status.
       operationId: listSegments
       parameters:
       - name: dataset_id
@@ -365,8 +354,7 @@ paths:
                     limit: 20
                     page: 1
         '400':
-          description: '`provider_not_initialize` : The knowledge base uses high-quality indexing but
-            its embedding model is missing or misconfigured.'
+          description: '`provider_not_initialize` : The knowledge base uses high-quality indexing but its embedding model is missing or misconfigured.'
           content:
             application/json:
               examples:
@@ -375,8 +363,7 @@ paths:
                   value:
                     status: 400
                     code: provider_not_initialize
-                    message: No Embedding Model available. Please configure a valid provider in the Settings
-                      -> Model Provider.
+                    message: No Embedding Model available. Please configure a valid provider in the Settings -> Model Provider.
         '403':
           description: '`forbidden` : Dataset api access is not enabled.'
           content:
@@ -491,8 +478,7 @@ paths:
                       summary: null
                     doc_form: text_model
         '400':
-          description: '`invalid_param` : The knowledge base uses high-quality indexing but its embedding
-            model is missing or misconfigured.'
+          description: '`invalid_param` : The knowledge base uses high-quality indexing but its embedding model is missing or misconfigured.'
           content:
             application/json:
               examples:
@@ -501,8 +487,7 @@ paths:
                   value:
                     status: 400
                     code: invalid_param
-                    message: No Embedding Model available. Please configure a valid provider in the Settings
-                      -> Model Provider.
+                    message: No Embedding Model available. Please configure a valid provider in the Settings -> Model Provider.
         '403':
           description: '`forbidden` : Dataset api access is not enabled.'
           content:
@@ -610,8 +595,9 @@ paths:
                         type: string
                       description: Attachment file IDs.
                     summary:
-                      type: string
-                      nullable: true
+                      type:
+                      - string
+                      - 'null'
                       description: Summary content for summary index.
                   description: Chunk data to update.
       responses:
@@ -664,11 +650,9 @@ paths:
                       summary: null
                     doc_form: text_model
         '400':
-          description: '- `provider_not_initialize` : The knowledge base uses high-quality indexing but
-            its embedding model is missing or misconfigured.
+          description: '- `provider_not_initialize` : The knowledge base uses high-quality indexing but its embedding model is missing or misconfigured.
 
-            - `invalid_param` : The chunk is indexing or disabled and cannot be updated, or index configuration
-            is invalid.'
+            - `invalid_param` : The chunk is indexing or disabled and cannot be updated, or index configuration is invalid.'
           content:
             application/json:
               examples:
@@ -677,8 +661,7 @@ paths:
                   value:
                     status: 400
                     code: provider_not_initialize
-                    message: No Embedding Model available. Please configure a valid provider in the Settings
-                      -> Model Provider.
+                    message: No Embedding Model available. Please configure a valid provider in the Settings -> Model Provider.
                 invalid_param_state:
                   summary: invalid_param (state)
                   value:
@@ -740,8 +723,7 @@ paths:
                     code: not_found
                     message: Segment not found.
         '503':
-          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
-            the Dify Cloud Sandbox plan only; retry the request later.'
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on the Dify Cloud Sandbox plan only; retry the request later.'
           content:
             application/json:
               examples:
@@ -788,8 +770,7 @@ paths:
         '204':
           description: Success.
         '400':
-          description: '- `invalid_param` : The knowledge base uses high-quality indexing but its embedding
-            model is missing or misconfigured.
+          description: '- `invalid_param` : The knowledge base uses high-quality indexing but its embedding model is missing or misconfigured.
 
             - `invalid_param` : The chunk is already being deleted by a concurrent request.'
           content:
@@ -800,8 +781,7 @@ paths:
                   value:
                     status: 400
                     code: invalid_param
-                    message: No Embedding Model available. Please configure a valid provider in the Settings
-                      -> Model Provider.
+                    message: No Embedding Model available. Please configure a valid provider in the Settings -> Model Provider.
                 invalid_param_deleting:
                   summary: invalid_param (deleting)
                   value:
@@ -864,8 +844,7 @@ paths:
       tags:
       - Chunks
       summary: Create Child Chunk
-      description: Create a child chunk under a parent chunk. Intended for documents that use the parent-child
-        (`hierarchical_model`) chunking mode.
+      description: Create a child chunk under a parent chunk. Intended for documents that use the parent-child (`hierarchical_model`) chunking mode.
       operationId: createChildChunk
       parameters:
       - name: dataset_id
@@ -925,11 +904,9 @@ paths:
                       created_at: 1741267200
                       updated_at: 1741267200
         '400':
-          description: '- `provider_not_initialize` : The knowledge base uses high-quality indexing but
-            its embedding model is missing or misconfigured.
+          description: '- `provider_not_initialize` : The knowledge base uses high-quality indexing but its embedding model is missing or misconfigured.
 
-            - `invalid_param` : Indexing the child chunk in the vector store failed; the message carries
-            the underlying vector-store error.'
+            - `invalid_param` : Indexing the child chunk in the vector store failed; the message carries the underlying vector-store error.'
           content:
             application/json:
               examples:
@@ -938,8 +915,7 @@ paths:
                   value:
                     status: 400
                     code: provider_not_initialize
-                    message: No Embedding Model available. Please configure a valid provider in the Settings
-                      -> Model Provider.
+                    message: No Embedding Model available. Please configure a valid provider in the Settings -> Model Provider.
                 invalid_param:
                   summary: invalid_param
                   value:
@@ -953,8 +929,7 @@ paths:
 
             - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.
 
-            - `forbidden` : To unlock this feature and elevate your Dify experience, please upgrade to
-            a paid plan.'
+            - `forbidden` : To unlock this feature and elevate your Dify experience, please upgrade to a paid plan.'
           content:
             application/json:
               examples:
@@ -981,8 +956,7 @@ paths:
                   value:
                     status: 403
                     code: forbidden
-                    message: To unlock this feature and elevate your Dify experience, please upgrade to
-                      a paid plan.
+                    message: To unlock this feature and elevate your Dify experience, please upgrade to a paid plan.
         '404':
           description: '- `not_found` : Dataset not found.
 
@@ -1011,8 +985,7 @@ paths:
                     code: not_found
                     message: Segment not found.
         '503':
-          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
-            the Dify Cloud Sandbox plan only; retry the request later.'
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on the Dify Cloud Sandbox plan only; retry the request later.'
           content:
             application/json:
               examples:
@@ -1231,8 +1204,7 @@ paths:
                       created_at: 1741267200
                       updated_at: 1741267200
         '400':
-          description: '`invalid_param` : Re-indexing the child chunk in the vector store failed; the
-            message carries the underlying vector-store error.'
+          description: '`invalid_param` : Re-indexing the child chunk in the vector store failed; the message carries the underlying vector-store error.'
           content:
             application/json:
               examples:
@@ -1249,8 +1221,7 @@ paths:
 
             - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.
 
-            - `forbidden` : To unlock this feature and elevate your Dify experience, please upgrade to
-            a paid plan.'
+            - `forbidden` : To unlock this feature and elevate your Dify experience, please upgrade to a paid plan.'
           content:
             application/json:
               examples:
@@ -1277,8 +1248,7 @@ paths:
                   value:
                     status: 403
                     code: forbidden
-                    message: To unlock this feature and elevate your Dify experience, please upgrade to
-                      a paid plan.
+                    message: To unlock this feature and elevate your Dify experience, please upgrade to a paid plan.
         '404':
           description: '- `not_found` : Dataset not found.
 
@@ -1315,8 +1285,7 @@ paths:
                     code: not_found
                     message: Child chunk not found.
         '503':
-          description: '`service_unavailable` : Vector space usage could not be verified. Returned on
-            the Dify Cloud Sandbox plan only; retry the request later.'
+          description: '`service_unavailable` : Vector space usage could not be verified. Returned on the Dify Cloud Sandbox plan only; retry the request later.'
           content:
             application/json:
               examples:
@@ -1370,8 +1339,7 @@ paths:
         '204':
           description: Success.
         '400':
-          description: '`invalid_param` : Removing the child chunk index from the vector store failed;
-            the message carries the underlying vector-store error.'
+          description: '`invalid_param` : Removing the child chunk index from the vector store failed; the message carries the underlying vector-store error.'
           content:
             application/json:
               examples:
@@ -1386,8 +1354,7 @@ paths:
 
             - `forbidden` : Sorry, you have reached the knowledge base request rate limit of your subscription.
 
-            - `forbidden` : To unlock this feature and elevate your Dify experience, please upgrade to
-            a paid plan.'
+            - `forbidden` : To unlock this feature and elevate your Dify experience, please upgrade to a paid plan.'
           content:
             application/json:
               examples:
@@ -1408,8 +1375,7 @@ paths:
                   value:
                     status: 403
                     code: forbidden
-                    message: To unlock this feature and elevate your Dify experience, please upgrade to
-                      a paid plan.
+                    message: To unlock this feature and elevate your Dify experience, please upgrade to a paid plan.
         '404':
           description: '- `not_found` : Dataset not found.
 
@@ -1472,8 +1438,7 @@ components:
           description: Word count of the child chunk content.
         type:
           type: string
-          description: How the child chunk was created. Child chunks created or updated through the API
-            are always `customized`. System-generated child chunks are `automatic`.
+          description: How the child chunk was created. Child chunks created or updated through the API are always `customized`. System-generated child chunks are `automatic`.
         created_at:
           type: number
           description: Creation timestamp (Unix epoch in seconds).
@@ -1525,12 +1490,14 @@ components:
           type: boolean
           description: Whether the chunk is enabled for retrieval.
         disabled_at:
-          type: number
-          nullable: true
+          type:
+          - number
+          - 'null'
           description: Timestamp when the chunk was disabled. `null` if enabled.
         disabled_by:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: ID of the user who disabled the chunk. `null` if enabled.
         status:
           type: string
@@ -1548,20 +1515,24 @@ components:
           type: string
           description: ID of the user who last updated the chunk.
         indexing_at:
-          type: number
-          nullable: true
+          type:
+          - number
+          - 'null'
           description: Timestamp when indexing started. `null` if not yet started.
         completed_at:
-          type: number
-          nullable: true
+          type:
+          - number
+          - 'null'
           description: Timestamp when indexing completed. `null` if not yet completed.
         error:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Error message if indexing failed. `null` when no error.
         stopped_at:
-          type: number
-          nullable: true
+          type:
+          - number
+          - 'null'
           description: Timestamp when indexing was stopped. `null` if not stopped.
         child_chunks:
           type: array
@@ -1593,24 +1564,16 @@ components:
                 type: string
                 description: URL to access the attachment.
         summary:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: AI-generated summary of the chunk content. `null` if summary indexing is not enabled.
   securitySchemes:
     ApiKeyAuth:
       type: http
       scheme: bearer
       bearerFormat: API_KEY
-      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
-        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
 
 
-        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
-        fail with HTTP `401` (`unauthorized`).'
-x-provenance:
-  generated: '2026-09-06'
-  method: derived
-  source: openapi/_original/dify-service-api-openapi.json
-  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
-    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
-    spec.
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail with HTTP `401` (`unauthorized`).'

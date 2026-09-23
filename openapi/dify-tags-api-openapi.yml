@@ -1,13 +1,11 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Dify Knowledge Tags API
-  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
-    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  title: Dify Service Tags API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate with an app API key; knowledge endpoints authenticate with a dataset API key.
   version: 1.0.0
 servers:
 - url: https://{api_base_url}
-  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
-    API base URL.
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own API base URL.
   variables:
     api_base_url:
       default: api.dify.ai/v1
@@ -57,8 +55,9 @@ paths:
                     type: string
                     description: Tag type. Always `knowledge` for knowledge base tags.
                   binding_count:
-                    type: string
-                    nullable: true
+                    type:
+                    - string
+                    - 'null'
                     description: Number of knowledge bases bound to this tag.
               examples:
                 success:
@@ -110,8 +109,9 @@ paths:
                       type: string
                       description: Tag type. Always `knowledge` for knowledge base tags.
                     binding_count:
-                      type: string
-                      nullable: true
+                      type:
+                      - string
+                      - 'null'
                       description: Number of knowledge bases bound to this tag.
               examples:
                 success:
@@ -168,8 +168,9 @@ paths:
                     type: string
                     description: Tag type. Always `knowledge` for knowledge base tags.
                   binding_count:
-                    type: string
-                    nullable: true
+                    type:
+                    - string
+                    - 'null'
                     description: Number of knowledge bases bound to this tag.
               examples:
                 success:
@@ -210,8 +211,7 @@ paths:
       tags:
       - Tags
       summary: Delete Knowledge Tag
-      description: Permanently delete a knowledge base tag. Does not delete the knowledge bases that were
-        tagged.
+      description: Permanently delete a knowledge base tag. Does not delete the knowledge bases that were tagged.
       operationId: deleteKnowledgeTag
       requestBody:
         required: true
@@ -266,8 +266,7 @@ paths:
                   items:
                     type: string
                   minItems: 1
-                  description: IDs of the tags to bind. See [List Knowledge Type Tags](/en/api-reference/tags/list-knowledge-tags).
-                    Unknown tag IDs are silently ignored.
+                  description: IDs of the tags to bind. See [List Knowledge Type Tags](/en/api-reference/tags/list-knowledge-tags). Unknown tag IDs are silently ignored.
                 target_id:
                   type: string
                   description: Knowledge base to bind the tags to. See [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
@@ -311,13 +310,11 @@ paths:
                   items:
                     type: string
                   minItems: 1
-                  description: Tag IDs to unbind. Required unless the legacy `tag_id` is provided. See
-                    [List Knowledge Type Tags](/en/api-reference/tags/list-knowledge-tags).
+                  description: Tag IDs to unbind. Required unless the legacy `tag_id` is provided. See [List Knowledge Type Tags](/en/api-reference/tags/list-knowledge-tags).
                 tag_id:
                   type: string
                   deprecated: true
-                  description: Legacy single-tag form. Normalized into `tag_ids` server-side. Use `tag_ids`
-                    for new integrations.
+                  description: Legacy single-tag form. Normalized into `tag_ids` server-side. Use `tag_ids` for new integrations.
                 target_id:
                   type: string
                   description: Knowledge base to unbind the tags from. See [List Knowledge Bases](/en/api-reference/knowledge-bases/list-knowledge-bases).
@@ -419,16 +416,7 @@ components:
       type: http
       scheme: bearer
       bearerFormat: API_KEY
-      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
-        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
 
 
-        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
-        fail with HTTP `401` (`unauthorized`).'
-x-provenance:
-  generated: '2026-09-06'
-  method: derived
-  source: openapi/_original/dify-service-api-openapi.json
-  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
-    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
-    spec.
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail with HTTP `401` (`unauthorized`).'

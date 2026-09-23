@@ -1,13 +1,11 @@
-openapi: 3.0.1
+openapi: 3.2.0
 info:
-  title: Dify Conversations API
-  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate
-    with an app API key; knowledge endpoints authenticate with a dataset API key.
+  title: Dify Service Conversations API
+  description: REST API for Dify applications and knowledge bases. Application endpoints authenticate with an app API key; knowledge endpoints authenticate with a dataset API key.
   version: 1.0.0
 servers:
 - url: https://{api_base_url}
-  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own
-    API base URL.
+  description: Base URL of the Dify Service API. For self-hosted deployments, replace it with your own API base URL.
   variables:
     api_base_url:
       default: api.dify.ai/v1
@@ -38,8 +36,7 @@ paths:
       - name: last_id
         in: query
         required: false
-        description: 'Pagination cursor: the `id` of the last conversation on the current page. Omit to
-          fetch the first page.'
+        description: 'Pagination cursor: the `id` of the last conversation on the current page. Omit to fetch the first page.'
         schema:
           type: string
       - name: limit
@@ -118,8 +115,7 @@ paths:
       description: '**Available for**: Chatflow, Agent, Chatbot, Legacy Agent apps.
 
 
-        Returns a conversation''s message history, newest first. Pass `first_id` to page backward into
-        older messages.'
+        Returns a conversation''s message history, newest first. Pass `first_id` to page backward into older messages.'
       operationId: getConversationHistory
       tags:
       - Conversations
@@ -139,8 +135,7 @@ paths:
       - name: first_id
         in: query
         required: false
-        description: 'Pagination cursor: the `id` of the first message on the current page. Pass it to
-          fetch the previous (older) page; omit to fetch the latest messages.'
+        description: 'Pagination cursor: the `id` of the first message on the current page. Pass it to fetch the previous (older) page; omit to fetch the latest messages.'
         schema:
           type: string
       - name: limit
@@ -249,8 +244,7 @@ paths:
       - name: last_id
         in: query
         required: false
-        description: 'Pagination cursor: the `id` of the last variable on the current page. Omit to fetch
-          the first page.'
+        description: 'Pagination cursor: the `id` of the last variable on the current page. Omit to fetch the first page.'
         schema:
           type: string
       - name: limit
@@ -332,8 +326,7 @@ paths:
       description: '**Available for**: Chatflow, Agent, Chatbot, Legacy Agent apps.
 
 
-        Renames a conversation, or auto-generates a name from its messages when `auto_generate` is `true`.
-        The name is what clients display in a multi-conversation list.'
+        Renames a conversation, or auto-generates a name from its messages when `auto_generate` is `true`. The name is what clients display in a multi-conversation list.'
       operationId: renameConversation
       tags:
       - Conversations
@@ -378,8 +371,7 @@ paths:
         '400':
           description: '- `not_chat_app` : App mode does not match the API route.
 
-            - `invalid_param` : `auto_generate` is `true` but the conversation has no messages to generate
-            a name from.'
+            - `invalid_param` : `auto_generate` is `true` but the conversation has no messages to generate a name from.'
           content:
             application/json:
               examples:
@@ -484,8 +476,7 @@ paths:
                   value:
                     status: 400
                     code: bad_request
-                    message: 'Type mismatch: variable ''user_preference'' expects string, but got number
-                      type'
+                    message: 'Type mismatch: variable ''user_preference'' expects string, but got number type'
         '404':
           description: '- `not_found` : Conversation does not exist.
 
@@ -537,8 +528,7 @@ paths:
               properties:
                 user:
                   type: string
-                  description: End-user identifier, defined by your app and unique within it. See [End
-                    User Identity](/en/api-reference/guides/end-user-identity).
+                  description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
             examples:
               deleteExample:
                 value:
@@ -576,6 +566,21 @@ paths:
           sidebarTitle: Delete Conversation
 components:
   schemas:
+    FormInputDefault:
+      type: object
+      description: Default value configuration for a form input.
+      properties:
+        type:
+          type: string
+          description: '`variable` for dynamic values from workflow variables, `constant` for static values.'
+        selector:
+          type: array
+          items:
+            type: string
+          description: Variable selector path when `type` is `variable`.
+        value:
+          type: string
+          description: Static value when `type` is `constant`.
     AgentThoughtItem:
       type: object
       description: An agent thought step in the message.
@@ -585,8 +590,9 @@ components:
           format: uuid
           description: Agent thought ID.
         chain_id:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Chain ID for this thought.
         message_id:
           type: string
@@ -602,8 +608,9 @@ components:
           type: string
           description: Tools called, split by `;`.
         tool_labels:
-          type: object
-          nullable: true
+          type:
+          - object
+          - 'null'
           additionalProperties: true
           description: Labels for tools used.
         tool_input:
@@ -635,359 +642,6 @@ components:
           description: List of messages.
           items:
             $ref: '#/components/schemas/ConversationMessageItem'
-    ConversationListItem:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Conversation ID.
-        name:
-          type: string
-          description: Conversation name.
-        inputs:
-          type: object
-          additionalProperties: true
-          description: Input variables for the conversation.
-        status:
-          type: string
-          description: Conversation status. `normal` for active conversations.
-        introduction:
-          type: string
-          description: Conversation introduction.
-        created_at:
-          type: integer
-          format: int64
-          description: Creation timestamp.
-        updated_at:
-          type: integer
-          format: int64
-          description: Last update timestamp.
-    ConversationMessageItem:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Message ID.
-        conversation_id:
-          type: string
-          format: uuid
-          description: Conversation ID.
-        parent_message_id:
-          type: string
-          format: uuid
-          nullable: true
-          description: Parent message ID for threaded conversations.
-        inputs:
-          type: object
-          additionalProperties: true
-          description: Input variables for this message.
-        query:
-          type: string
-          description: User query text.
-        answer:
-          type: string
-          description: Assistant answer text.
-        status:
-          type: string
-          description: Message status. `normal` for successful messages, `error` when generation failed.
-        error:
-          type: string
-          nullable: true
-          description: Error message if `status` is `error`.
-        message_files:
-          type: array
-          description: Files attached to this message.
-          items:
-            $ref: '#/components/schemas/MessageFileItem'
-        feedback:
-          type: object
-          nullable: true
-          description: User feedback for this message.
-          properties:
-            rating:
-              type: string
-              description: Feedback rating. `like` for positive, `dislike` for negative.
-        retriever_resources:
-          type: array
-          description: Retriever resources used for this message.
-          items:
-            $ref: '#/components/schemas/RetrieverResource'
-        agent_thoughts:
-          type: array
-          description: Agent thoughts for this message.
-          items:
-            $ref: '#/components/schemas/AgentThoughtItem'
-        created_at:
-          type: integer
-          format: int64
-          description: Creation timestamp (Unix epoch seconds).
-        extra_contents:
-          type: array
-          description: Additional execution content associated with this message, such as human input
-            form data from Human Input nodes in Chatflow workflows.
-          items:
-            $ref: '#/components/schemas/HumanInputContent'
-        message_tokens:
-          type: integer
-          description: Number of tokens in the input message.
-        answer_tokens:
-          type: integer
-          description: Number of tokens in the generated answer.
-        total_tokens:
-          type: integer
-          description: Total tokens used, the sum of `message_tokens` and `answer_tokens`.
-        provider_response_latency:
-          type: number
-          format: double
-          description: Model provider response latency in seconds.
-        total_price:
-          type: string
-          format: decimal
-          nullable: true
-          description: Total price for the tokens used, or `null` when pricing is unavailable.
-        currency:
-          type: string
-          nullable: true
-          description: Currency for `total_price` (for example, `USD`), or `null` when pricing is unavailable.
-    ConversationRenameRequest:
-      type: object
-      description: Request body for renaming a conversation.
-      properties:
-        name:
-          type: string
-          description: New conversation name. Required unless `auto_generate` is `true`.
-        auto_generate:
-          type: boolean
-          default: false
-          description: Automatically generate the conversation name. When `true`, the `name` field is
-            ignored.
-        user:
-          type: string
-          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
-    ConversationVariableItem:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Variable ID.
-        name:
-          type: string
-          description: Variable name.
-        value_type:
-          type: string
-          description: 'Variable value type. Possible values: `string`, `number`, `object`, `secret`,
-            `file`, `boolean`, `array[any]`, `array[string]`, `array[number]`, `array[object]`, `array[file]`,
-            `array[boolean]`.'
-        value:
-          type: string
-          description: Variable value (can be a JSON string for complex types).
-        description:
-          type: string
-          description: Variable description.
-        created_at:
-          type: integer
-          format: int64
-          description: Creation timestamp.
-        updated_at:
-          type: integer
-          format: int64
-          description: Last update timestamp.
-    ConversationVariableUpdateRequest:
-      type: object
-      description: Request body for updating a conversation variable.
-      required:
-      - value
-      properties:
-        value:
-          description: The new value for the variable. Must match the variable's expected type.
-        user:
-          type: string
-          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
-    ConversationVariablesResponse:
-      type: object
-      properties:
-        limit:
-          type: integer
-          description: Number of items per page.
-        has_more:
-          type: boolean
-          description: Whether there is a next page.
-        data:
-          type: array
-          description: List of conversation variables.
-          items:
-            $ref: '#/components/schemas/ConversationVariableItem'
-    ConversationsListResponse:
-      type: object
-      properties:
-        limit:
-          type: integer
-          description: Number of items per page.
-        has_more:
-          type: boolean
-          description: Whether there are more conversations.
-        data:
-          type: array
-          description: List of conversations.
-          items:
-            $ref: '#/components/schemas/ConversationListItem'
-    FormInput:
-      type: object
-      description: A form input field definition.
-      properties:
-        type:
-          type: string
-          description: 'Form input control type. Available values: `paragraph` (multi-line text input),
-            `select` (single-choice from a list), `file` (single file upload), and `file-list` (multiple
-            file uploads).'
-        output_variable_name:
-          type: string
-          description: Variable name where the input value is stored.
-        default:
-          nullable: true
-          description: Default value configuration for this input.
-          $ref: '#/components/schemas/FormInputDefault'
-    FormInputDefault:
-      type: object
-      description: Default value configuration for a form input.
-      properties:
-        type:
-          type: string
-          description: '`variable` for dynamic values from workflow variables, `constant` for static values.'
-        selector:
-          type: array
-          items:
-            type: string
-          description: Variable selector path when `type` is `variable`.
-        value:
-          type: string
-          description: Static value when `type` is `constant`.
-    HumanInputContent:
-      type: object
-      description: Execution content from a Human Input node, including form definition and submission
-        data.
-      properties:
-        workflow_run_id:
-          type: string
-          description: ID of the workflow run this content belongs to.
-        submitted:
-          type: boolean
-          description: Whether the human input form has been submitted.
-        type:
-          type: string
-          description: '`human_input` for human input content.'
-        form_definition:
-          nullable: true
-          description: Form definition from the Human Input node. `null` when the content represents a
-            submission response.
-          $ref: '#/components/schemas/HumanInputFormDefinition'
-        form_submission_data:
-          nullable: true
-          description: Submitted form data. `null` when the form has not been submitted yet.
-          $ref: '#/components/schemas/HumanInputFormSubmissionData'
-    HumanInputFormDefinition:
-      type: object
-      description: Definition of a human input form rendered by a Human Input node.
-      properties:
-        form_id:
-          type: string
-          description: Unique form identifier.
-        node_id:
-          type: string
-          description: ID of the Human Input node that generated this form.
-        node_title:
-          type: string
-          description: Title of the Human Input node.
-        form_content:
-          type: string
-          description: Markdown or text content displayed with the form.
-        inputs:
-          type: array
-          description: Input fields in the form.
-          items:
-            $ref: '#/components/schemas/FormInput'
-        actions:
-          type: array
-          description: Action buttons available on the form.
-          items:
-            $ref: '#/components/schemas/UserAction'
-        display_in_ui:
-          type: boolean
-          description: Whether the form should be displayed in the UI.
-        form_token:
-          type: string
-          nullable: true
-          description: Token for form submission authentication.
-        resolved_default_values:
-          type: object
-          additionalProperties: true
-          description: Resolved default values for form inputs, keyed by output variable name.
-        expiration_time:
-          type: integer
-          description: Unix timestamp when the form expires.
-    HumanInputFormSubmissionData:
-      type: object
-      description: Data from a submitted human input form.
-      properties:
-        node_id:
-          type: string
-          description: ID of the Human Input node.
-        node_title:
-          type: string
-          description: Title of the Human Input node.
-        rendered_content:
-          type: string
-          description: Rendered content of the form submission.
-        action_id:
-          type: string
-          description: ID of the action button that was clicked.
-        action_text:
-          type: string
-          description: Display text of the action button that was clicked.
-    MessageFileItem:
-      type: object
-      description: A file attached to a message.
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: File ID.
-        filename:
-          type: string
-          description: Original filename.
-        type:
-          type: string
-          description: File type, e.g., `image`.
-        url:
-          type: string
-          format: url
-          nullable: true
-          description: Preview URL for the file.
-        mime_type:
-          type: string
-          nullable: true
-          description: MIME type of the file.
-        size:
-          type: integer
-          nullable: true
-          description: File size in bytes.
-        transfer_method:
-          type: string
-          description: Transfer method used. `remote_url` for URL-based files, `local_file` for uploaded
-            files, `tool_file` for tool-generated files.
-        belongs_to:
-          type: string
-          nullable: true
-          description: Who this file belongs to. `user` for user-uploaded files, `assistant` for assistant-generated
-            files.
-        upload_file_id:
-          type: string
-          format: uuid
-          nullable: true
-          description: Upload file ID if transferred via `local_file`.
     RetrieverResource:
       type: object
       description: Citation and attribution information for a retriever resource.
@@ -1044,13 +698,58 @@ components:
           type: string
           description: Content snippet from the resource.
         summary:
-          type: string
-          nullable: true
+          type:
+          - string
+          - 'null'
           description: Summary of the chunk content.
         created_at:
           type: integer
           format: int64
           description: Creation timestamp (Unix epoch seconds).
+    MessageFileItem:
+      type: object
+      description: A file attached to a message.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: File ID.
+        filename:
+          type: string
+          description: Original filename.
+        type:
+          type: string
+          description: File type, e.g., `image`.
+        url:
+          type:
+          - string
+          - 'null'
+          format: url
+          description: Preview URL for the file.
+        mime_type:
+          type:
+          - string
+          - 'null'
+          description: MIME type of the file.
+        size:
+          type:
+          - integer
+          - 'null'
+          description: File size in bytes.
+        transfer_method:
+          type: string
+          description: Transfer method used. `remote_url` for URL-based files, `local_file` for uploaded files, `tool_file` for tool-generated files.
+        belongs_to:
+          type:
+          - string
+          - 'null'
+          description: Who this file belongs to. `user` for user-uploaded files, `assistant` for assistant-generated files.
+        upload_file_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: Upload file ID if transferred via `local_file`.
     UserAction:
       type: object
       description: An action button on a human input form.
@@ -1064,21 +763,304 @@ components:
         button_style:
           type: string
           description: '`primary`, `default`, `accent`, or `ghost`.'
+    ConversationListItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Conversation ID.
+        name:
+          type: string
+          description: Conversation name.
+        inputs:
+          type: object
+          additionalProperties: true
+          description: Input variables for the conversation.
+        status:
+          type: string
+          description: Conversation status. `normal` for active conversations.
+        introduction:
+          type: string
+          description: Conversation introduction.
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp.
+        updated_at:
+          type: integer
+          format: int64
+          description: Last update timestamp.
+    FormInput:
+      type: object
+      description: A form input field definition.
+      properties:
+        type:
+          type: string
+          description: 'Form input control type. Available values: `paragraph` (multi-line text input), `select` (single-choice from a list), `file` (single file upload), and `file-list` (multiple file uploads).'
+        output_variable_name:
+          type: string
+          description: Variable name where the input value is stored.
+        default:
+          description: Default value configuration for this input.
+          $ref: '#/components/schemas/FormInputDefault'
+    HumanInputFormSubmissionData:
+      type: object
+      description: Data from a submitted human input form.
+      properties:
+        node_id:
+          type: string
+          description: ID of the Human Input node.
+        node_title:
+          type: string
+          description: Title of the Human Input node.
+        rendered_content:
+          type: string
+          description: Rendered content of the form submission.
+        action_id:
+          type: string
+          description: ID of the action button that was clicked.
+        action_text:
+          type: string
+          description: Display text of the action button that was clicked.
+    ConversationsListResponse:
+      type: object
+      properties:
+        limit:
+          type: integer
+          description: Number of items per page.
+        has_more:
+          type: boolean
+          description: Whether there are more conversations.
+        data:
+          type: array
+          description: List of conversations.
+          items:
+            $ref: '#/components/schemas/ConversationListItem'
+    HumanInputFormDefinition:
+      type: object
+      description: Definition of a human input form rendered by a Human Input node.
+      properties:
+        form_id:
+          type: string
+          description: Unique form identifier.
+        node_id:
+          type: string
+          description: ID of the Human Input node that generated this form.
+        node_title:
+          type: string
+          description: Title of the Human Input node.
+        form_content:
+          type: string
+          description: Markdown or text content displayed with the form.
+        inputs:
+          type: array
+          description: Input fields in the form.
+          items:
+            $ref: '#/components/schemas/FormInput'
+        actions:
+          type: array
+          description: Action buttons available on the form.
+          items:
+            $ref: '#/components/schemas/UserAction'
+        display_in_ui:
+          type: boolean
+          description: Whether the form should be displayed in the UI.
+        form_token:
+          type:
+          - string
+          - 'null'
+          description: Token for form submission authentication.
+        resolved_default_values:
+          type: object
+          additionalProperties: true
+          description: Resolved default values for form inputs, keyed by output variable name.
+        expiration_time:
+          type: integer
+          description: Unix timestamp when the form expires.
+    ConversationVariableItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Variable ID.
+        name:
+          type: string
+          description: Variable name.
+        value_type:
+          type: string
+          description: 'Variable value type. Possible values: `string`, `number`, `object`, `secret`, `file`, `boolean`, `array[any]`, `array[string]`, `array[number]`, `array[object]`, `array[file]`, `array[boolean]`.'
+        value:
+          type: string
+          description: Variable value (can be a JSON string for complex types).
+        description:
+          type: string
+          description: Variable description.
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp.
+        updated_at:
+          type: integer
+          format: int64
+          description: Last update timestamp.
+    ConversationMessageItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Message ID.
+        conversation_id:
+          type: string
+          format: uuid
+          description: Conversation ID.
+        parent_message_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: Parent message ID for threaded conversations.
+        inputs:
+          type: object
+          additionalProperties: true
+          description: Input variables for this message.
+        query:
+          type: string
+          description: User query text.
+        answer:
+          type: string
+          description: Assistant answer text.
+        status:
+          type: string
+          description: Message status. `normal` for successful messages, `error` when generation failed.
+        error:
+          type:
+          - string
+          - 'null'
+          description: Error message if `status` is `error`.
+        message_files:
+          type: array
+          description: Files attached to this message.
+          items:
+            $ref: '#/components/schemas/MessageFileItem'
+        feedback:
+          type:
+          - object
+          - 'null'
+          description: User feedback for this message.
+          properties:
+            rating:
+              type: string
+              description: Feedback rating. `like` for positive, `dislike` for negative.
+        retriever_resources:
+          type: array
+          description: Retriever resources used for this message.
+          items:
+            $ref: '#/components/schemas/RetrieverResource'
+        agent_thoughts:
+          type: array
+          description: Agent thoughts for this message.
+          items:
+            $ref: '#/components/schemas/AgentThoughtItem'
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp (Unix epoch seconds).
+        extra_contents:
+          type: array
+          description: Additional execution content associated with this message, such as human input form data from Human Input nodes in Chatflow workflows.
+          items:
+            $ref: '#/components/schemas/HumanInputContent'
+        message_tokens:
+          type: integer
+          description: Number of tokens in the input message.
+        answer_tokens:
+          type: integer
+          description: Number of tokens in the generated answer.
+        total_tokens:
+          type: integer
+          description: Total tokens used, the sum of `message_tokens` and `answer_tokens`.
+        provider_response_latency:
+          type: number
+          format: double
+          description: Model provider response latency in seconds.
+        total_price:
+          type:
+          - string
+          - 'null'
+          format: decimal
+          description: Total price for the tokens used, or `null` when pricing is unavailable.
+        currency:
+          type:
+          - string
+          - 'null'
+          description: Currency for `total_price` (for example, `USD`), or `null` when pricing is unavailable.
+    HumanInputContent:
+      type: object
+      description: Execution content from a Human Input node, including form definition and submission data.
+      properties:
+        workflow_run_id:
+          type: string
+          description: ID of the workflow run this content belongs to.
+        submitted:
+          type: boolean
+          description: Whether the human input form has been submitted.
+        type:
+          type: string
+          description: '`human_input` for human input content.'
+        form_definition:
+          description: Form definition from the Human Input node. `null` when the content represents a submission response.
+          $ref: '#/components/schemas/HumanInputFormDefinition'
+        form_submission_data:
+          description: Submitted form data. `null` when the form has not been submitted yet.
+          $ref: '#/components/schemas/HumanInputFormSubmissionData'
+    ConversationVariableUpdateRequest:
+      type: object
+      description: Request body for updating a conversation variable.
+      required:
+      - value
+      properties:
+        value:
+          description: The new value for the variable. Must match the variable's expected type.
+        user:
+          type: string
+          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
+    ConversationVariablesResponse:
+      type: object
+      properties:
+        limit:
+          type: integer
+          description: Number of items per page.
+        has_more:
+          type: boolean
+          description: Whether there is a next page.
+        data:
+          type: array
+          description: List of conversation variables.
+          items:
+            $ref: '#/components/schemas/ConversationVariableItem'
+    ConversationRenameRequest:
+      type: object
+      description: Request body for renaming a conversation.
+      properties:
+        name:
+          type: string
+          description: New conversation name. Required unless `auto_generate` is `true`.
+        auto_generate:
+          type: boolean
+          default: false
+          description: Automatically generate the conversation name. When `true`, the `name` field is ignored.
+        user:
+          type: string
+          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
   securitySchemes:
     ApiKeyAuth:
       type: http
       scheme: bearer
       bearerFormat: API_KEY
-      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App
-        endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
+      description: 'Every request authenticates with an API key: `Authorization: Bearer {API_KEY}`. App endpoints take an app API key; knowledge endpoints take a knowledge base API key ([Get Started](/en/api-reference/guides/get-started)).
 
 
-        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key
-        fail with HTTP `401` (`unauthorized`).'
-x-provenance:
-  generated: '2026-09-06'
-  method: derived
-  source: openapi/_original/dify-service-api-openapi.json
-  note: Per-tag split of the first-party Dify Service API OpenAPI harvested from https://docs.dify.ai/en/api-reference/openapi_service.json
-    (advertised in https://docs.dify.ai/llms.txt). Paths, schemas and operationIds are verbatim from that
-    spec.
+        Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail with HTTP `401` (`unauthorized`).'
