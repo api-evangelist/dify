@@ -256,12 +256,6 @@ paths:
           sidebarTitle: Convert Text to Audio
 components:
   schemas:
-    AudioToTextResponse:
-      type: object
-      properties:
-        text:
-          type: string
-          description: Output text from speech recognition.
     TextToAudioRequest:
       type: object
       description: Request body for text-to-audio conversion. Provide either `message_id` or `text`.
@@ -295,6 +289,12 @@ components:
         user:
           type: string
           description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
+    AudioToTextResponse:
+      type: object
+      properties:
+        text:
+          type: string
+          description: Output text from speech recognition.
   securitySchemes:
     ApiKeyAuth:
       type: http

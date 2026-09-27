@@ -328,37 +328,6 @@ paths:
           sidebarTitle: Get Annotation Reply Job Status
 components:
   schemas:
-    InitialAnnotationReplySettingsRequest:
-      type: object
-      description: Request body for configuring annotation reply settings.
-      required:
-      - score_threshold
-      - embedding_provider_name
-      - embedding_model_name
-      properties:
-        embedding_provider_name:
-          type: string
-          description: Embedding model provider (for example, `openai`). Get available providers from [Get Available Models](/en/api-reference/models/get-available-models).
-        embedding_model_name:
-          type: string
-          description: Embedding model used to vectorize annotations for matching (for example, `text-embedding-3-small`).
-        score_threshold:
-          type: number
-          format: float
-          description: Minimum similarity score for an annotation to be considered a match. Higher values require closer matches.
-    UpdateAnnotationRequest:
-      type: object
-      description: Request body for updating an annotation.
-      required:
-      - question
-      - answer
-      properties:
-        question:
-          type: string
-          description: New question text for the annotation.
-        answer:
-          type: string
-          description: New answer text for the annotation.
     InitialAnnotationReplySettingsStatusResponse:
       type: object
       properties:
@@ -372,6 +341,39 @@ components:
         error_msg:
           type: string
           description: Error message describing why the job failed. Empty string when `job_status` is not `error`.
+    AnnotationListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnnotationItem'
+          description: List of annotation items for the current page.
+        has_more:
+          type: boolean
+          description: '`true` if more pages are available beyond the current result set.'
+        limit:
+          type: integer
+          description: Number of items per page.
+        total:
+          type: integer
+          description: Total number of annotations matching the query.
+        page:
+          type: integer
+          description: Current page number.
+    UpdateAnnotationRequest:
+      type: object
+      description: Request body for updating an annotation.
+      required:
+      - question
+      - answer
+      properties:
+        question:
+          type: string
+          description: New question text for the annotation.
+        answer:
+          type: string
+          description: New answer text for the annotation.
     CreateAnnotationRequest:
       type: object
       description: Request body for creating a new annotation.
@@ -395,26 +397,6 @@ components:
         job_status:
           type: string
           description: 'Current job status: `waiting` (queued) or `processing` (in progress). `completed` and `error` are returned only by [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status).'
-    AnnotationListResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/AnnotationItem'
-          description: List of annotation items for the current page.
-        has_more:
-          type: boolean
-          description: '`true` if more pages are available beyond the current result set.'
-        limit:
-          type: integer
-          description: Number of items per page.
-        total:
-          type: integer
-          description: Total number of annotations matching the query.
-        page:
-          type: integer
-          description: Current page number.
     AnnotationItem:
       type: object
       properties:
@@ -443,6 +425,24 @@ components:
           - 'null'
           format: int64
           description: Creation timestamp (Unix epoch seconds).
+    InitialAnnotationReplySettingsRequest:
+      type: object
+      description: Request body for configuring annotation reply settings.
+      required:
+      - score_threshold
+      - embedding_provider_name
+      - embedding_model_name
+      properties:
+        embedding_provider_name:
+          type: string
+          description: Embedding model provider (for example, `openai`). Get available providers from [Get Available Models](/en/api-reference/models/get-available-models).
+        embedding_model_name:
+          type: string
+          description: Embedding model used to vectorize annotations for matching (for example, `text-embedding-3-small`).
+        score_threshold:
+          type: number
+          format: float
+          description: Minimum similarity score for an annotation to be considered a match. Higher values require closer matches.
   securitySchemes:
     ApiKeyAuth:
       type: http

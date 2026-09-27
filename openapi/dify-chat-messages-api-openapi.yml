@@ -477,81 +477,6 @@ paths:
           sidebarTitle: Get Next Suggested Questions
 components:
   schemas:
-    SuggestedQuestionsResponse:
-      type: object
-      properties:
-        result:
-          type: string
-          description: Result status.
-        data:
-          type: array
-          items:
-            type: string
-          description: List of suggested questions.
-    RetrieverResource:
-      type: object
-      description: Citation and attribution information for a retriever resource.
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Unique ID of the retriever resource.
-        message_id:
-          type: string
-          format: uuid
-          description: ID of the message this resource belongs to.
-        position:
-          type: integer
-          description: Position of the resource in the list.
-        dataset_id:
-          type: string
-          format: uuid
-          description: ID of the knowledge base.
-        dataset_name:
-          type: string
-          description: Name of the knowledge base.
-        document_id:
-          type: string
-          format: uuid
-          description: ID of the document.
-        document_name:
-          type: string
-          description: Name of the document.
-        data_source_type:
-          type: string
-          description: Type of the data source.
-        segment_id:
-          type: string
-          format: uuid
-          description: ID of the specific chunk within the document.
-        score:
-          type: number
-          format: float
-          description: Similarity score of the resource.
-        hit_count:
-          type: integer
-          description: Number of times this chunk was hit.
-        word_count:
-          type: integer
-          description: Word count of the chunk.
-        segment_position:
-          type: integer
-          description: Position of the chunk within the document.
-        index_node_hash:
-          type: string
-          description: Hash of the index node.
-        content:
-          type: string
-          description: Content snippet from the resource.
-        summary:
-          type:
-          - string
-          - 'null'
-          description: Summary of the chunk content.
-        created_at:
-          type: integer
-          format: int64
-          description: Creation timestamp (Unix epoch seconds).
     Usage:
       type: object
       description: Model usage information.
@@ -671,6 +596,17 @@ components:
         workflow_id:
           type: string
           description: Chatflow apps only. Specify a published workflow version ID to execute. If not provided, the latest published version is used. On Dify Cloud, pinning a version requires a paid plan.
+    SuggestedQuestionsResponse:
+      type: object
+      properties:
+        result:
+          type: string
+          description: Result status.
+        data:
+          type: array
+          items:
+            type: string
+          description: List of suggested questions.
     ChatCompletionResponse:
       type: object
       properties:
@@ -714,6 +650,70 @@ components:
           type: integer
           format: int64
           description: Message creation timestamp (Unix epoch seconds).
+    RetrieverResource:
+      type: object
+      description: Citation and attribution information for a retriever resource.
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Unique ID of the retriever resource.
+        message_id:
+          type: string
+          format: uuid
+          description: ID of the message this resource belongs to.
+        position:
+          type: integer
+          description: Position of the resource in the list.
+        dataset_id:
+          type: string
+          format: uuid
+          description: ID of the knowledge base.
+        dataset_name:
+          type: string
+          description: Name of the knowledge base.
+        document_id:
+          type: string
+          format: uuid
+          description: ID of the document.
+        document_name:
+          type: string
+          description: Name of the document.
+        data_source_type:
+          type: string
+          description: Type of the data source.
+        segment_id:
+          type: string
+          format: uuid
+          description: ID of the specific chunk within the document.
+        score:
+          type: number
+          format: float
+          description: Similarity score of the resource.
+        hit_count:
+          type: integer
+          description: Number of times this chunk was hit.
+        word_count:
+          type: integer
+          description: Word count of the chunk.
+        segment_position:
+          type: integer
+          description: Position of the chunk within the document.
+        index_node_hash:
+          type: string
+          description: Hash of the index node.
+        content:
+          type: string
+          description: Content snippet from the resource.
+        summary:
+          type:
+          - string
+          - 'null'
+          description: Summary of the chunk content.
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp (Unix epoch seconds).
   responses:
     SuccessResult:
       description: Operation successful.

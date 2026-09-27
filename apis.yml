@@ -1,5 +1,9 @@
 aid: dify
 url: https://raw.githubusercontent.com/api-evangelist/dify/refs/heads/main/apis.yml
+x-docs-platform: mintlify
+x-docs-platform-confidence: medium
+x-docs-platform-checked: 2026-09-25
+x-docs-hosting: vercel
 apis:
 - aid: dify:dify-conversations-api
   name: Dify Conversations API
@@ -145,10 +149,11 @@ apis:
   baseURL: https://api.dify.ai/v1
   tags:
   - Documents
-  - Knowledge-Management
+  - Knowledge Management
   tags_raw:
   - Documents
   - Knowledge Management
+  - Knowledge-Management
   properties:
   - type: OpenAPI
     url: openapi/dify-documents-api-openapi.yml
@@ -163,12 +168,13 @@ apis:
   baseURL: https://api.dify.ai/v1
   tags:
   - Chunks
-  - Knowledge-Management
+  - Knowledge Management
   - RAG
   tags_raw:
   - Chunks
   - Knowledge Management
   - RAG
+  - Knowledge-Management
   properties:
   - type: OpenAPI
     url: openapi/dify-chunks-api-openapi.yml
@@ -184,10 +190,11 @@ apis:
   baseURL: https://api.dify.ai/v1
   tags:
   - Tags
-  - Knowledge-Management
+  - Knowledge Management
   tags_raw:
   - Tags
   - Knowledge Management
+  - Knowledge-Management
   properties:
   - type: OpenAPI
     url: openapi/dify-tags-api-openapi.yml
@@ -203,10 +210,11 @@ apis:
   baseURL: https://api.dify.ai/v1
   tags:
   - Metadata
-  - Knowledge-Management
+  - Knowledge Management
   tags_raw:
   - Metadata
   - Knowledge Management
+  - Knowledge-Management
   properties:
   - type: OpenAPI
     url: openapi/dify-metadata-api-openapi.yml
@@ -236,10 +244,11 @@ apis:
   baseURL: https://api.dify.ai/v1
   tags:
   - Pipelines
-  - Knowledge-Management
+  - Knowledge Management
   tags_raw:
   - Pipelines
   - Knowledge Management
+  - Knowledge-Management
   properties:
   - type: OpenAPI
     url: openapi/dify-knowledge-pipeline-api-openapi.yml
@@ -318,11 +327,12 @@ tags:
 - Backend-as-a-Service
 - Agents
 - Workflows
-- Knowledge-Management
+- Knowledge Management
 - RAG
 - MCP
 - Low-Code
-- Open-Source
+- Open Source
+- A2A
 tags_raw:
 - Artificial Intelligence
 - LLMOps
@@ -334,6 +344,9 @@ tags_raw:
 - Model Context Protocol
 - Low Code
 - Open Source
+- Knowledge-Management
+- Open-Source
+- A2A
 type: Index
 deliveryModel:
   model: saas+self-hosted
@@ -506,3 +519,10 @@ x-enrichment:
   status: enriched
   artifacts_added: 40
   pass: local-v3
+x-a2a:
+  verified: true
+  probed: '2026-09-26'
+  url: "https://docs.dify.ai/.well-known/agent-card.json"
+  grade: "conformant"
+  protocol_version: "0.3"
+  control: 404
