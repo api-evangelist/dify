@@ -846,6 +846,120 @@ paths:
           sidebarTitle: Stop Workflow Task
 components:
   schemas:
+    WorkflowRunSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Workflow run ID.
+        version:
+          type: string
+          description: Workflow version identifier.
+        status:
+          type: string
+          description: Workflow execution status. `running` for in-progress executions, `succeeded` when completed successfully, `failed` when execution encountered an error, `stopped` when manually halted, `partial-succeeded` when some nodes succeeded but others failed, `paused` when awaiting human input.
+        error:
+          type:
+          - string
+          - 'null'
+          description: Error message if the workflow failed.
+        elapsed_time:
+          type: number
+          format: float
+          description: Total time elapsed in seconds.
+        total_tokens:
+          type: integer
+          description: Total tokens consumed.
+        total_steps:
+          type: integer
+          description: Total number of workflow steps executed.
+        created_at:
+          type: integer
+          format: int64
+          description: Unix timestamp of when the workflow run was created.
+        finished_at:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          description: Unix timestamp of when the workflow run finished.
+        exceptions_count:
+          type: integer
+          description: Number of exceptions that occurred during execution.
+        triggered_from:
+          type: string
+          description: Source that triggered the workflow run. `app-run` for runs started from the app or API, `webhook` for runs started by a webhook trigger, `schedule` for runs started by a schedule trigger, `plugin` for runs started by an integration trigger.
+    WorkflowLogsResponse:
+      type: object
+      properties:
+        page:
+          type: integer
+          description: Current page number.
+        limit:
+          type: integer
+          description: Number of items per page.
+        total:
+          type: integer
+          description: Total number of log entries.
+        has_more:
+          type: boolean
+          description: Whether more pages are available.
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/WorkflowLogItem'
+          description: List of workflow log entries.
+    WorkflowBlockingResponse:
+      type: object
+      properties:
+        task_id:
+          type: string
+          format: uuid
+          description: Task ID for the in-progress execution. Use this with [Stop Workflow Task](/en/api-reference/workflow-runs/stop-workflow-task) to cancel a running workflow. Only valid during execution.
+        workflow_run_id:
+          type: string
+          format: uuid
+          description: Persistent identifier for this workflow run record. Use this with [Get Workflow Run Detail](/en/api-reference/workflow-runs/get-workflow-run-detail) to retrieve results after execution.
+        data:
+          $ref: '#/components/schemas/WorkflowFinishedData'
+    WorkflowExecutionRequest:
+      type: object
+      required:
+      - inputs
+      - user
+      properties:
+        inputs:
+          type: object
+          description: 'Key-value pairs for workflow input variables. Discover the variable names and types your app expects from the `user_input_form` field of [Get App Parameters](/en/api-reference/applications/get-app-parameters).
+
+
+            File-type variables take an array of file objects with `type`, `transfer_method`, and either `url` or `upload_file_id`.'
+          additionalProperties:
+            oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: object
+            - type: array
+              items:
+                $ref: '#/components/schemas/InputFileObject'
+        response_mode:
+          type: string
+          enum:
+          - streaming
+          - blocking
+          description: Response mode. Use `blocking` for synchronous responses (Cloudflare timeout is `100 s`), or `streaming` for Server-Sent Events. When omitted, defaults to blocking behavior.
+        user:
+          type: string
+          description: 'End-user identifier, defined by your app and unique within it. Scopes data access: a workflow run and its files are only visible to later requests that carry the same `user`. See [End User Identity](/en/api-reference/guides/end-user-identity).'
+        files:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/InputFileObject'
+          description: 'File list. Suitable when files need to be combined with text for input, available only when the model supports Vision capability. To attach a local file, first upload it via [Upload File](/en/api-reference/files/upload-file) and use the returned `id` as `upload_file_id` with `transfer_method: local_file`.'
     EndUserSummary:
       type: object
       properties:
@@ -862,49 +976,6 @@ components:
         session_id:
           type: string
           description: Session identifier.
-    WorkflowLogItem:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Log entry ID.
-        workflow_run:
-          $ref: '#/components/schemas/WorkflowRunSummary'
-        created_from:
-          type: string
-          description: Source of the workflow run (e.g., `service-api`).
-        created_by_role:
-          type: string
-          description: Role of the creator (e.g., `end_user`, `account`).
-        created_by_account:
-          type:
-          - object
-          - 'null'
-          description: Account details if created by an admin user.
-          properties:
-            id:
-              type: string
-              format: uuid
-              description: Account ID.
-            name:
-              type: string
-              description: Account display name.
-            email:
-              type: string
-              description: Account email address.
-        created_by_end_user:
-          $ref: '#/components/schemas/EndUserSummary'
-        created_at:
-          type: integer
-          format: int64
-          description: Unix timestamp of when the log entry was created.
-        details:
-          type:
-          - object
-          - 'null'
-          additionalProperties: true
-          description: Additional details for the log entry.
     WorkflowFinishedData:
       type: object
       properties:
@@ -967,83 +1038,49 @@ components:
             type: object
             additionalProperties: true
           description: Files generated during workflow execution. Only present in streaming `workflow_finished` events.
-    WorkflowLogsResponse:
-      type: object
-      properties:
-        page:
-          type: integer
-          description: Current page number.
-        limit:
-          type: integer
-          description: Number of items per page.
-        total:
-          type: integer
-          description: Total number of log entries.
-        has_more:
-          type: boolean
-          description: Whether more pages are available.
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/WorkflowLogItem'
-          description: List of workflow log entries.
-    WorkflowBlockingResponse:
-      type: object
-      properties:
-        task_id:
-          type: string
-          format: uuid
-          description: Task ID for the in-progress execution. Use this with [Stop Workflow Task](/en/api-reference/workflow-runs/stop-workflow-task) to cancel a running workflow. Only valid during execution.
-        workflow_run_id:
-          type: string
-          format: uuid
-          description: Persistent identifier for this workflow run record. Use this with [Get Workflow Run Detail](/en/api-reference/workflow-runs/get-workflow-run-detail) to retrieve results after execution.
-        data:
-          $ref: '#/components/schemas/WorkflowFinishedData'
-    WorkflowRunSummary:
+    WorkflowLogItem:
       type: object
       properties:
         id:
           type: string
           format: uuid
-          description: Workflow run ID.
-        version:
+          description: Log entry ID.
+        workflow_run:
+          $ref: '#/components/schemas/WorkflowRunSummary'
+        created_from:
           type: string
-          description: Workflow version identifier.
-        status:
+          description: Source of the workflow run (e.g., `service-api`).
+        created_by_role:
           type: string
-          description: Workflow execution status. `running` for in-progress executions, `succeeded` when completed successfully, `failed` when execution encountered an error, `stopped` when manually halted, `partial-succeeded` when some nodes succeeded but others failed, `paused` when awaiting human input.
-        error:
+          description: Role of the creator (e.g., `end_user`, `account`).
+        created_by_account:
           type:
-          - string
+          - object
           - 'null'
-          description: Error message if the workflow failed.
-        elapsed_time:
-          type: number
-          format: float
-          description: Total time elapsed in seconds.
-        total_tokens:
-          type: integer
-          description: Total tokens consumed.
-        total_steps:
-          type: integer
-          description: Total number of workflow steps executed.
+          description: Account details if created by an admin user.
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Account ID.
+            name:
+              type: string
+              description: Account display name.
+            email:
+              type: string
+              description: Account email address.
+        created_by_end_user:
+          $ref: '#/components/schemas/EndUserSummary'
         created_at:
           type: integer
           format: int64
-          description: Unix timestamp of when the workflow run was created.
-        finished_at:
+          description: Unix timestamp of when the log entry was created.
+        details:
           type:
-          - integer
+          - object
           - 'null'
-          format: int64
-          description: Unix timestamp of when the workflow run finished.
-        exceptions_count:
-          type: integer
-          description: Number of exceptions that occurred during execution.
-        triggered_from:
-          type: string
-          description: Source that triggered the workflow run. `app-run` for runs started from the app or API, `webhook` for runs started by a webhook trigger, `schedule` for runs started by a schedule trigger, `plugin` for runs started by an integration trigger.
+          additionalProperties: true
+          description: Additional details for the log entry.
     WorkflowRunDetailResponse:
       type: object
       properties:
@@ -1094,43 +1131,6 @@ components:
           - 'null'
           format: float
           description: Total time elapsed in seconds.
-    WorkflowExecutionRequest:
-      type: object
-      required:
-      - inputs
-      - user
-      properties:
-        inputs:
-          type: object
-          description: 'Key-value pairs for workflow input variables. Discover the variable names and types your app expects from the `user_input_form` field of [Get App Parameters](/en/api-reference/applications/get-app-parameters).
-
-
-            File-type variables take an array of file objects with `type`, `transfer_method`, and either `url` or `upload_file_id`.'
-          additionalProperties:
-            oneOf:
-            - type: string
-            - type: number
-            - type: boolean
-            - type: object
-            - type: array
-              items:
-                $ref: '#/components/schemas/InputFileObject'
-        response_mode:
-          type: string
-          enum:
-          - streaming
-          - blocking
-          description: Response mode. Use `blocking` for synchronous responses (Cloudflare timeout is `100 s`), or `streaming` for Server-Sent Events. When omitted, defaults to blocking behavior.
-        user:
-          type: string
-          description: 'End-user identifier, defined by your app and unique within it. Scopes data access: a workflow run and its files are only visible to later requests that carry the same `user`. See [End User Identity](/en/api-reference/guides/end-user-identity).'
-        files:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/InputFileObject'
-          description: 'File list. Suitable when files need to be combined with text for input, available only when the model supports Vision capability. To attach a local file, first upload it via [Upload File](/en/api-reference/files/upload-file) and use the returned `id` as `upload_file_id` with `transfer_method: local_file`.'
     InputFileObject:
       type: object
       required:

@@ -477,54 +477,49 @@ paths:
           sidebarTitle: Get Next Suggested Questions
 components:
   schemas:
-    Usage:
+    ChatCompletionResponse:
       type: object
-      description: Model usage information.
       properties:
-        prompt_tokens:
+        event:
+          type: string
+          description: Event type, fixed as `message`.
+        task_id:
+          type: string
+          format: uuid
+          description: Task ID for request tracking and stop response API.
+        id:
+          type: string
+          format: uuid
+          description: Unique ID of this response event.
+        message_id:
+          type: string
+          format: uuid
+          description: Unique message ID. Use this as the `message_id` parameter when calling feedback or suggested questions endpoints.
+        conversation_id:
+          type: string
+          format: uuid
+          description: Conversation ID.
+        mode:
+          type: string
+          description: App mode. `chat` for Chatbot apps, `agent-chat` for Legacy Agent apps, `advanced-chat` for Chatflow apps.
+        answer:
+          type: string
+          description: Complete response content.
+        metadata:
+          type: object
+          description: Metadata including usage and retriever resources.
+          properties:
+            usage:
+              $ref: '#/components/schemas/Usage'
+            retriever_resources:
+              type: array
+              description: List of retriever resources used.
+              items:
+                $ref: '#/components/schemas/RetrieverResource'
+        created_at:
           type: integer
-          description: Number of tokens in the prompt.
-        prompt_unit_price:
-          type: string
-          format: decimal
-          description: Unit price per prompt token.
-        prompt_price_unit:
-          type: string
-          format: decimal
-          description: Price unit for prompt tokens.
-        prompt_price:
-          type: string
-          format: decimal
-          description: Total price for prompt tokens.
-        completion_tokens:
-          type: integer
-          description: Number of tokens in the completion.
-        completion_unit_price:
-          type: string
-          format: decimal
-          description: Unit price per completion token.
-        completion_price_unit:
-          type: string
-          format: decimal
-          description: Price unit for completion tokens.
-        completion_price:
-          type: string
-          format: decimal
-          description: Total price for completion tokens.
-        total_tokens:
-          type: integer
-          description: Total number of tokens used.
-        total_price:
-          type: string
-          format: decimal
-          description: Total price for all tokens.
-        currency:
-          type: string
-          description: Currency for pricing.
-        latency:
-          type: number
-          format: double
-          description: Latency in seconds.
+          format: int64
+          description: Message creation timestamp (Unix epoch seconds).
     ChatRequest:
       type: object
       required:
@@ -607,49 +602,54 @@ components:
           items:
             type: string
           description: List of suggested questions.
-    ChatCompletionResponse:
+    Usage:
       type: object
+      description: Model usage information.
       properties:
-        event:
-          type: string
-          description: Event type, fixed as `message`.
-        task_id:
-          type: string
-          format: uuid
-          description: Task ID for request tracking and stop response API.
-        id:
-          type: string
-          format: uuid
-          description: Unique ID of this response event.
-        message_id:
-          type: string
-          format: uuid
-          description: Unique message ID. Use this as the `message_id` parameter when calling feedback or suggested questions endpoints.
-        conversation_id:
-          type: string
-          format: uuid
-          description: Conversation ID.
-        mode:
-          type: string
-          description: App mode. `chat` for Chatbot apps, `agent-chat` for Legacy Agent apps, `advanced-chat` for Chatflow apps.
-        answer:
-          type: string
-          description: Complete response content.
-        metadata:
-          type: object
-          description: Metadata including usage and retriever resources.
-          properties:
-            usage:
-              $ref: '#/components/schemas/Usage'
-            retriever_resources:
-              type: array
-              description: List of retriever resources used.
-              items:
-                $ref: '#/components/schemas/RetrieverResource'
-        created_at:
+        prompt_tokens:
           type: integer
-          format: int64
-          description: Message creation timestamp (Unix epoch seconds).
+          description: Number of tokens in the prompt.
+        prompt_unit_price:
+          type: string
+          format: decimal
+          description: Unit price per prompt token.
+        prompt_price_unit:
+          type: string
+          format: decimal
+          description: Price unit for prompt tokens.
+        prompt_price:
+          type: string
+          format: decimal
+          description: Total price for prompt tokens.
+        completion_tokens:
+          type: integer
+          description: Number of tokens in the completion.
+        completion_unit_price:
+          type: string
+          format: decimal
+          description: Unit price per completion token.
+        completion_price_unit:
+          type: string
+          format: decimal
+          description: Price unit for completion tokens.
+        completion_price:
+          type: string
+          format: decimal
+          description: Total price for completion tokens.
+        total_tokens:
+          type: integer
+          description: Total number of tokens used.
+        total_price:
+          type: string
+          format: decimal
+          description: Total price for all tokens.
+        currency:
+          type: string
+          description: Currency for pricing.
+        latency:
+          type: number
+          format: double
+          description: Latency in seconds.
     RetrieverResource:
       type: object
       description: Citation and attribution information for a retriever resource.

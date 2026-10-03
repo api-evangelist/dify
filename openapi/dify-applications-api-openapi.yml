@@ -220,6 +220,19 @@ paths:
           sidebarTitle: Get App WebApp Settings
 components:
   schemas:
+    AppMetaResponse:
+      type: object
+      properties:
+        tool_icons:
+          type: object
+          additionalProperties:
+            oneOf:
+            - title: Icon URL
+              type: string
+              format: url
+              description: URL of the icon.
+            - $ref: '#/components/schemas/ToolIconDetail'
+          description: Tool icons. Keys are tool names.
     AppInfoResponse:
       type: object
       properties:
@@ -240,30 +253,6 @@ components:
         author_name:
           type: string
           description: Name of the application author.
-    AppMetaResponse:
-      type: object
-      properties:
-        tool_icons:
-          type: object
-          additionalProperties:
-            oneOf:
-            - title: Icon URL
-              type: string
-              format: url
-              description: URL of the icon.
-            - $ref: '#/components/schemas/ToolIconDetail'
-          description: Tool icons. Keys are tool names.
-    ToolIconDetail:
-      title: Emoji Icon
-      type: object
-      description: Detail of a tool icon using emoji.
-      properties:
-        background:
-          type: string
-          description: Background color in hex format.
-        content:
-          type: string
-          description: Emoji content.
     AppParametersResponse:
       type: object
       properties:
@@ -440,6 +429,17 @@ components:
             workflow_file_upload_limit:
               type: integer
               description: Maximum number of files per workflow execution.
+    ToolIconDetail:
+      title: Emoji Icon
+      type: object
+      description: Detail of a tool icon using emoji.
+      properties:
+        background:
+          type: string
+          description: Background color in hex format.
+        content:
+          type: string
+          description: Emoji content.
     WebAppSettingsResponse:
       type: object
       properties:

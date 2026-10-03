@@ -566,7 +566,66 @@ paths:
           sidebarTitle: Delete Conversation
 components:
   schemas:
-    ConversationHistoryResponse:
+    UserAction:
+      type: object
+      description: An action button on a human input form.
+      properties:
+        id:
+          type: string
+          description: Unique action identifier.
+        title:
+          type: string
+          description: Button display text.
+        button_style:
+          type: string
+          description: '`primary`, `default`, `accent`, or `ghost`.'
+    HumanInputFormSubmissionData:
+      type: object
+      description: Data from a submitted human input form.
+      properties:
+        node_id:
+          type: string
+          description: ID of the Human Input node.
+        node_title:
+          type: string
+          description: Title of the Human Input node.
+        rendered_content:
+          type: string
+          description: Rendered content of the form submission.
+        action_id:
+          type: string
+          description: ID of the action button that was clicked.
+        action_text:
+          type: string
+          description: Display text of the action button that was clicked.
+    ConversationVariableItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Variable ID.
+        name:
+          type: string
+          description: Variable name.
+        value_type:
+          type: string
+          description: 'Variable value type. Possible values: `string`, `number`, `object`, `secret`, `file`, `boolean`, `array[any]`, `array[string]`, `array[number]`, `array[object]`, `array[file]`, `array[boolean]`.'
+        value:
+          type: string
+          description: Variable value (can be a JSON string for complex types).
+        description:
+          type: string
+          description: Variable description.
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp.
+        updated_at:
+          type: integer
+          format: int64
+          description: Last update timestamp.
+    ConversationVariablesResponse:
       type: object
       properties:
         limit:
@@ -574,12 +633,12 @@ components:
           description: Number of items per page.
         has_more:
           type: boolean
-          description: Whether there are more messages.
+          description: Whether there is a next page.
         data:
           type: array
-          description: List of messages.
+          description: List of conversation variables.
           items:
-            $ref: '#/components/schemas/ConversationMessageItem'
+            $ref: '#/components/schemas/ConversationVariableItem'
     AgentThoughtItem:
       type: object
       description: An agent thought step in the message.
@@ -627,19 +686,6 @@ components:
           type: integer
           format: int64
           description: Creation timestamp.
-    UserAction:
-      type: object
-      description: An action button on a human input form.
-      properties:
-        id:
-          type: string
-          description: Unique action identifier.
-        title:
-          type: string
-          description: Button display text.
-        button_style:
-          type: string
-          description: '`primary`, `default`, `accent`, or `ghost`.'
     FormInput:
       type: object
       description: A form input field definition.
@@ -653,52 +699,45 @@ components:
         default:
           description: Default value configuration for this input.
           $ref: '#/components/schemas/FormInputDefault'
-    HumanInputContent:
+    ConversationsListResponse:
       type: object
-      description: Execution content from a Human Input node, including form definition and submission data.
       properties:
-        workflow_run_id:
-          type: string
-          description: ID of the workflow run this content belongs to.
-        submitted:
+        limit:
+          type: integer
+          description: Number of items per page.
+        has_more:
           type: boolean
-          description: Whether the human input form has been submitted.
-        type:
-          type: string
-          description: '`human_input` for human input content.'
-        form_definition:
-          description: Form definition from the Human Input node. `null` when the content represents a submission response.
-          $ref: '#/components/schemas/HumanInputFormDefinition'
-        form_submission_data:
-          description: Submitted form data. `null` when the form has not been submitted yet.
-          $ref: '#/components/schemas/HumanInputFormSubmissionData'
-    ConversationVariableItem:
+          description: Whether there are more conversations.
+        data:
+          type: array
+          description: List of conversations.
+          items:
+            $ref: '#/components/schemas/ConversationListItem'
+    ConversationVariableUpdateRequest:
       type: object
+      description: Request body for updating a conversation variable.
+      required:
+      - value
       properties:
-        id:
+        value:
+          description: The new value for the variable. Must match the variable's expected type.
+        user:
           type: string
-          format: uuid
-          description: Variable ID.
+          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
+    ConversationRenameRequest:
+      type: object
+      description: Request body for renaming a conversation.
+      properties:
         name:
           type: string
-          description: Variable name.
-        value_type:
+          description: New conversation name. Required unless `auto_generate` is `true`.
+        auto_generate:
+          type: boolean
+          default: false
+          description: Automatically generate the conversation name. When `true`, the `name` field is ignored.
+        user:
           type: string
-          description: 'Variable value type. Possible values: `string`, `number`, `object`, `secret`, `file`, `boolean`, `array[any]`, `array[string]`, `array[number]`, `array[object]`, `array[file]`, `array[boolean]`.'
-        value:
-          type: string
-          description: Variable value (can be a JSON string for complex types).
-        description:
-          type: string
-          description: Variable description.
-        created_at:
-          type: integer
-          format: int64
-          description: Creation timestamp.
-        updated_at:
-          type: integer
-          format: int64
-          description: Last update timestamp.
+          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
     ConversationMessageItem:
       type: object
       properties:
@@ -791,25 +830,40 @@ components:
           - string
           - 'null'
           description: Currency for `total_price` (for example, `USD`), or `null` when pricing is unavailable.
-    HumanInputFormSubmissionData:
+    FormInputDefault:
       type: object
-      description: Data from a submitted human input form.
+      description: Default value configuration for a form input.
       properties:
-        node_id:
+        type:
           type: string
-          description: ID of the Human Input node.
-        node_title:
+          description: '`variable` for dynamic values from workflow variables, `constant` for static values.'
+        selector:
+          type: array
+          items:
+            type: string
+          description: Variable selector path when `type` is `variable`.
+        value:
           type: string
-          description: Title of the Human Input node.
-        rendered_content:
+          description: Static value when `type` is `constant`.
+    HumanInputContent:
+      type: object
+      description: Execution content from a Human Input node, including form definition and submission data.
+      properties:
+        workflow_run_id:
           type: string
-          description: Rendered content of the form submission.
-        action_id:
+          description: ID of the workflow run this content belongs to.
+        submitted:
+          type: boolean
+          description: Whether the human input form has been submitted.
+        type:
           type: string
-          description: ID of the action button that was clicked.
-        action_text:
-          type: string
-          description: Display text of the action button that was clicked.
+          description: '`human_input` for human input content.'
+        form_definition:
+          description: Form definition from the Human Input node. `null` when the content represents a submission response.
+          $ref: '#/components/schemas/HumanInputFormDefinition'
+        form_submission_data:
+          description: Submitted form data. `null` when the form has not been submitted yet.
+          $ref: '#/components/schemas/HumanInputFormSubmissionData'
     HumanInputFormDefinition:
       type: object
       description: Definition of a human input form rendered by a Human Input node.
@@ -851,7 +905,7 @@ components:
         expiration_time:
           type: integer
           description: Unix timestamp when the form expires.
-    ConversationVariablesResponse:
+    ConversationHistoryResponse:
       type: object
       properties:
         limit:
@@ -859,99 +913,40 @@ components:
           description: Number of items per page.
         has_more:
           type: boolean
-          description: Whether there is a next page.
+          description: Whether there are more messages.
         data:
           type: array
-          description: List of conversation variables.
+          description: List of messages.
           items:
-            $ref: '#/components/schemas/ConversationVariableItem'
-    MessageFileItem:
+            $ref: '#/components/schemas/ConversationMessageItem'
+    ConversationListItem:
       type: object
-      description: A file attached to a message.
       properties:
         id:
           type: string
           format: uuid
-          description: File ID.
-        filename:
-          type: string
-          description: Original filename.
-        type:
-          type: string
-          description: File type, e.g., `image`.
-        url:
-          type:
-          - string
-          - 'null'
-          format: url
-          description: Preview URL for the file.
-        mime_type:
-          type:
-          - string
-          - 'null'
-          description: MIME type of the file.
-        size:
-          type:
-          - integer
-          - 'null'
-          description: File size in bytes.
-        transfer_method:
-          type: string
-          description: Transfer method used. `remote_url` for URL-based files, `local_file` for uploaded files, `tool_file` for tool-generated files.
-        belongs_to:
-          type:
-          - string
-          - 'null'
-          description: Who this file belongs to. `user` for user-uploaded files, `assistant` for assistant-generated files.
-        upload_file_id:
-          type:
-          - string
-          - 'null'
-          format: uuid
-          description: Upload file ID if transferred via `local_file`.
-    ConversationsListResponse:
-      type: object
-      properties:
-        limit:
-          type: integer
-          description: Number of items per page.
-        has_more:
-          type: boolean
-          description: Whether there are more conversations.
-        data:
-          type: array
-          description: List of conversations.
-          items:
-            $ref: '#/components/schemas/ConversationListItem'
-    FormInputDefault:
-      type: object
-      description: Default value configuration for a form input.
-      properties:
-        type:
-          type: string
-          description: '`variable` for dynamic values from workflow variables, `constant` for static values.'
-        selector:
-          type: array
-          items:
-            type: string
-          description: Variable selector path when `type` is `variable`.
-        value:
-          type: string
-          description: Static value when `type` is `constant`.
-    ConversationRenameRequest:
-      type: object
-      description: Request body for renaming a conversation.
-      properties:
+          description: Conversation ID.
         name:
           type: string
-          description: New conversation name. Required unless `auto_generate` is `true`.
-        auto_generate:
-          type: boolean
-          default: false
-          description: Automatically generate the conversation name. When `true`, the `name` field is ignored.
-        user:
+          description: Conversation name.
+        inputs:
+          type: object
+          additionalProperties: true
+          description: Input variables for the conversation.
+        status:
           type: string
-          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
+          description: Conversation status. `normal` for active conversations.
+        introduction:
+          type: string
+          description: Conversation introduction.
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp.
+        updated_at:
+          type: integer
+          format: int64
+          description: Last update timestamp.
     RetrieverResource:
       type: object
       description: Citation and attribution information for a retriever resource.
@@ -1016,45 +1011,50 @@ components:
           type: integer
           format: int64
           description: Creation timestamp (Unix epoch seconds).
-    ConversationVariableUpdateRequest:
+    MessageFileItem:
       type: object
-      description: Request body for updating a conversation variable.
-      required:
-      - value
-      properties:
-        value:
-          description: The new value for the variable. Must match the variable's expected type.
-        user:
-          type: string
-          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
-    ConversationListItem:
-      type: object
+      description: A file attached to a message.
       properties:
         id:
           type: string
           format: uuid
-          description: Conversation ID.
-        name:
+          description: File ID.
+        filename:
           type: string
-          description: Conversation name.
-        inputs:
-          type: object
-          additionalProperties: true
-          description: Input variables for the conversation.
-        status:
+          description: Original filename.
+        type:
           type: string
-          description: Conversation status. `normal` for active conversations.
-        introduction:
+          description: File type, e.g., `image`.
+        url:
+          type:
+          - string
+          - 'null'
+          format: url
+          description: Preview URL for the file.
+        mime_type:
+          type:
+          - string
+          - 'null'
+          description: MIME type of the file.
+        size:
+          type:
+          - integer
+          - 'null'
+          description: File size in bytes.
+        transfer_method:
           type: string
-          description: Conversation introduction.
-        created_at:
-          type: integer
-          format: int64
-          description: Creation timestamp.
-        updated_at:
-          type: integer
-          format: int64
-          description: Last update timestamp.
+          description: Transfer method used. `remote_url` for URL-based files, `local_file` for uploaded files, `tool_file` for tool-generated files.
+        belongs_to:
+          type:
+          - string
+          - 'null'
+          description: Who this file belongs to. `user` for user-uploaded files, `assistant` for assistant-generated files.
+        upload_file_id:
+          type:
+          - string
+          - 'null'
+          format: uuid
+          description: Upload file ID if transferred via `local_file`.
   securitySchemes:
     ApiKeyAuth:
       type: http

@@ -328,19 +328,16 @@ paths:
           sidebarTitle: Get Annotation Reply Job Status
 components:
   schemas:
-    InitialAnnotationReplySettingsStatusResponse:
+    InitialAnnotationReplySettingsResponse:
       type: object
       properties:
         job_id:
           type: string
           format: uuid
-          description: Job ID from the [Configure Annotation Reply](/en/api-reference/annotations/configure-annotation-reply) call.
+          description: Asynchronous job ID. Use with [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status) to track progress.
         job_status:
           type: string
-          description: Current job status. `waiting` for queued, `processing` for in progress, `completed` when finished, `error` if failed.
-        error_msg:
-          type: string
-          description: Error message describing why the job failed. Empty string when `job_status` is not `error`.
+          description: 'Current job status: `waiting` (queued) or `processing` (in progress). `completed` and `error` are returned only by [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status).'
     AnnotationListResponse:
       type: object
       properties:
@@ -361,6 +358,19 @@ components:
         page:
           type: integer
           description: Current page number.
+    InitialAnnotationReplySettingsStatusResponse:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+          description: Job ID from the [Configure Annotation Reply](/en/api-reference/annotations/configure-annotation-reply) call.
+        job_status:
+          type: string
+          description: Current job status. `waiting` for queued, `processing` for in progress, `completed` when finished, `error` if failed.
+        error_msg:
+          type: string
+          description: Error message describing why the job failed. Empty string when `job_status` is not `error`.
     UpdateAnnotationRequest:
       type: object
       description: Request body for updating an annotation.
@@ -387,16 +397,24 @@ components:
         answer:
           type: string
           description: Answer returned when this annotation is matched.
-    InitialAnnotationReplySettingsResponse:
+    InitialAnnotationReplySettingsRequest:
       type: object
+      description: Request body for configuring annotation reply settings.
+      required:
+      - score_threshold
+      - embedding_provider_name
+      - embedding_model_name
       properties:
-        job_id:
+        embedding_provider_name:
           type: string
-          format: uuid
-          description: Asynchronous job ID. Use with [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status) to track progress.
-        job_status:
+          description: Embedding model provider (for example, `openai`). Get available providers from [Get Available Models](/en/api-reference/models/get-available-models).
+        embedding_model_name:
           type: string
-          description: 'Current job status: `waiting` (queued) or `processing` (in progress). `completed` and `error` are returned only by [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status).'
+          description: Embedding model used to vectorize annotations for matching (for example, `text-embedding-3-small`).
+        score_threshold:
+          type: number
+          format: float
+          description: Minimum similarity score for an annotation to be considered a match. Higher values require closer matches.
     AnnotationItem:
       type: object
       properties:
@@ -425,24 +443,6 @@ components:
           - 'null'
           format: int64
           description: Creation timestamp (Unix epoch seconds).
-    InitialAnnotationReplySettingsRequest:
-      type: object
-      description: Request body for configuring annotation reply settings.
-      required:
-      - score_threshold
-      - embedding_provider_name
-      - embedding_model_name
-      properties:
-        embedding_provider_name:
-          type: string
-          description: Embedding model provider (for example, `openai`). Get available providers from [Get Available Models](/en/api-reference/models/get-available-models).
-        embedding_model_name:
-          type: string
-          description: Embedding model used to vectorize annotations for matching (for example, `text-embedding-3-small`).
-        score_threshold:
-          type: number
-          format: float
-          description: Minimum similarity score for an annotation to be considered a match. Higher values require closer matches.
   securitySchemes:
     ApiKeyAuth:
       type: http
