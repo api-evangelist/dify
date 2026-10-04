@@ -477,49 +477,17 @@ paths:
           sidebarTitle: Get Next Suggested Questions
 components:
   schemas:
-    ChatCompletionResponse:
+    SuggestedQuestionsResponse:
       type: object
       properties:
-        event:
+        result:
           type: string
-          description: Event type, fixed as `message`.
-        task_id:
-          type: string
-          format: uuid
-          description: Task ID for request tracking and stop response API.
-        id:
-          type: string
-          format: uuid
-          description: Unique ID of this response event.
-        message_id:
-          type: string
-          format: uuid
-          description: Unique message ID. Use this as the `message_id` parameter when calling feedback or suggested questions endpoints.
-        conversation_id:
-          type: string
-          format: uuid
-          description: Conversation ID.
-        mode:
-          type: string
-          description: App mode. `chat` for Chatbot apps, `agent-chat` for Legacy Agent apps, `advanced-chat` for Chatflow apps.
-        answer:
-          type: string
-          description: Complete response content.
-        metadata:
-          type: object
-          description: Metadata including usage and retriever resources.
-          properties:
-            usage:
-              $ref: '#/components/schemas/Usage'
-            retriever_resources:
-              type: array
-              description: List of retriever resources used.
-              items:
-                $ref: '#/components/schemas/RetrieverResource'
-        created_at:
-          type: integer
-          format: int64
-          description: Message creation timestamp (Unix epoch seconds).
+          description: Result status.
+        data:
+          type: array
+          items:
+            type: string
+          description: List of suggested questions.
     ChatRequest:
       type: object
       required:
@@ -591,17 +559,49 @@ components:
         workflow_id:
           type: string
           description: Chatflow apps only. Specify a published workflow version ID to execute. If not provided, the latest published version is used. On Dify Cloud, pinning a version requires a paid plan.
-    SuggestedQuestionsResponse:
+    ChatCompletionResponse:
       type: object
       properties:
-        result:
+        event:
           type: string
-          description: Result status.
-        data:
-          type: array
-          items:
-            type: string
-          description: List of suggested questions.
+          description: Event type, fixed as `message`.
+        task_id:
+          type: string
+          format: uuid
+          description: Task ID for request tracking and stop response API.
+        id:
+          type: string
+          format: uuid
+          description: Unique ID of this response event.
+        message_id:
+          type: string
+          format: uuid
+          description: Unique message ID. Use this as the `message_id` parameter when calling feedback or suggested questions endpoints.
+        conversation_id:
+          type: string
+          format: uuid
+          description: Conversation ID.
+        mode:
+          type: string
+          description: App mode. `chat` for Chatbot apps, `agent-chat` for Legacy Agent apps, `advanced-chat` for Chatflow apps.
+        answer:
+          type: string
+          description: Complete response content.
+        metadata:
+          type: object
+          description: Metadata including usage and retriever resources.
+          properties:
+            usage:
+              $ref: '#/components/schemas/Usage'
+            retriever_resources:
+              type: array
+              description: List of retriever resources used.
+              items:
+                $ref: '#/components/schemas/RetrieverResource'
+        created_at:
+          type: integer
+          format: int64
+          description: Message creation timestamp (Unix epoch seconds).
     Usage:
       type: object
       description: Model usage information.

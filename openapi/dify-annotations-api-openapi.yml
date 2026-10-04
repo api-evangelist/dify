@@ -328,49 +328,6 @@ paths:
           sidebarTitle: Get Annotation Reply Job Status
 components:
   schemas:
-    InitialAnnotationReplySettingsResponse:
-      type: object
-      properties:
-        job_id:
-          type: string
-          format: uuid
-          description: Asynchronous job ID. Use with [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status) to track progress.
-        job_status:
-          type: string
-          description: 'Current job status: `waiting` (queued) or `processing` (in progress). `completed` and `error` are returned only by [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status).'
-    AnnotationListResponse:
-      type: object
-      properties:
-        data:
-          type: array
-          items:
-            $ref: '#/components/schemas/AnnotationItem'
-          description: List of annotation items for the current page.
-        has_more:
-          type: boolean
-          description: '`true` if more pages are available beyond the current result set.'
-        limit:
-          type: integer
-          description: Number of items per page.
-        total:
-          type: integer
-          description: Total number of annotations matching the query.
-        page:
-          type: integer
-          description: Current page number.
-    InitialAnnotationReplySettingsStatusResponse:
-      type: object
-      properties:
-        job_id:
-          type: string
-          format: uuid
-          description: Job ID from the [Configure Annotation Reply](/en/api-reference/annotations/configure-annotation-reply) call.
-        job_status:
-          type: string
-          description: Current job status. `waiting` for queued, `processing` for in progress, `completed` when finished, `error` if failed.
-        error_msg:
-          type: string
-          description: Error message describing why the job failed. Empty string when `job_status` is not `error`.
     UpdateAnnotationRequest:
       type: object
       description: Request body for updating an annotation.
@@ -397,6 +354,29 @@ components:
         answer:
           type: string
           description: Answer returned when this annotation is matched.
+    InitialAnnotationReplySettingsStatusResponse:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+          description: Job ID from the [Configure Annotation Reply](/en/api-reference/annotations/configure-annotation-reply) call.
+        job_status:
+          type: string
+          description: Current job status. `waiting` for queued, `processing` for in progress, `completed` when finished, `error` if failed.
+        error_msg:
+          type: string
+          description: Error message describing why the job failed. Empty string when `job_status` is not `error`.
+    InitialAnnotationReplySettingsResponse:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+          description: Asynchronous job ID. Use with [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status) to track progress.
+        job_status:
+          type: string
+          description: 'Current job status: `waiting` (queued) or `processing` (in progress). `completed` and `error` are returned only by [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status).'
     InitialAnnotationReplySettingsRequest:
       type: object
       description: Request body for configuring annotation reply settings.
@@ -415,6 +395,26 @@ components:
           type: number
           format: float
           description: Minimum similarity score for an annotation to be considered a match. Higher values require closer matches.
+    AnnotationListResponse:
+      type: object
+      properties:
+        data:
+          type: array
+          items:
+            $ref: '#/components/schemas/AnnotationItem'
+          description: List of annotation items for the current page.
+        has_more:
+          type: boolean
+          description: '`true` if more pages are available beyond the current result set.'
+        limit:
+          type: integer
+          description: Number of items per page.
+        total:
+          type: integer
+          description: Total number of annotations matching the query.
+        page:
+          type: integer
+          description: Current page number.
     AnnotationItem:
       type: object
       properties:

@@ -220,6 +220,70 @@ paths:
           sidebarTitle: Get App WebApp Settings
 components:
   schemas:
+    WebAppSettingsResponse:
+      type: object
+      properties:
+        title:
+          type: string
+          description: Web app title.
+        chat_color_theme:
+          type: string
+          description: Chat color theme.
+        chat_color_theme_inverted:
+          type: boolean
+          description: Whether the chat color theme is inverted.
+        icon_type:
+          type: string
+          description: Type of icon used. `emoji` for emoji icons, `image` for uploaded image icons.
+        icon:
+          type: string
+          description: Icon content (emoji or image ID).
+        icon_background:
+          type: string
+          description: Icon background color.
+        icon_url:
+          type:
+          - string
+          - 'null'
+          format: url
+          description: URL of the icon image.
+        description:
+          type: string
+          description: Web app description.
+        copyright:
+          type: string
+          description: Copyright text.
+        privacy_policy:
+          type: string
+          description: Privacy policy URL.
+        input_placeholder:
+          type:
+          - string
+          - 'null'
+          description: Placeholder text shown in the web app message input box. `null` when not configured.
+        custom_disclaimer:
+          type: string
+          description: Custom disclaimer text.
+        default_language:
+          type: string
+          description: Default language code.
+        show_workflow_steps:
+          type: boolean
+          description: Whether to show workflow steps.
+        use_icon_as_answer_icon:
+          type: boolean
+          description: Whether to use the app icon as the answer icon.
+    ToolIconDetail:
+      title: Emoji Icon
+      type: object
+      description: Detail of a tool icon using emoji.
+      properties:
+        background:
+          type: string
+          description: Background color in hex format.
+        content:
+          type: string
+          description: Emoji content.
     AppMetaResponse:
       type: object
       properties:
@@ -233,26 +297,6 @@ components:
               description: URL of the icon.
             - $ref: '#/components/schemas/ToolIconDetail'
           description: Tool icons. Keys are tool names.
-    AppInfoResponse:
-      type: object
-      properties:
-        name:
-          type: string
-          description: Application name.
-        description:
-          type: string
-          description: Application description.
-        tags:
-          type: array
-          items:
-            type: string
-          description: Application tags.
-        mode:
-          type: string
-          description: Application mode. `completion` for Text Generator apps, `chat` for Chatbot apps, `agent-chat` for Legacy Agent apps, `advanced-chat` for Chatflow apps, `workflow` for Workflow apps, `agent` for Agent apps.
-        author_name:
-          type: string
-          description: Name of the application author.
     AppParametersResponse:
       type: object
       properties:
@@ -429,70 +473,26 @@ components:
             workflow_file_upload_limit:
               type: integer
               description: Maximum number of files per workflow execution.
-    ToolIconDetail:
-      title: Emoji Icon
-      type: object
-      description: Detail of a tool icon using emoji.
-      properties:
-        background:
-          type: string
-          description: Background color in hex format.
-        content:
-          type: string
-          description: Emoji content.
-    WebAppSettingsResponse:
+    AppInfoResponse:
       type: object
       properties:
-        title:
+        name:
           type: string
-          description: Web app title.
-        chat_color_theme:
-          type: string
-          description: Chat color theme.
-        chat_color_theme_inverted:
-          type: boolean
-          description: Whether the chat color theme is inverted.
-        icon_type:
-          type: string
-          description: Type of icon used. `emoji` for emoji icons, `image` for uploaded image icons.
-        icon:
-          type: string
-          description: Icon content (emoji or image ID).
-        icon_background:
-          type: string
-          description: Icon background color.
-        icon_url:
-          type:
-          - string
-          - 'null'
-          format: url
-          description: URL of the icon image.
+          description: Application name.
         description:
           type: string
-          description: Web app description.
-        copyright:
+          description: Application description.
+        tags:
+          type: array
+          items:
+            type: string
+          description: Application tags.
+        mode:
           type: string
-          description: Copyright text.
-        privacy_policy:
+          description: Application mode. `completion` for Text Generator apps, `chat` for Chatbot apps, `agent-chat` for Legacy Agent apps, `advanced-chat` for Chatflow apps, `workflow` for Workflow apps, `agent` for Agent apps.
+        author_name:
           type: string
-          description: Privacy policy URL.
-        input_placeholder:
-          type:
-          - string
-          - 'null'
-          description: Placeholder text shown in the web app message input box. `null` when not configured.
-        custom_disclaimer:
-          type: string
-          description: Custom disclaimer text.
-        default_language:
-          type: string
-          description: Default language code.
-        show_workflow_steps:
-          type: boolean
-          description: Whether to show workflow steps.
-        use_icon_as_answer_icon:
-          type: boolean
-          description: Whether to use the app icon as the answer icon.
+          description: Name of the application author.
   securitySchemes:
     ApiKeyAuth:
       type: http

@@ -846,6 +846,93 @@ paths:
           sidebarTitle: Stop Workflow Task
 components:
   schemas:
+    WorkflowExecutionRequest:
+      type: object
+      required:
+      - inputs
+      - user
+      properties:
+        inputs:
+          type: object
+          description: 'Key-value pairs for workflow input variables. Discover the variable names and types your app expects from the `user_input_form` field of [Get App Parameters](/en/api-reference/applications/get-app-parameters).
+
+
+            File-type variables take an array of file objects with `type`, `transfer_method`, and either `url` or `upload_file_id`.'
+          additionalProperties:
+            oneOf:
+            - type: string
+            - type: number
+            - type: boolean
+            - type: object
+            - type: array
+              items:
+                $ref: '#/components/schemas/InputFileObject'
+        response_mode:
+          type: string
+          enum:
+          - streaming
+          - blocking
+          description: Response mode. Use `blocking` for synchronous responses (Cloudflare timeout is `100 s`), or `streaming` for Server-Sent Events. When omitted, defaults to blocking behavior.
+        user:
+          type: string
+          description: 'End-user identifier, defined by your app and unique within it. Scopes data access: a workflow run and its files are only visible to later requests that carry the same `user`. See [End User Identity](/en/api-reference/guides/end-user-identity).'
+        files:
+          type:
+          - array
+          - 'null'
+          items:
+            $ref: '#/components/schemas/InputFileObject'
+          description: 'File list. Suitable when files need to be combined with text for input, available only when the model supports Vision capability. To attach a local file, first upload it via [Upload File](/en/api-reference/files/upload-file) and use the returned `id` as `upload_file_id` with `transfer_method: local_file`.'
+    WorkflowRunDetailResponse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Workflow run ID.
+        workflow_id:
+          type: string
+          format: uuid
+          description: Workflow ID.
+        status:
+          type: string
+          description: Workflow execution status. `running` for in-progress executions, `succeeded` when completed successfully, `failed` when execution encountered an error, `stopped` when manually halted, `partial-succeeded` when some nodes succeeded but others failed, `paused` when awaiting human input.
+        inputs:
+          type:
+          - string
+          - 'null'
+          description: 'Input variables of the workflow run, returned as a raw JSON string that clients must parse (e.g., `{"query": "..."}`). May be `null`.'
+        outputs:
+          type: object
+          additionalProperties: true
+          description: Output data from the workflow. An empty object until outputs are available.
+        error:
+          type:
+          - string
+          - 'null'
+          description: Error message if the workflow failed.
+        total_steps:
+          type: integer
+          description: Total number of workflow steps executed.
+        total_tokens:
+          type: integer
+          description: Total tokens consumed.
+        created_at:
+          type: integer
+          format: int64
+          description: Unix timestamp of when the workflow run was created.
+        finished_at:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          description: Unix timestamp of when the workflow run finished.
+        elapsed_time:
+          type:
+          - number
+          - 'null'
+          format: float
+          description: Total time elapsed in seconds.
     WorkflowRunSummary:
       type: object
       properties:
@@ -890,6 +977,22 @@ components:
         triggered_from:
           type: string
           description: Source that triggered the workflow run. `app-run` for runs started from the app or API, `webhook` for runs started by a webhook trigger, `schedule` for runs started by a schedule trigger, `plugin` for runs started by an integration trigger.
+    EndUserSummary:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: End user ID.
+        type:
+          type: string
+          description: End user type.
+        is_anonymous:
+          type: boolean
+          description: Whether the end user is anonymous.
+        session_id:
+          type: string
+          description: Session identifier.
     WorkflowLogsResponse:
       type: object
       properties:
@@ -910,6 +1013,101 @@ components:
           items:
             $ref: '#/components/schemas/WorkflowLogItem'
           description: List of workflow log entries.
+    InputFileObject:
+      type: object
+      required:
+      - type
+      - transfer_method
+      properties:
+        type:
+          type: string
+          enum:
+          - image
+          - document
+          - audio
+          - video
+          - custom
+          description: File type.
+        transfer_method:
+          type: string
+          enum:
+          - remote_url
+          - local_file
+          description: 'Transfer method: `remote_url` for file URL, `local_file` for uploaded file.'
+        url:
+          type: string
+          format: url
+          description: File URL (when `transfer_method` is `remote_url`).
+        upload_file_id:
+          type: string
+          description: Uploaded file ID, obtained by uploading through the [Upload File](/en/api-reference/files/upload-file) API in advance (when `transfer_method` is `local_file`).
+      anyOf:
+      - properties:
+          transfer_method:
+            enum:
+            - remote_url
+          url:
+            type: string
+            format: url
+        required:
+        - url
+        not:
+          required:
+          - upload_file_id
+      - properties:
+          transfer_method:
+            enum:
+            - local_file
+          upload_file_id:
+            type: string
+        required:
+        - upload_file_id
+        not:
+          required:
+          - url
+    WorkflowLogItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+          description: Log entry ID.
+        workflow_run:
+          $ref: '#/components/schemas/WorkflowRunSummary'
+        created_from:
+          type: string
+          description: Source of the workflow run (e.g., `service-api`).
+        created_by_role:
+          type: string
+          description: Role of the creator (e.g., `end_user`, `account`).
+        created_by_account:
+          type:
+          - object
+          - 'null'
+          description: Account details if created by an admin user.
+          properties:
+            id:
+              type: string
+              format: uuid
+              description: Account ID.
+            name:
+              type: string
+              description: Account display name.
+            email:
+              type: string
+              description: Account email address.
+        created_by_end_user:
+          $ref: '#/components/schemas/EndUserSummary'
+        created_at:
+          type: integer
+          format: int64
+          description: Unix timestamp of when the log entry was created.
+        details:
+          type:
+          - object
+          - 'null'
+          additionalProperties: true
+          description: Additional details for the log entry.
     WorkflowBlockingResponse:
       type: object
       properties:
@@ -923,59 +1121,6 @@ components:
           description: Persistent identifier for this workflow run record. Use this with [Get Workflow Run Detail](/en/api-reference/workflow-runs/get-workflow-run-detail) to retrieve results after execution.
         data:
           $ref: '#/components/schemas/WorkflowFinishedData'
-    WorkflowExecutionRequest:
-      type: object
-      required:
-      - inputs
-      - user
-      properties:
-        inputs:
-          type: object
-          description: 'Key-value pairs for workflow input variables. Discover the variable names and types your app expects from the `user_input_form` field of [Get App Parameters](/en/api-reference/applications/get-app-parameters).
-
-
-            File-type variables take an array of file objects with `type`, `transfer_method`, and either `url` or `upload_file_id`.'
-          additionalProperties:
-            oneOf:
-            - type: string
-            - type: number
-            - type: boolean
-            - type: object
-            - type: array
-              items:
-                $ref: '#/components/schemas/InputFileObject'
-        response_mode:
-          type: string
-          enum:
-          - streaming
-          - blocking
-          description: Response mode. Use `blocking` for synchronous responses (Cloudflare timeout is `100 s`), or `streaming` for Server-Sent Events. When omitted, defaults to blocking behavior.
-        user:
-          type: string
-          description: 'End-user identifier, defined by your app and unique within it. Scopes data access: a workflow run and its files are only visible to later requests that carry the same `user`. See [End User Identity](/en/api-reference/guides/end-user-identity).'
-        files:
-          type:
-          - array
-          - 'null'
-          items:
-            $ref: '#/components/schemas/InputFileObject'
-          description: 'File list. Suitable when files need to be combined with text for input, available only when the model supports Vision capability. To attach a local file, first upload it via [Upload File](/en/api-reference/files/upload-file) and use the returned `id` as `upload_file_id` with `transfer_method: local_file`.'
-    EndUserSummary:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: End user ID.
-        type:
-          type: string
-          description: End user type.
-        is_anonymous:
-          type: boolean
-          description: Whether the end user is anonymous.
-        session_id:
-          type: string
-          description: Session identifier.
     WorkflowFinishedData:
       type: object
       properties:
@@ -1038,151 +1183,6 @@ components:
             type: object
             additionalProperties: true
           description: Files generated during workflow execution. Only present in streaming `workflow_finished` events.
-    WorkflowLogItem:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Log entry ID.
-        workflow_run:
-          $ref: '#/components/schemas/WorkflowRunSummary'
-        created_from:
-          type: string
-          description: Source of the workflow run (e.g., `service-api`).
-        created_by_role:
-          type: string
-          description: Role of the creator (e.g., `end_user`, `account`).
-        created_by_account:
-          type:
-          - object
-          - 'null'
-          description: Account details if created by an admin user.
-          properties:
-            id:
-              type: string
-              format: uuid
-              description: Account ID.
-            name:
-              type: string
-              description: Account display name.
-            email:
-              type: string
-              description: Account email address.
-        created_by_end_user:
-          $ref: '#/components/schemas/EndUserSummary'
-        created_at:
-          type: integer
-          format: int64
-          description: Unix timestamp of when the log entry was created.
-        details:
-          type:
-          - object
-          - 'null'
-          additionalProperties: true
-          description: Additional details for the log entry.
-    WorkflowRunDetailResponse:
-      type: object
-      properties:
-        id:
-          type: string
-          format: uuid
-          description: Workflow run ID.
-        workflow_id:
-          type: string
-          format: uuid
-          description: Workflow ID.
-        status:
-          type: string
-          description: Workflow execution status. `running` for in-progress executions, `succeeded` when completed successfully, `failed` when execution encountered an error, `stopped` when manually halted, `partial-succeeded` when some nodes succeeded but others failed, `paused` when awaiting human input.
-        inputs:
-          type:
-          - string
-          - 'null'
-          description: 'Input variables of the workflow run, returned as a raw JSON string that clients must parse (e.g., `{"query": "..."}`). May be `null`.'
-        outputs:
-          type: object
-          additionalProperties: true
-          description: Output data from the workflow. An empty object until outputs are available.
-        error:
-          type:
-          - string
-          - 'null'
-          description: Error message if the workflow failed.
-        total_steps:
-          type: integer
-          description: Total number of workflow steps executed.
-        total_tokens:
-          type: integer
-          description: Total tokens consumed.
-        created_at:
-          type: integer
-          format: int64
-          description: Unix timestamp of when the workflow run was created.
-        finished_at:
-          type:
-          - integer
-          - 'null'
-          format: int64
-          description: Unix timestamp of when the workflow run finished.
-        elapsed_time:
-          type:
-          - number
-          - 'null'
-          format: float
-          description: Total time elapsed in seconds.
-    InputFileObject:
-      type: object
-      required:
-      - type
-      - transfer_method
-      properties:
-        type:
-          type: string
-          enum:
-          - image
-          - document
-          - audio
-          - video
-          - custom
-          description: File type.
-        transfer_method:
-          type: string
-          enum:
-          - remote_url
-          - local_file
-          description: 'Transfer method: `remote_url` for file URL, `local_file` for uploaded file.'
-        url:
-          type: string
-          format: url
-          description: File URL (when `transfer_method` is `remote_url`).
-        upload_file_id:
-          type: string
-          description: Uploaded file ID, obtained by uploading through the [Upload File](/en/api-reference/files/upload-file) API in advance (when `transfer_method` is `local_file`).
-      anyOf:
-      - properties:
-          transfer_method:
-            enum:
-            - remote_url
-          url:
-            type: string
-            format: url
-        required:
-        - url
-        not:
-          required:
-          - upload_file_id
-      - properties:
-          transfer_method:
-            enum:
-            - local_file
-          upload_file_id:
-            type: string
-        required:
-        - upload_file_id
-        not:
-          required:
-          - url
   responses:
     SuccessResult:
       description: Operation successful.

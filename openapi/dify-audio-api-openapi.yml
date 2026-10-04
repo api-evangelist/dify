@@ -262,19 +262,6 @@ components:
         text:
           type: string
           description: Output text from speech recognition.
-    AudioToTextRequest:
-      type: object
-      description: Request body for audio-to-text conversion.
-      required:
-      - file
-      properties:
-        file:
-          type: string
-          format: binary
-          description: 'Audio file to transcribe. Accepted MIME types: `audio/mp3`, `audio/m4a` (also accepted as `audio/x-m4a`), `audio/wav`, `audio/amr`, `audio/mpga`. Other types, including the common `audio/mpeg`, are rejected with `unsupported_audio_type`. Maximum size `30 MB`.'
-        user:
-          type: string
-          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
     TextToAudioRequest:
       type: object
       description: Request body for text-to-audio conversion. Provide either `message_id` or `text`.
@@ -295,6 +282,19 @@ components:
         streaming:
           type: boolean
           description: Accepted for backward compatibility but has no effect. Whether the audio is streamed is determined by the configured TTS provider's output, not by this field.
+    AudioToTextRequest:
+      type: object
+      description: Request body for audio-to-text conversion.
+      required:
+      - file
+      properties:
+        file:
+          type: string
+          format: binary
+          description: 'Audio file to transcribe. Accepted MIME types: `audio/mp3`, `audio/m4a` (also accepted as `audio/x-m4a`), `audio/wav`, `audio/amr`, `audio/mpga`. Other types, including the common `audio/mpeg`, are rejected with `unsupported_audio_type`. Maximum size `30 MB`.'
+        user:
+          type: string
+          description: End-user identifier, defined by your app and unique within it. See [End User Identity](/en/api-reference/guides/end-user-identity).
   securitySchemes:
     ApiKeyAuth:
       type: http

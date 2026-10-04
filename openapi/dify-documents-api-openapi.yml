@@ -2054,6 +2054,104 @@ paths:
           sidebarTitle: Update Document Status in Batch
 components:
   schemas:
+    Document:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the document.
+        position:
+          type: integer
+          description: Display position of the document in the list.
+        data_source_type:
+          type: string
+          description: How the document was created. `upload_file` for file uploads, `notion_import` for Notion imports.
+        data_source_info:
+          type: object
+          description: Raw data source information, varies by `data_source_type`.
+        data_source_detail_dict:
+          type: object
+          description: Detailed data source information including file details.
+        dataset_process_rule_id:
+          type: string
+          description: ID of the processing rule applied to this document.
+        name:
+          type: string
+          description: Document name.
+        created_from:
+          type: string
+          description: Origin of the document. `api` for API creation, `web` for UI creation.
+        created_by:
+          type: string
+          description: ID of the user who created the document.
+        created_at:
+          type: number
+          description: Creation timestamp (Unix epoch in seconds).
+        tokens:
+          type: integer
+          description: Total number of tokens in the document.
+        indexing_status:
+          type: string
+          description: Current indexing status. `waiting` for queued, `parsing` while extracting content, `cleaning` while removing noise, `splitting` while chunking, `indexing` while building vectors, `completed` when ready, `error` if failed, `paused` if manually paused.
+        error:
+          type:
+          - string
+          - 'null'
+          description: Error message if indexing failed. `null` when no error.
+        enabled:
+          type: boolean
+          description: Whether the document is enabled for retrieval.
+        disabled_at:
+          type:
+          - number
+          - 'null'
+          description: Timestamp when the document was disabled. `null` if enabled.
+        disabled_by:
+          type:
+          - string
+          - 'null'
+          description: ID of the user who disabled the document. `null` if enabled.
+        archived:
+          type: boolean
+          description: Whether the document is archived.
+        display_status:
+          type: string
+          description: User-facing display status derived from `indexing_status` and `enabled` state.
+        word_count:
+          type: integer
+          description: Total word count of the document.
+        hit_count:
+          type: integer
+          description: Number of times the document has been matched in retrieval queries.
+        doc_form:
+          type: string
+          description: Document chunking mode. `text_model` for standard text chunking, `hierarchical_model` for parent-child structure, `qa_model` for QA pair extraction.
+        doc_metadata:
+          type: array
+          description: Metadata values assigned to this document.
+          items:
+            type: object
+            properties:
+              id:
+                type: string
+                description: Metadata field identifier.
+              name:
+                type: string
+                description: Metadata field name.
+              type:
+                type: string
+                description: Metadata field value type.
+              value:
+                type: string
+                description: Metadata value for this document.
+        summary_index_status:
+          type:
+          - string
+          - 'null'
+          description: Status of the summary index for this document. `null` if summary indexing is not configured.
+        need_summary:
+          type: boolean
+          description: Whether a summary needs to be generated for this document.
     RetrievalModel:
       type: object
       required:
@@ -2204,104 +2302,6 @@ components:
                       items:
                         type: string
                     - type: number
-    Document:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique identifier of the document.
-        position:
-          type: integer
-          description: Display position of the document in the list.
-        data_source_type:
-          type: string
-          description: How the document was created. `upload_file` for file uploads, `notion_import` for Notion imports.
-        data_source_info:
-          type: object
-          description: Raw data source information, varies by `data_source_type`.
-        data_source_detail_dict:
-          type: object
-          description: Detailed data source information including file details.
-        dataset_process_rule_id:
-          type: string
-          description: ID of the processing rule applied to this document.
-        name:
-          type: string
-          description: Document name.
-        created_from:
-          type: string
-          description: Origin of the document. `api` for API creation, `web` for UI creation.
-        created_by:
-          type: string
-          description: ID of the user who created the document.
-        created_at:
-          type: number
-          description: Creation timestamp (Unix epoch in seconds).
-        tokens:
-          type: integer
-          description: Total number of tokens in the document.
-        indexing_status:
-          type: string
-          description: Current indexing status. `waiting` for queued, `parsing` while extracting content, `cleaning` while removing noise, `splitting` while chunking, `indexing` while building vectors, `completed` when ready, `error` if failed, `paused` if manually paused.
-        error:
-          type:
-          - string
-          - 'null'
-          description: Error message if indexing failed. `null` when no error.
-        enabled:
-          type: boolean
-          description: Whether the document is enabled for retrieval.
-        disabled_at:
-          type:
-          - number
-          - 'null'
-          description: Timestamp when the document was disabled. `null` if enabled.
-        disabled_by:
-          type:
-          - string
-          - 'null'
-          description: ID of the user who disabled the document. `null` if enabled.
-        archived:
-          type: boolean
-          description: Whether the document is archived.
-        display_status:
-          type: string
-          description: User-facing display status derived from `indexing_status` and `enabled` state.
-        word_count:
-          type: integer
-          description: Total word count of the document.
-        hit_count:
-          type: integer
-          description: Number of times the document has been matched in retrieval queries.
-        doc_form:
-          type: string
-          description: Document chunking mode. `text_model` for standard text chunking, `hierarchical_model` for parent-child structure, `qa_model` for QA pair extraction.
-        doc_metadata:
-          type: array
-          description: Metadata values assigned to this document.
-          items:
-            type: object
-            properties:
-              id:
-                type: string
-                description: Metadata field identifier.
-              name:
-                type: string
-                description: Metadata field name.
-              type:
-                type: string
-                description: Metadata field value type.
-              value:
-                type: string
-                description: Metadata value for this document.
-        summary_index_status:
-          type:
-          - string
-          - 'null'
-          description: Status of the summary index for this document. `null` if summary indexing is not configured.
-        need_summary:
-          type: boolean
-          description: Whether a summary needs to be generated for this document.
   securitySchemes:
     ApiKeyAuth:
       type: http
