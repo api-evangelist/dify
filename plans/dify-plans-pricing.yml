@@ -207,3 +207,51 @@ plans:
       - Advanced security and controls
       - Updates and maintenance by Dify officially
       - Professional technical support
+x-canonical:
+  generated: '2026-10-08'
+  vocabulary: all/0-working/economics/plans-canonical.yml
+  models:
+  - free
+  - negotiated
+  units:
+  - object
+  plans:
+  - name: Sandbox
+    access: free
+    model: free
+    model_how: derived
+    units: []
+    periods:
+    - minute
+    - month
+    - unbounded
+  - name: Professional
+    access: paid
+    model: free
+    model_how: derived
+    units:
+    - object
+    periods:
+    - minute
+    - month
+  - name: Team
+    access: paid
+    model: free
+    model_how: derived
+    units:
+    - object
+    periods:
+    - minute
+    - month
+  - name: Community
+    access: free
+    model: free
+    model_how: derived
+    units: []
+    periods: []
+  - name: Enterprise
+    access: negotiated
+    model: negotiated
+    model_how: stated
+    units: []
+    periods: []

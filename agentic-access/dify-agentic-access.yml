@@ -1,23 +1,23 @@
-generated: '2026-09-06'
+generated: '2026-09-23'
 method: generated
 source: openapi/dify-annotations-api-openapi.yml, openapi/dify-applications-api-openapi.yml,
-  openapi/dify-audio-api-openapi.yml, openapi/dify-chat-api-openapi.yml, openapi/dify-chunks-api-openapi.yml,
-  openapi/dify-completion-api-openapi.yml, openapi/dify-conversations-api-openapi.yml, openapi/dify-datasets-api-openapi.yml,
+  openapi/dify-audio-api-openapi.yml, openapi/dify-chat-messages-api-openapi.yml, openapi/dify-chunks-api-openapi.yml,
+  openapi/dify-completion-messages-api-openapi.yml, openapi/dify-conversations-api-openapi.yml,
   openapi/dify-documents-api-openapi.yml, openapi/dify-end-users-api-openapi.yml, openapi/dify-feedback-api-openapi.yml,
-  openapi/dify-files-api-openapi.yml, openapi/dify-human-input-api-openapi.yml, openapi/dify-knowledge-pipeline-api-openapi.yml,
-  openapi/dify-metadata-api-openapi.yml, openapi/dify-models-api-openapi.yml, openapi/dify-tags-api-openapi.yml,
-  openapi/dify-workflows-api-openapi.yml
+  openapi/dify-files-api-openapi.yml, openapi/dify-human-input-api-openapi.yml, openapi/dify-knowledge-bases-api-openapi.yml,
+  openapi/dify-knowledge-pipeline-api-openapi.yml, openapi/dify-metadata-api-openapi.yml, openapi/dify-models-api-openapi.yml,
+  openapi/dify-tags-api-openapi.yml, openapi/dify-workflow-runs-api-openapi.yml
 description: Recommended x-agentic-access execution contracts, classified heuristically from
   the OpenAPI. A governance starting point for exposing this API to AI agents — review and bind
   audience per deployment. See research/curity/agentic-governance/.
 summary:
   operations: 82
   by_action_class:
-    acting: 50
-    connected: 32
+    acting: 49
+    connected: 33
   by_consequence:
-    write: 45
-    read: 32
+    write: 44
+    read: 33
     physical: 2
     safety-critical: 3
   human_in_the_loop_required: 3
@@ -460,90 +460,6 @@ operations:
       - abnormal
       - high-value
     audit: required
-- path: /datasets
-  method: post
-  operationId: createDataset
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /datasets
-  method: get
-  operationId: listDatasets
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /datasets/{dataset_id}
-  method: get
-  operationId: getDatasetDetail
-  x-agentic-access:
-    action-class: connected
-    consequence: read
-    subject: optional
-    token:
-      max-ttl: 3600
-    audit: none
-- path: /datasets/{dataset_id}
-  method: patch
-  operationId: updateDataset
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /datasets/{dataset_id}
-  method: delete
-  operationId: deleteDataset
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
-- path: /datasets/{dataset_id}/retrieve
-  method: post
-  operationId: retrieveSegments
-  x-agentic-access:
-    action-class: acting
-    consequence: write
-    subject: required
-    audience: null
-    token:
-      max-ttl: 900
-    escalation:
-      human-in-the-loop: conditional
-      triggers:
-      - abnormal
-      - high-value
-    audit: required
 - path: /datasets/{dataset_id}/document/create-by-text
   method: post
   operationId: createDocumentFromText
@@ -800,6 +716,84 @@ operations:
       - abnormal
       - high-value
     audit: required
+- path: /datasets
+  method: post
+  operationId: createDataset
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /datasets
+  method: get
+  operationId: listDatasets
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /datasets/{dataset_id}
+  method: get
+  operationId: getDatasetDetail
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
+- path: /datasets/{dataset_id}
+  method: patch
+  operationId: updateDataset
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /datasets/{dataset_id}
+  method: delete
+  operationId: deleteDataset
+  x-agentic-access:
+    action-class: acting
+    consequence: write
+    subject: required
+    audience: null
+    token:
+      max-ttl: 900
+    escalation:
+      human-in-the-loop: conditional
+      triggers:
+      - abnormal
+      - high-value
+    audit: required
+- path: /datasets/{dataset_id}/retrieve
+  method: post
+  operationId: retrieveSegments
+  x-agentic-access:
+    action-class: connected
+    consequence: read
+    subject: optional
+    token:
+      max-ttl: 3600
+    audit: none
 - path: /datasets/pipeline/file-upload
   method: post
   operationId: uploadPipelineFile
