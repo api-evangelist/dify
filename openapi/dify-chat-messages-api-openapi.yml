@@ -477,17 +477,70 @@ paths:
           sidebarTitle: Get Next Suggested Questions
 components:
   schemas:
-    SuggestedQuestionsResponse:
+    RetrieverResource:
       type: object
+      description: Citation and attribution information for a retriever resource.
       properties:
-        result:
+        id:
           type: string
-          description: Result status.
-        data:
-          type: array
-          items:
-            type: string
-          description: List of suggested questions.
+          format: uuid
+          description: Unique ID of the retriever resource.
+        message_id:
+          type: string
+          format: uuid
+          description: ID of the message this resource belongs to.
+        position:
+          type: integer
+          description: Position of the resource in the list.
+        dataset_id:
+          type: string
+          format: uuid
+          description: ID of the knowledge base.
+        dataset_name:
+          type: string
+          description: Name of the knowledge base.
+        document_id:
+          type: string
+          format: uuid
+          description: ID of the document.
+        document_name:
+          type: string
+          description: Name of the document.
+        data_source_type:
+          type: string
+          description: Type of the data source.
+        segment_id:
+          type: string
+          format: uuid
+          description: ID of the specific chunk within the document.
+        score:
+          type: number
+          format: float
+          description: Similarity score of the resource.
+        hit_count:
+          type: integer
+          description: Number of times this chunk was hit.
+        word_count:
+          type: integer
+          description: Word count of the chunk.
+        segment_position:
+          type: integer
+          description: Position of the chunk within the document.
+        index_node_hash:
+          type: string
+          description: Hash of the index node.
+        content:
+          type: string
+          description: Content snippet from the resource.
+        summary:
+          type:
+          - string
+          - 'null'
+          description: Summary of the chunk content.
+        created_at:
+          type: integer
+          format: int64
+          description: Creation timestamp (Unix epoch seconds).
     ChatRequest:
       type: object
       required:
@@ -559,49 +612,17 @@ components:
         workflow_id:
           type: string
           description: Chatflow apps only. Specify a published workflow version ID to execute. If not provided, the latest published version is used. On Dify Cloud, pinning a version requires a paid plan.
-    ChatCompletionResponse:
+    SuggestedQuestionsResponse:
       type: object
       properties:
-        event:
+        result:
           type: string
-          description: Event type, fixed as `message`.
-        task_id:
-          type: string
-          format: uuid
-          description: Task ID for request tracking and stop response API.
-        id:
-          type: string
-          format: uuid
-          description: Unique ID of this response event.
-        message_id:
-          type: string
-          format: uuid
-          description: Unique message ID. Use this as the `message_id` parameter when calling feedback or suggested questions endpoints.
-        conversation_id:
-          type: string
-          format: uuid
-          description: Conversation ID.
-        mode:
-          type: string
-          description: App mode. `chat` for Chatbot apps, `agent-chat` for Legacy Agent apps, `advanced-chat` for Chatflow apps.
-        answer:
-          type: string
-          description: Complete response content.
-        metadata:
-          type: object
-          description: Metadata including usage and retriever resources.
-          properties:
-            usage:
-              $ref: '#/components/schemas/Usage'
-            retriever_resources:
-              type: array
-              description: List of retriever resources used.
-              items:
-                $ref: '#/components/schemas/RetrieverResource'
-        created_at:
-          type: integer
-          format: int64
-          description: Message creation timestamp (Unix epoch seconds).
+          description: Result status.
+        data:
+          type: array
+          items:
+            type: string
+          description: List of suggested questions.
     Usage:
       type: object
       description: Model usage information.
@@ -650,70 +671,49 @@ components:
           type: number
           format: double
           description: Latency in seconds.
-    RetrieverResource:
+    ChatCompletionResponse:
       type: object
-      description: Citation and attribution information for a retriever resource.
       properties:
+        event:
+          type: string
+          description: Event type, fixed as `message`.
+        task_id:
+          type: string
+          format: uuid
+          description: Task ID for request tracking and stop response API.
         id:
           type: string
           format: uuid
-          description: Unique ID of the retriever resource.
+          description: Unique ID of this response event.
         message_id:
           type: string
           format: uuid
-          description: ID of the message this resource belongs to.
-        position:
-          type: integer
-          description: Position of the resource in the list.
-        dataset_id:
+          description: Unique message ID. Use this as the `message_id` parameter when calling feedback or suggested questions endpoints.
+        conversation_id:
           type: string
           format: uuid
-          description: ID of the knowledge base.
-        dataset_name:
+          description: Conversation ID.
+        mode:
           type: string
-          description: Name of the knowledge base.
-        document_id:
+          description: App mode. `chat` for Chatbot apps, `agent-chat` for Legacy Agent apps, `advanced-chat` for Chatflow apps.
+        answer:
           type: string
-          format: uuid
-          description: ID of the document.
-        document_name:
-          type: string
-          description: Name of the document.
-        data_source_type:
-          type: string
-          description: Type of the data source.
-        segment_id:
-          type: string
-          format: uuid
-          description: ID of the specific chunk within the document.
-        score:
-          type: number
-          format: float
-          description: Similarity score of the resource.
-        hit_count:
-          type: integer
-          description: Number of times this chunk was hit.
-        word_count:
-          type: integer
-          description: Word count of the chunk.
-        segment_position:
-          type: integer
-          description: Position of the chunk within the document.
-        index_node_hash:
-          type: string
-          description: Hash of the index node.
-        content:
-          type: string
-          description: Content snippet from the resource.
-        summary:
-          type:
-          - string
-          - 'null'
-          description: Summary of the chunk content.
+          description: Complete response content.
+        metadata:
+          type: object
+          description: Metadata including usage and retriever resources.
+          properties:
+            usage:
+              $ref: '#/components/schemas/Usage'
+            retriever_resources:
+              type: array
+              description: List of retriever resources used.
+              items:
+                $ref: '#/components/schemas/RetrieverResource'
         created_at:
           type: integer
           format: int64
-          description: Creation timestamp (Unix epoch seconds).
+          description: Message creation timestamp (Unix epoch seconds).
   responses:
     SuccessResult:
       description: Operation successful.

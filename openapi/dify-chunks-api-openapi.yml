@@ -1418,33 +1418,6 @@ paths:
           sidebarTitle: Delete Child Chunk
 components:
   schemas:
-    ChildChunk:
-      type: object
-      properties:
-        id:
-          type: string
-          description: Unique identifier of the child chunk.
-        segment_id:
-          type: string
-          description: ID of the parent chunk this child chunk belongs to.
-        content:
-          type: string
-          description: Text content of the child chunk.
-        position:
-          type: integer
-          description: Position of the child chunk within the parent chunk.
-        word_count:
-          type: integer
-          description: Word count of the child chunk content.
-        type:
-          type: string
-          description: How the child chunk was created. Child chunks created or updated through the API are always `customized`. System-generated child chunks are `automatic`.
-        created_at:
-          type: number
-          description: Creation timestamp (Unix epoch in seconds).
-        updated_at:
-          type: number
-          description: Last update timestamp (Unix epoch in seconds).
     Segment:
       type: object
       properties:
@@ -1568,6 +1541,33 @@ components:
           - string
           - 'null'
           description: AI-generated summary of the chunk content. `null` if summary indexing is not enabled.
+    ChildChunk:
+      type: object
+      properties:
+        id:
+          type: string
+          description: Unique identifier of the child chunk.
+        segment_id:
+          type: string
+          description: ID of the parent chunk this child chunk belongs to.
+        content:
+          type: string
+          description: Text content of the child chunk.
+        position:
+          type: integer
+          description: Position of the child chunk within the parent chunk.
+        word_count:
+          type: integer
+          description: Word count of the child chunk content.
+        type:
+          type: string
+          description: How the child chunk was created. Child chunks created or updated through the API are always `customized`. System-generated child chunks are `automatic`.
+        created_at:
+          type: number
+          description: Creation timestamp (Unix epoch in seconds).
+        updated_at:
+          type: number
+          description: Last update timestamp (Unix epoch in seconds).
   securitySchemes:
     ApiKeyAuth:
       type: http

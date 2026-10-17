@@ -328,55 +328,34 @@ paths:
           sidebarTitle: Get Annotation Reply Job Status
 components:
   schemas:
-    UpdateAnnotationRequest:
-      type: object
-      description: Request body for updating an annotation.
-      required:
-      - question
-      - answer
-      properties:
-        question:
-          type: string
-          description: New question text for the annotation.
-        answer:
-          type: string
-          description: New answer text for the annotation.
-    CreateAnnotationRequest:
-      type: object
-      description: Request body for creating a new annotation.
-      required:
-      - question
-      - answer
-      properties:
-        question:
-          type: string
-          description: Question text the app matches incoming user input against.
-        answer:
-          type: string
-          description: Answer returned when this annotation is matched.
-    InitialAnnotationReplySettingsStatusResponse:
+    AnnotationItem:
       type: object
       properties:
-        job_id:
+        id:
           type: string
           format: uuid
-          description: Job ID from the [Configure Annotation Reply](/en/api-reference/annotations/configure-annotation-reply) call.
-        job_status:
-          type: string
-          description: Current job status. `waiting` for queued, `processing` for in progress, `completed` when finished, `error` if failed.
-        error_msg:
-          type: string
-          description: Error message describing why the job failed. Empty string when `job_status` is not `error`.
-    InitialAnnotationReplySettingsResponse:
-      type: object
-      properties:
-        job_id:
-          type: string
-          format: uuid
-          description: Asynchronous job ID. Use with [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status) to track progress.
-        job_status:
-          type: string
-          description: 'Current job status: `waiting` (queued) or `processing` (in progress). `completed` and `error` are returned only by [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status).'
+          description: Unique annotation identifier.
+        question:
+          type:
+          - string
+          - 'null'
+          description: Question text that triggers this annotation.
+        answer:
+          type:
+          - string
+          - 'null'
+          description: Predefined answer returned when the annotation is matched.
+        hit_count:
+          type:
+          - integer
+          - 'null'
+          description: Number of times this annotation has been matched and returned as a reply.
+        created_at:
+          type:
+          - integer
+          - 'null'
+          format: int64
+          description: Creation timestamp (Unix epoch seconds).
     InitialAnnotationReplySettingsRequest:
       type: object
       description: Request body for configuring annotation reply settings.
@@ -415,34 +394,55 @@ components:
         page:
           type: integer
           description: Current page number.
-    AnnotationItem:
+    CreateAnnotationRequest:
+      type: object
+      description: Request body for creating a new annotation.
+      required:
+      - question
+      - answer
+      properties:
+        question:
+          type: string
+          description: Question text the app matches incoming user input against.
+        answer:
+          type: string
+          description: Answer returned when this annotation is matched.
+    InitialAnnotationReplySettingsStatusResponse:
       type: object
       properties:
-        id:
+        job_id:
           type: string
           format: uuid
-          description: Unique annotation identifier.
+          description: Job ID from the [Configure Annotation Reply](/en/api-reference/annotations/configure-annotation-reply) call.
+        job_status:
+          type: string
+          description: Current job status. `waiting` for queued, `processing` for in progress, `completed` when finished, `error` if failed.
+        error_msg:
+          type: string
+          description: Error message describing why the job failed. Empty string when `job_status` is not `error`.
+    UpdateAnnotationRequest:
+      type: object
+      description: Request body for updating an annotation.
+      required:
+      - question
+      - answer
+      properties:
         question:
-          type:
-          - string
-          - 'null'
-          description: Question text that triggers this annotation.
+          type: string
+          description: New question text for the annotation.
         answer:
-          type:
-          - string
-          - 'null'
-          description: Predefined answer returned when the annotation is matched.
-        hit_count:
-          type:
-          - integer
-          - 'null'
-          description: Number of times this annotation has been matched and returned as a reply.
-        created_at:
-          type:
-          - integer
-          - 'null'
-          format: int64
-          description: Creation timestamp (Unix epoch seconds).
+          type: string
+          description: New answer text for the annotation.
+    InitialAnnotationReplySettingsResponse:
+      type: object
+      properties:
+        job_id:
+          type: string
+          format: uuid
+          description: Asynchronous job ID. Use with [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status) to track progress.
+        job_status:
+          type: string
+          description: 'Current job status: `waiting` (queued) or `processing` (in progress). `completed` and `error` are returned only by [Get Annotation Reply Job Status](/en/api-reference/annotations/get-annotation-reply-job-status).'
   securitySchemes:
     ApiKeyAuth:
       type: http
