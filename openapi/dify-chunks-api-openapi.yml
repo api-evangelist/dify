@@ -1577,3 +1577,9 @@ components:
 
 
         Keep keys server-side; never embed them in client code. Requests with a missing or invalid key fail with HTTP `401` (`unauthorized`).'
+x-provenance:
+  method: harvested
+  publisher: Dify
+  source: https://docs.dify.ai/en/api-reference/openapi_service.json
+  note: split by refine-openapis from the provider's own published document, verified by fetch (openapi/_original/*.fetch.json);
+    stamped by stamp-openapi-provenance.py (roadmap#793)
