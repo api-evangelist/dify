@@ -1,4 +1,4 @@
-# Dify (dify)
+# Dify
 
 <!-- API-EVANGELIST-PROVENANCE:BEGIN -->
 > ### About this repository
@@ -64,62 +64,188 @@
 > Full detail: **[Where this data comes from](https://apievangelist.com/about/where-our-data-comes-from)**
 <!-- API-EVANGELIST-PROVENANCE:END -->
 
-Dify is an open-source platform for building AI applications. We combine Backend-as-a-Service and LLMOps to streamline the development of generative AI solutions, making it accessible to both developers and non-technical innovators.
+Dify is an open-source platform for building AI applications, combining Backend-as-a-Service and LLMOps to streamline the development of generative AI solutions for developers and non-technical innovators alike. Teams build agentic workflows, chatflows, agents and RAG knowledge pipelines on a visual canvas, then publish each one as a web app, an embeddable widget, a REST API or an MCP server. Dify is operated by Langgenius, Inc. and ships as Dify Cloud, a self-hosted Community Edition and a commercial Enterprise edition.
 
-**APIs.json:** [https://raw.githubusercontent.com/api-evangelist/dify/refs/heads/main/apis.yml](https://raw.githubusercontent.com/api-evangelist/dify/refs/heads/main/apis.yml)
+**Areas:** Artificial Intelligence · LLMOps · Backend-as-a-Service · Agents · Workflows · Knowledge Management · RAG · MCP · Low-Code · Open Source · A2A
 
-## Scope
+## Dify on APIs.io
 
-- **Type:** Index
-- **Position:** Consumer
-- **Access:** 3rd-Party
+Everything profiled for Dify is published on APIs.io rather than in this repository. Start at the provider page — **[apis.io/providers/dify/](https://apis.io/providers/dify/)** — or go straight to one of the APIs or properties below.
 
-## Tags
+### APIs (18)
 
-- Artificial Intelligence
-- Backend-As-A-Service
-- LLMOps
+- [Dify Conversations API](https://apis.io/apis/dify/dify-conversations-api/) — Operations related to managing conversations. 6 operation(s) from the Dify Service API.
+- [Dify Files API](https://apis.io/apis/dify/dify-files-api/) — File upload and preview operations. 2 operation(s) from the Dify Service API.
+- [Dify Applications API](https://apis.io/apis/dify/dify-applications-api/) — Operations to retrieve application settings and information. 4 operation(s) from the Dify Service API.
+- [Dify Annotations API](https://apis.io/apis/dify/dify-annotations-api/) — Operations related to managing annotations for direct replies. 6 operation(s) from the Dify Service API.
+- [Dify Audio API](https://apis.io/apis/dify/dify-audio-api/) — Text-to-Speech and Speech-to-Text operations. 2 operation(s) from the Dify Service API.
+- [Dify Feedback API](https://apis.io/apis/dify/dify-feedback-api/) — User feedback operations. 2 operation(s) from the Dify Service API.
+- [Dify End Users API](https://apis.io/apis/dify/dify-end-users-api/) — Operations related to end user information. 1 operation(s) from the Dify Service API.
+- [Dify Human Input API](https://apis.io/apis/dify/dify-human-input-api/) — Endpoints for resuming paused workflows that require human input. 2 operation(s) from the Dify Service API.
+- [Dify Documents API](https://apis.io/apis/dify/dify-documents-api/) — Operations for creating, updating, and managing documents within a knowledge base. 12 operation(s) from the Dify Service API.
+- [Dify Chunks API](https://apis.io/apis/dify/dify-chunks-api/) — Operations for managing document chunks and child chunks. 9 operation(s) from the Dify Service API.
+- [Dify Knowledge Tags API](https://apis.io/apis/dify/dify-tags-api/) — Operations for managing knowledge base tags and tag bindings. 7 operation(s) from the Dify Service API.
+- [Dify Metadata API](https://apis.io/apis/dify/dify-metadata-api/) — Operations for managing knowledge base metadata fields and document metadata values. 7 operation(s) from the Dify Service API.
+- [Dify Models API](https://apis.io/apis/dify/dify-models-api/) — Operations for retrieving available models. 1 operation(s) from the Dify Service API.
+- [Dify Knowledge Pipeline API](https://apis.io/apis/dify/dify-knowledge-pipeline-api/) — Operations for managing and running knowledge pipelines, including datasource plugins and pipeline execution. 4 operation(s) from the Dify Service API.
+- [Dify Chat Messages API](https://apis.io/apis/dify/dify-chat-messages-api/) — Operations related to chat messages and interactions.
+- [Dify Completion Messages API](https://apis.io/apis/dify/dify-completion-messages-api/) — Operations related to text generation and completion.
+- [Dify Knowledge Bases API](https://apis.io/apis/dify/dify-knowledge-bases-api/) — Operations for managing knowledge bases, including creation, configuration, and retrieval.
+- [Dify Workflow Runs API](https://apis.io/apis/dify/dify-workflow-runs-api/) — Operations for executing and managing workflows.
 
-## Timestamps
+### Published properties
 
-- **Created:** 2025-02-08
-- **Modified:** 2026-04-28
+Each property below is a page on APIs.io carrying the machine-readable artifact and what it says.
 
-## APIs
+#### AsyncAPI (1)
 
-### Dify
+Event-driven and webhook contracts.
 
-Dify is an open-source platform for building AI applications. We combine Backend-as-a-Service and LLMOps to streamline the development of generative AI solutions, making it accessible to both developers and non-technical innovators.
+- [Dify Events](https://apis.io/asyncapis/dify/dify-events/)
 
-- **Human URL:** [ https://docs.dify.ai/]( https://docs.dify.ai/)
+#### MCP servers (1)
 
-#### Tags
+Model Context Protocol servers that expose the API to agents.
 
-- Artificial Intelligence
-- Backend-As-A-Service
-- LLMOps
+- [Dify Docs MCP](https://apis.io/servers/dify/dify-docs-mcp/)
 
-#### Properties
+#### Agentic access (1)
 
-- [Documentation]( https://docs.dify.ai/)
-- [Postman Collection](collections/dify.postman_collection.json) — [Postman Collection 2.1](https://schema.getpostman.com/json/collection/v2.1.0/collection.json)
-- [Open Collection](collections/dify.opencollection.json) — [Open Collection 1.0](https://schema.opencollection.com/opencollection/v1.0.0.json)
+Which operations an agent can call, which act, and which need a human in the loop.
 
-## Common Properties
+- [Dify Agentic Access](https://apis.io/agentic-access/dify/dify-agentic-access/)
 
-- [GitHub Organization](https://github.com/langgenius)
-- [LinkedIn](https://www.linkedin.com/company/langgenius)
+#### Collections (7)
+
+Postman and Open Collection request collections.
+
+- [Dify API](https://apis.io/collections/dify/open-dify/)
+- [Dify Chat API](https://apis.io/collections/dify/open-dify-chat-api/)
+- [Dify Chat Completion API](https://apis.io/collections/dify/open-dify-completion-api/)
+- [Dify Chat Conversations API](https://apis.io/collections/dify/open-dify-conversations-api/)
+- [Dify Chat Datasets API](https://apis.io/collections/dify/open-dify-datasets-api/)
+- [Dify Chat Files API](https://apis.io/collections/dify/open-dify-files-api/)
+- [Dify Chat Workflows API](https://apis.io/collections/dify/open-dify-workflows-api/)
+
+#### Overlays (19)
+
+OpenAPI overlays, including conversational phrasing for each operation.
+
+- [Dify Annotations Api Phrasing Overlay](https://apis.io/overlays/dify/dify-annotations-api-phrasing-overlay/)
+- [Dify Applications Api Phrasing Overlay](https://apis.io/overlays/dify/dify-applications-api-phrasing-overlay/)
+- [Dify Audio Api Phrasing Overlay](https://apis.io/overlays/dify/dify-audio-api-phrasing-overlay/)
+- [Dify Chat Messages Api Phrasing Overlay](https://apis.io/overlays/dify/dify-chat-messages-api-phrasing-overlay/)
+- [Dify Chunks Api Phrasing Overlay](https://apis.io/overlays/dify/dify-chunks-api-phrasing-overlay/)
+- [Dify Completion Messages Api Phrasing Overlay](https://apis.io/overlays/dify/dify-completion-messages-api-phrasing-overlay/)
+- [Dify Conversations Api Phrasing Overlay](https://apis.io/overlays/dify/dify-conversations-api-phrasing-overlay/)
+- [Dify Documents Api Phrasing Overlay](https://apis.io/overlays/dify/dify-documents-api-phrasing-overlay/)
+- [Dify End Users Api Phrasing Overlay](https://apis.io/overlays/dify/dify-end-users-api-phrasing-overlay/)
+- [Dify Feedback Api Phrasing Overlay](https://apis.io/overlays/dify/dify-feedback-api-phrasing-overlay/)
+- [Dify Files Api Phrasing Overlay](https://apis.io/overlays/dify/dify-files-api-phrasing-overlay/)
+- [Dify Human Input Api Phrasing Overlay](https://apis.io/overlays/dify/dify-human-input-api-phrasing-overlay/)
+- [Dify Knowledge Bases Api Phrasing Overlay](https://apis.io/overlays/dify/dify-knowledge-bases-api-phrasing-overlay/)
+- [Dify Knowledge Pipeline Api Phrasing Overlay](https://apis.io/overlays/dify/dify-knowledge-pipeline-api-phrasing-overlay/)
+- [Dify Metadata Api Phrasing Overlay](https://apis.io/overlays/dify/dify-metadata-api-phrasing-overlay/)
+- [Dify Models Api Phrasing Overlay](https://apis.io/overlays/dify/dify-models-api-phrasing-overlay/)
+- [Dify Service Api Overlay](https://apis.io/overlays/dify/dify-service-api-overlay/)
+- [Dify Tags Api Phrasing Overlay](https://apis.io/overlays/dify/dify-tags-api-phrasing-overlay/)
+- [Dify Workflow Runs Api Phrasing Overlay](https://apis.io/overlays/dify/dify-workflow-runs-api-phrasing-overlay/)
+
+#### Security (4)
+
+Authentication, trust centre, and vulnerability disclosure.
+
+- [Dify Authentication](https://apis.io/security/dify/dify-authentication/)
+- [Dify Domain Security](https://apis.io/security/dify/dify-domain-security/)
+- [Dify Trust Center](https://apis.io/security/dify/dify-trust-center/)
+- [Dify Vulnerability Disclosure](https://apis.io/security/dify/dify-vulnerability-disclosure/)
+
+#### Plans and pricing (1)
+
+Published plans, tiers and prices.
+
+- [Dify Plans Pricing](https://apis.io/plans/dify/dify-plans-pricing/)
+
+#### Rate limits (1)
+
+Published request limits.
+
+- [Dify Rate Limits](https://apis.io/rate-limits/dify/dify-rate-limits/)
+
+#### FinOps (1)
+
+What the API costs to run, by operation.
+
+- [Dify Finops](https://apis.io/finops/dify/dify-finops/)
+
+## Where to find this API
+
+Links to the company's own pages. This repository publishes no copy of their specifications — the canonical document is theirs and lives at the URLs below.
+
 - [Website](https://dify.ai/)
-- [Pricing](https://dify.ai/pricing)
-- [Marketplace](https://marketplace.dify.ai/)
 - [Documentation](https://docs.dify.ai/)
+- [Getting started](https://docs.dify.ai/en/api-reference/guides/get-started)
+- [API reference](https://docs.dify.ai/en/api-reference)
+- [Pricing](https://dify.ai/pricing)
+- [Sign up](https://cloud.dify.ai/signup)
+- [Support](https://discord.gg/FngNHpbcY7)
 - [Blog](https://dify.ai/blog)
-- [Roadmap](https://roadmap.dify.ai/roadmap)
-- [Terms of Service](https://dify.ai/terms)
-- [Privacy Policy](https://dify.ai/privacy)
-- [L L Ms Txt](https://docs.dify.ai/llms.txt)
+- [Terms of service](https://dify.ai/legal/terms-of-service)
+- [Privacy policy](https://dify.ai/legal/privacy-policy)
+- [GitHub](https://github.com/langgenius)
+- [Status](https://status.dify.ai/)
 
-## Maintainers
+## API Evangelist rating
 
-**FN:** Kin Lane
-**Email:** kin@apievangelist.com
+**Kin Score 73.8** — exemplar · rubric 0.25.0 · scored 2026-10-23
+
+| Facet | Score |
+|---|---|
+| Discoverability | 75.0 |
+| Contract quality | 60.6 |
+| Contract governance | 18.2 |
+| Operational transparency | 89.5 |
+| Developer ergonomics | 85.0 |
+| Access clarity | 92.1 |
+
+**Agent readiness 40.8** — agent-ready (gated down from agent-native)
+
+| Agent-readiness dimension | Result |
+|---|---|
+| Spec Presence | yes |
+| Agentic Access | derived (partial credit) |
+| Reversibility Documented | — |
+| MCP Server | platform (partial credit) |
+| Auth Clarity | bearer (partial credit) |
+| Idempotency | — |
+| Error Semantics | documented (partial credit) |
+| OpenAPI Examples | verified |
+| Rate Limit Signal | documented (partial credit) |
+| Event Surface Described | yes |
+| Agent Skills | unknown |
+| Well Known Catalog | yes |
+| Consent Identity | — |
+| Agent Card | — |
+| Dry Run Mode | — |
+| Delegated Identity | — |
+| Protected Resource Metadata | — |
+| Dynamic Client Registration | — |
+| Agentic Commerce | — |
+| Pagination Ratio | partial |
+| Operation Distinctiveness | mostly |
+
+**Regulatory alignment 32.7** — Horizontal (data, software, accessibility, platform)
+
+The rubric is published at [github.com/api-evangelist/kin-score](https://github.com/api-evangelist/kin-score). The per-check breakdown behind these numbers — which checks were earned, partial or missed — along with score history and how this provider compares to its peers, is available at [apis.io/providers/dify/](https://apis.io/providers/dify/).
+
+## How this profile is made
+
+API Evangelist profiles a company's public API surface the way a developer would find it: the website, developer portal and documentation, the specifications it publishes, its public repositories, and its pricing, status and changelog pages. From that it derives the properties above — contracts split per API, workflows, schemas, collections, governance rules, plans and rate limits — and scores them against the published [Kin Score rubric](https://github.com/api-evangelist/kin-score).
+
+The artifacts are published on [APIs.io](https://apis.io), not in this repository. This repository is the public record for Dify: the place to say something is wrong, missing or out of date, and to ask for a re-score or a removal.
+
+## Open an issue
+
+- **Something about this listing** — a wrong description, a missing API, a stale artifact or a question about the rating: [open an issue on this repository](https://github.com/api-evangelist/dify/issues/new).
+- **A new API, or one that is not in the catalog yet** — [submit it on APIs.io](https://apis.io/add/).
+- **Anything else** — [the APIs.io inbox](https://github.com/api-search/inbox/issues/new) or [info@apievangelist.com](mailto:info@apievangelist.com).
