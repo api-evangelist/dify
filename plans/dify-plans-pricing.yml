@@ -1,0 +1,111 @@
+# Pricing transcribed from the provider's own page — see provenance. Numbers are quoted, not derived.
+generated: '2026-10-28'
+method: searched
+source: https://dify.ai/pricing
+sources:
+- https://dify.ai/pricing
+provenance:
+  tool: engine/economics/harvest_pricing.py
+  run: 20261028T120612
+  grounding: every price_text was found verbatim in the fetched page text
+audience: business-product
+pricing_basis: tiered-subscription
+delivery:
+  delivery: open-core
+  method: page
+  read: '2026-10-28'
+  evidence: Community For open-source enthusiasts, individual developers, and non-commercial projects.
+    Free
+  free_edition: Community
+  managed_tier: Professional
+published: true
+note: Annual billing shown (Monthly/Annually toggle, 'Bill Annually Save 17%'). Self-hosted Community
+  Edition free; Enterprise is a commercial licence with custom pricing.
+plan_count: 5
+currency: USD
+plans:
+- name: Sandbox
+  price_text: Free
+  period: none
+  unit: workspace
+  included_quota: 200 message credits, 1 Team Workspace, 1 Team Member, 5 Apps, 50 Knowledge Documents,
+    50MB Knowledge Data Storage, 3,000 Trigger Events, 30 Days Log History
+- name: Professional
+  price_text: $590 per workspace / year
+  price: 590
+  currency: USD
+  period: year
+  unit: workspace
+  included_quota: 5,000 message credits / month, 1 Team Workspace, 3 Team Members, 50 Apps, 500 Knowledge
+    Documents, 5GB Knowledge Data Storage, 20,000 Trigger Events / month, 2,000 Annotation Quota, Unlimited
+    Log History
+- name: Team
+  price_text: $1590 per workspace / year
+  price: 1590
+  currency: USD
+  period: year
+  unit: workspace
+  included_quota: 10,000 message credits / month, 1 Team Workspace, 50 Team Members, 200 Apps, 1,000 Knowledge
+    Documents, 20GB Knowledge Data Storage, Unlimited Trigger Events, 5,000 Annotation Quota, Unlimited
+    Log History
+- name: Enterprise
+  price_text: Custom
+  period: none
+  included_quota: Commercial License Authorization, SSO, advanced security, professional support
+- name: Community
+  price_text: Free
+  period: none
+  included_quota: All Core Features Released Under the Public Repository, Single Workspace
+rate_limit_statements:
+- 100 Knowledge Request Rate Limit/min
+- 1,000 Knowledge Request Rate Limit/min
+- 10 Knowledge Request/min
+- 5,000 API Rate Limit/month
+- No Dify API Rate Limit
+x-canonical:
+  generated: '2026-11-01'
+  vocabulary: engine/economics/plans-canonical.yml
+  models:
+  - hybrid
+  - metered
+  units:
+  - object
+  plans:
+  - name: Sandbox
+    access: other
+    model: metered
+    model_how: derived
+    units:
+    - object
+    periods:
+    - none
+  - name: Professional
+    access: other
+    model: hybrid
+    model_how: derived
+    units:
+    - object
+    periods:
+    - year
+  - name: Team
+    access: other
+    model: hybrid
+    model_how: derived
+    units:
+    - object
+    periods:
+    - year
+  - name: Enterprise
+    access: other
+    model: unstated
+    model_how: derived
+    units: []
+    periods:
+    - none
+  - name: Community
+    access: other
+    model: unstated
+    model_how: derived
+    units: []
+    periods:
+    - none
